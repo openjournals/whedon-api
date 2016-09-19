@@ -13,6 +13,15 @@ before do
 end
 
 post '/dispatch' do
+  say_hello if @action == "opened"
+  robawt_respond if @message
+end
+
+def say_hello
+  puts "HELLO HUMAN, I AM WHEDON"
+end
+
+def robawt_respond
   puts "ACTION: #{@action}"
   puts "MESSAGE: #{@message}"
   case @message
