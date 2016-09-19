@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
-gem "eventmachine"
+gem "octokit"
+gem "sidekiq"
 gem "sinatra"
 gem "thin"
