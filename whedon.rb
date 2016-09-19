@@ -3,6 +3,7 @@ require 'sinatra'
 
 before do
   params = JSON.parse(request.env["rack.input"].read)
+  puts params.inspect
   @message = params['body']
 end
 
