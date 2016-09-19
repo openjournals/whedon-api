@@ -7,6 +7,7 @@ before do
 end
 
 post '/dispatch' do
+  puts @message
   case @message
   when /commands/i
     puts "I have all the commands"
