@@ -1,8 +1,16 @@
 require 'json'
 require 'sinatra'
 
-post '/dispatch' do
+before do
   params = JSON.parse(request.env["rack.input"].read)
-  puts "I HAVE PARAMS!"
-  puts params
+  @message = params['body']
+end
+
+post '/dispatch' do
+  case @message
+  when /commands/i
+    puts "I have all the commands"
+  else
+    puts "You make no sense human"
+  end
 end
