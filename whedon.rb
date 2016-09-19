@@ -6,12 +6,15 @@ require 'sinatra'
 before do
   params = JSON.parse(request.env["rack.input"].read)
   # Only work with issues. Halt if there isn't an issue in the JSON
-  puts "DEBUG: #{params}"
+  puts "PARAMS: #{params}"
   halt if params['issue'].nil?
+  @action = params['issue']['action']
   @message = params['issue']['body']
 end
 
 post '/dispatch' do
+  puts "ACTION: #{@action}"
+  puts "MESSAGE: #{@message}"
   case @message
   when /commands/i
     puts "I have all the commands"
