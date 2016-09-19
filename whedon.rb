@@ -8,7 +8,7 @@ before do
   # Only work with issues. Halt if there isn't an issue in the JSON
   puts "PARAMS: #{params}"
   halt if params['issue'].nil?
-  @action = params['issue']['action']
+  @action = params['action']
   @message = params['issue']['body']
 end
 
