@@ -118,8 +118,8 @@ def assign_reviewer(new_reviewer)
 end
 
 def start_review
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[0]
-  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\w*)/)[0]
+  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[1]
+  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\w*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
   url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
