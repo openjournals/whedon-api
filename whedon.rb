@@ -117,6 +117,7 @@ def assign_reviewer(new_reviewer)
   new_reviewer = new_reviewer.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\w*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
+  settings.github.add_collaborator(nwo, new_reviewer)
 end
 
 def start_review
