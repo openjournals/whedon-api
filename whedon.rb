@@ -5,6 +5,8 @@ require 'sinatra'
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
 set :joss_editor_team_id, 2009411
+set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
+               'katyhuff', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
@@ -15,6 +17,7 @@ before do
   puts "PARAMS: #{params}"
   halt if params['issue'].nil?
   @action = params['action']
+  @payload = params
 
   if @action == 'opened'
     @message = params['issue']['body']
@@ -22,6 +25,7 @@ before do
     @message = params['comment']['body']
   end
 
+  @sender = params['sender']['login']
   @issue_id = params['issue']['number']
   @nwo = params['repository']['full_name']
 end
@@ -36,7 +40,15 @@ post '/dispatch' do
 end
 
 def say_hello
-  respond "HELLO HUMAN, I AM WHEDON"
+  if assignees.any?
+    respond erb :welcome, :locals => { :editor => assignees.first }
+  else
+    respond erb :welcome
+  end
+end
+
+def assignees
+  @assignees ||= settings.github.issue(@nwo, @issue_id).collect { |a| a.login }
 end
 
 def robawt_respond
@@ -46,12 +58,15 @@ def robawt_respond
   when /\A@whedon commands/i
     respond erb :commands
   when /\A@whedon assign (.*) as reviewer/i
+    check_editor
     # TODO actually assign the reviewer
     respond "OK, the reviewer is #{$1}"
   when /\A@whedon assign (.*) as editor/i
+    check_editor
     # TODO actually assign the editor
     respond "OK, the editor is #{$1}"
   when /\A@whedon start review magic-word=(.*)|\Astart review/i
+    check_editor
     respond "OK starting the review"
   when /\A@whedon list editors/i
     # TODO list editors
@@ -74,5 +89,10 @@ end
 
 # Return an array of editor usernames for JOSS editor list
 def editors
-  editors = settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
+  @editors ||= settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
+end
+
+# Check that the person sending the command is an editor
+def check_editor
+  halt 403 unless settings.editors.include?(@sender)
 end
