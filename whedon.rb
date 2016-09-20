@@ -34,14 +34,14 @@ post '/dispatch' do
 end
 
 def say_hello
-  puts "HELLO HUMAN, I AM WHEDON"
+  respond "HELLO HUMAN, I AM WHEDON"
 end
 
 def robawt_respond
   puts "ACTION: #{@action}"
   puts "MESSAGE: #{@message}"
   case @message
-  when /commands/i
+  when /@whedon commands/i
     respond "I have all the commands"
   else
     puts "You make no sense human"
