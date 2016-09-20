@@ -60,21 +60,19 @@ def robawt_respond
     respond erb :commands
   when /\A@whedon assign (.*) as reviewer/i
     check_editor
-    # TODO actually assign the reviewer
+    assign_reviewer($1)
     respond "OK, the reviewer is #{$1}"
   when /\A@whedon assign (.*) as editor/i
     check_editor
-    # TODO actually assign the editor
     assign_editor($1)
     respond "OK, the editor is #{$1}"
   when /\A@whedon start review magic-word=(.*)|\Astart review/i
     check_editor
+    # TODO actually post something to the API
     respond "OK starting the review"
   when /\A@whedon list editors/i
-    # TODO list editors
     respond erb :editors, :locals => { :editors => editors }
   when /\A@whedon list reviewers/i
-    # TODO list the reviewers
     respond reviewers
   end
 end
@@ -101,6 +99,12 @@ def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Editor:\*\*\s*@\w*/i, "**Editor:** @#{new_editor}")
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => new_editor)
+end
+
+# Change the reviewer listed at the top of the issue
+def assign_reviewer(new_reviewer)
+  new_reviewer = new_reviewer.gsub(/^\@/, "")
+  new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\w*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
 end
 
 def issue
