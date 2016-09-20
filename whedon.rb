@@ -8,7 +8,7 @@ set :joss_editor_team_id, 2009411
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
-  sleep(1000)
+  sleep(1)
   params = JSON.parse(request.env["rack.input"].read)
   # Only work with issues. Halt if there isn't an issue in the JSON
   puts "PARAMS: #{params}"
@@ -54,7 +54,7 @@ def robawt_respond
     respond "OK starting the review"
   when /list editors/i
     # TODO list editors
-    respond editors.join('\n')
+    respond "Current JOSS editors\n\n #{editors}"
   when /list reviewers/i
     # TODO list the reviewers
     respond reviewers
@@ -71,5 +71,8 @@ end
 
 # Return an array of editor usernames for JOSS editor list
 def editors
-  settings.github.team_members(settings.joss_editor_team_id).collect { |e| "@#{e.login}" }
+  response = "```\n"
+  settings.github.team_members(settings.joss_editor_team_id).collect { |e| response << "@#{e.login}\n" }
+  response << "```"
+  return response
 end
