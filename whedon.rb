@@ -44,7 +44,7 @@ def robawt_respond
   puts "MESSAGE: #{@message}"
   case @message
   when /@whedon commands/i
-    respond "I have all the commands"
+    respond erb :commands
   when /assign (.*) as reviewer/i
     # TODO actually assign the reviewer
     respond "OK, the reviewer is #{$1}"
@@ -62,10 +62,12 @@ def robawt_respond
   end
 end
 
+# How Whedon talks
 def respond(comment)
   settings.github.add_comment(@nwo, @issue_id, comment)
 end
 
+# Returns a string response with URL to Gist of reviewers
 def reviewers
   "Here's the current list of JOSS reviewers: https://gist.github.com/arfon/5317c568cb32c7b917fea3c13958131d"
 end
