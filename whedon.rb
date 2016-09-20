@@ -2,6 +2,7 @@ require 'json'
 require 'octokit'
 require 'sinatra'
 
+set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
 set :joss_editor_team_id, 2009411
 
@@ -54,7 +55,7 @@ def robawt_respond
     respond "OK starting the review"
   when /list editors/i
     # TODO list editors
-    respond "Current JOSS editors\n\n #{editors}"
+    respond erb :editors, :locals => { :editors => editors }
   when /list reviewers/i
     # TODO list the reviewers
     respond reviewers
@@ -71,8 +72,5 @@ end
 
 # Return an array of editor usernames for JOSS editor list
 def editors
-  response = "```\n"
-  settings.github.team_members(settings.joss_editor_team_id).collect { |e| response << "@#{e.login}\n" }
-  response << "```"
-  return response
+  editors = settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
 end
