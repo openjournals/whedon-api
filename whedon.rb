@@ -51,7 +51,7 @@ def robawt_respond
   when /\A@whedon assign (.*) as editor/i
     # TODO actually assign the editor
     respond "OK, the editor is #{$1}"
-  when /\A@whedon start review magic-word=(.*)|start review/i
+  when /\A@whedon start review magic-word=(.*)|\Astart review/i
     respond "OK starting the review"
   when /\A@whedon list editors/i
     # TODO list editors
