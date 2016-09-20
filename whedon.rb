@@ -104,7 +104,7 @@ def assign_editor(new_editor)
 end
 
 def issue
-  @issue ||= settings.github.issues(@nwo, @issue_id)
+  @issue ||= settings.github.issue(@nwo, @issue_id)
 end
 
 # Check that the person sending the command is an editor
