@@ -12,9 +12,16 @@ before do
   puts "PARAMS: #{params}"
   halt if params['issue'].nil?
   @action = params['action']
+
+  if @action = 'opened'
+    @message = params['issue']['body']
+  elsif @action = 'created'
+    @message = params['comment']['body']
+  end
+  
   @issue_id = params['issue']['number']
   @nwo = params['repository']['full_name']
-  @message = params['issue']['body']
+
 end
 
 post '/dispatch' do
