@@ -4,6 +4,7 @@ require 'sinatra'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
+set :joss_api_key = ENV['JOSS_API_KEY']
 set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
@@ -12,10 +13,10 @@ set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
-  sleep(1)
+  sleep(2) # This seems to help with auto-updating GitHub issue threads
   params = JSON.parse(request.env["rack.input"].read)
+
   # Only work with issues. Halt if there isn't an issue in the JSON
-  puts "PARAMS: #{params}"
   halt if params['issue'].nil?
   @action = params['action']
   @payload = params
@@ -69,7 +70,13 @@ def robawt_respond
   when /\A@whedon start review magic-word=(.*)|\Astart review/i
     check_editor
     # TODO actually post something to the API
-    respond "OK starting the review"
+    word = $1
+    if word && word == settings.magic_word
+      respond "OK starting the review"
+    else
+      respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
+      halt
+    end
   when /\A@whedon list editors/i
     respond erb :editors, :locals => { :editors => editors }
   when /\A@whedon list reviewers/i
