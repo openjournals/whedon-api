@@ -1,5 +1,8 @@
 require 'json'
+require 'octokit'
 require 'sinatra'
+
+set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
@@ -9,11 +12,17 @@ before do
   puts "PARAMS: #{params}"
   halt if params['issue'].nil?
   @action = params['action']
+  @issue_id = params['issue']['number']
+  @nwo = params['repository']['full_name']
   @message = params['issue']['body']
 end
 
 post '/dispatch' do
-  say_hello if @action == "opened"
+  if @action == "opened"
+    say_hello
+    halt
+  end
+
   robawt_respond if @message
 end
 
@@ -26,8 +35,12 @@ def robawt_respond
   puts "MESSAGE: #{@message}"
   case @message
   when /commands/i
-    puts "I have all the commands"
+    respond "I have all the commands"
   else
     puts "You make no sense human"
   end
+end
+
+def respond(comment)
+  settings.github.add_comment(@nwo, @issue_id, comment)
 end
