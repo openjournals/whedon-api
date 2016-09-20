@@ -107,10 +107,6 @@ def issue
   @issue ||= settings.github.issues(@nwo, @issue_id)
 end
 
-newBody = output.body.replace /\*\*Editor:\*\*\s*@\w*/i, "**Editor:** @#{editor}"
-updateIssueEditor(user, repo, number, newBody).then (output) ->
-  console.log "Editor updated to #{editor}"
-
 # Check that the person sending the command is an editor
 def check_editor
   unless settings.editors.include?(@sender)
