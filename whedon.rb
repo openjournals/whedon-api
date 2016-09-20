@@ -13,12 +13,12 @@ before do
   halt if params['issue'].nil?
   @action = params['action']
 
-  if @action = 'opened'
+  if @action == 'opened'
     @message = params['issue']['body']
-  elsif @action = 'created'
+  elsif @action == 'created'
     @message = params['comment']['body']
   end
-  
+
   @issue_id = params['issue']['number']
   @nwo = params['repository']['full_name']
 
