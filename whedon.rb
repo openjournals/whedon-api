@@ -4,7 +4,7 @@ require 'sinatra'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
-set :joss_api_key = ENV['JOSS_API_KEY']
+set :joss_api_key, ENV['JOSS_API_KEY']
 set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
@@ -75,7 +75,7 @@ def robawt_respond
       respond "OK starting the review"
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
-      halt
+      haltgit s
     end
   when /\A@whedon list editors/i
     respond erb :editors, :locals => { :editors => editors }
