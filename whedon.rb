@@ -109,15 +109,16 @@ end
 def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\w*|Pending)/i, "**Editor:** @#{new_editor}")
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => new_editor)
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_editor])
 end
 
 # Change the reviewer listed at the top of the issue
 def assign_reviewer(new_reviewer)
   new_reviewer = new_reviewer.gsub(/^\@/, "")
+  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[1]
   new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\w*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
   settings.github.add_collaborator(@nwo, new_reviewer)
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_reviewer, editor])
 end
 
 def start_review
