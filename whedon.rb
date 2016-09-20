@@ -75,7 +75,7 @@ def robawt_respond
       respond "OK starting the review"
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
-      haltgit s
+      halt
     end
   when /\A@whedon list editors/i
     respond erb :editors, :locals => { :editors => editors }
