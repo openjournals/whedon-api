@@ -61,11 +61,11 @@ def robawt_respond
   when /\A@whedon assign (.*) as reviewer/i
     check_editor
     # TODO actually assign the reviewer
-
     respond "OK, the reviewer is #{$1}"
   when /\A@whedon assign (.*) as editor/i
     check_editor
     # TODO actually assign the editor
+    assign_editor($1)
     respond "OK, the editor is #{$1}"
   when /\A@whedon start review magic-word=(.*)|\Astart review/i
     check_editor
@@ -93,6 +93,23 @@ end
 def editors
   @editors ||= settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
 end
+
+# Change the editor on an issue. This is a two-step process:
+# 1. Change the review issue assignee
+# 2. Update the editor listed at the top of the issue
+def assign_editor(new_editor)
+  new_editor = new_editor.gsub(/^\@/, "")
+  new_body = issue.body.gsub(/\*\*Editor:\*\*\s*@\w*/i, "**Editor:** @#{new_editor}")
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => new_editor)
+end
+
+def issue
+  @issue ||= settings.github.issues(@nwo, @issue_id)
+end
+
+newBody = output.body.replace /\*\*Editor:\*\*\s*@\w*/i, "**Editor:** @#{editor}"
+updateIssueEditor(user, repo, number, newBody).then (output) ->
+  console.log "Editor updated to #{editor}"
 
 # Check that the person sending the command is an editor
 def check_editor
