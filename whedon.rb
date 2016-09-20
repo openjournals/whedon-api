@@ -1,5 +1,6 @@
 require 'json'
 require 'octokit'
+require 'rest-client'
 require 'sinatra'
 
 set :views, Proc.new { File.join(root, "responses") }
@@ -72,6 +73,7 @@ def robawt_respond
     # TODO actually post something to the API
     word = $1
     if word && word == settings.magic_word
+      start_review
       respond "OK starting the review"
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
@@ -113,6 +115,17 @@ def assign_reviewer(new_reviewer)
   new_reviewer = new_reviewer.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\w*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
+end
+
+def start_review
+  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[0]
+  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\w*)/)[0]
+  # Check we have an editor and a reviewer
+  raise unless (editor && reviewer)
+  url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
+  # TODO let's do some error handling here please
+  puts "POSTING TO #{url}"
+  # res = RestClient.post(url)
 end
 
 def issue
