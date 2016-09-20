@@ -68,6 +68,8 @@ def robawt_respond
     check_editor
     assign_editor($1)
     respond "OK, the editor is #{$1}"
+  when /\A@whedon set (.*) as archive/
+    respond "OK, setting the archive as #{$1}"
   when /\A@whedon start review magic-word=(.*)|\A@whedon start review/i
     check_editor
     # TODO actually post something to the API
@@ -106,7 +108,7 @@ end
 # 2. Update the editor listed at the top of the issue
 def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
-  new_body = issue.body.gsub(/\*\*Editor:\*\*\s*@\w*/i, "**Editor:** @#{new_editor}")
+  new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\w*|Pending)/i, "**Editor:** @#{new_editor}")
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => new_editor)
 end
 
