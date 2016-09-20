@@ -48,7 +48,7 @@ def say_hello
 end
 
 def assignees
-  @assignees ||= settings.github.issue(@nwo, @issue_id).collect { |a| a.login }
+  @assignees ||= settings.github.issue(@nwo, @issue_id).assignees.collect { |a| a.login }
 end
 
 def robawt_respond
