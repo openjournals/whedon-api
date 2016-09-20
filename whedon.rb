@@ -43,20 +43,20 @@ def robawt_respond
   puts "ACTION: #{@action}"
   puts "MESSAGE: #{@message}"
   case @message
-  when /@whedon commands/i
+  when /\A@whedon commands/i
     respond erb :commands
-  when /assign (.*) as reviewer/i
+  when /\A@whedon assign (.*) as reviewer/i
     # TODO actually assign the reviewer
     respond "OK, the reviewer is #{$1}"
-  when /assign (.*) as editor/i
+  when /\A@whedon assign (.*) as editor/i
     # TODO actually assign the editor
     respond "OK, the editor is #{$1}"
-  when /start review magic-word=(.*)|start review/i
+  when /\A@whedon start review magic-word=(.*)|start review/i
     respond "OK starting the review"
-  when /list editors/i
+  when /\A@whedon list editors/i
     # TODO list editors
     respond erb :editors, :locals => { :editors => editors }
-  when /list reviewers/i
+  when /\A@whedon list reviewers/i
     # TODO list the reviewers
     respond reviewers
   end
