@@ -6,7 +6,7 @@ set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
 set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
-set :editors, ['acabunoc', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
+set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
                'katyhuff', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
