@@ -5,7 +5,8 @@ require 'sinatra'
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
 set :joss_editor_team_id, 2009411
-set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
+set :magic_word, "bananas"
+set :editors, ['acabunoc', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
                'katyhuff', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
@@ -60,6 +61,7 @@ def robawt_respond
   when /\A@whedon assign (.*) as reviewer/i
     check_editor
     # TODO actually assign the reviewer
+
     respond "OK, the reviewer is #{$1}"
   when /\A@whedon assign (.*) as editor/i
     check_editor
@@ -94,5 +96,8 @@ end
 
 # Check that the person sending the command is an editor
 def check_editor
-  halt 403 unless settings.editors.include?(@sender)
+  unless settings.editors.include?(@sender)
+    respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only JOSS editors are allowed to do."
+    halt 403
+  end
 end
