@@ -67,7 +67,7 @@ def robawt_respond
     check_editor
     assign_editor($1)
     respond "OK, the editor is #{$1}"
-  when /\A@whedon start review magic-word=(.*)|\Astart review/i
+  when /\A@whedon start review magic-word=(.*)|\A@whedon start review/i
     check_editor
     # TODO actually post something to the API
     word = $1
