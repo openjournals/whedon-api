@@ -97,7 +97,7 @@ end
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
   if doi
-    respond "Nice DOI: #{doi}"
+    respond "<a href='http://dx.doi.org/#{doi}' target='_blank'>#{doi}</a>"
   else
     respond "#{doi_string} doesn't look like an archive DOI."
   end
