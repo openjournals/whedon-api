@@ -69,6 +69,7 @@ def robawt_respond
     assign_editor($1)
     respond "OK, the editor is #{$1}"
   when /\A@whedon set (.*) as archive/
+    check_editor
     respond "OK, setting the archive as #{$1}"
   when /\A@whedon start review magic-word=(.*)|\A@whedon start review/i
     check_editor
