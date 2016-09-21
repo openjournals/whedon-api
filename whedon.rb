@@ -95,7 +95,7 @@ def respond(comment)
 end
 
 def assign_archive(doi_string)
-  doi = [/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
+  doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
   if doi
     respond "Nice DOI: #{doi}"
   else
