@@ -70,7 +70,7 @@ def robawt_respond
     respond "OK, the editor is #{$1}"
   when /\A@whedon set (.*) as archive/
     check_editor
-    respond "OK, setting the archive as #{$1}"
+    assign_archive($1)
   when /\A@whedon start review magic-word=(.*)|\A@whedon start review/i
     check_editor
     # TODO actually post something to the API
@@ -92,6 +92,15 @@ end
 # How Whedon talks
 def respond(comment)
   settings.github.add_comment(@nwo, @issue_id, comment)
+end
+
+def assign_archive(doi_string)
+  doi = [/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
+  if doi
+    respond "Nice DOI: #{doi}"
+  else
+    respond "#{doi_string} doesn't look like an archive DOI."
+  end
 end
 
 # Returns a string response with URL to Gist of reviewers
