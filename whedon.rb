@@ -100,7 +100,7 @@ def assign_archive(doi_string)
     doi_with_url = "<a href='http://dx.doi.org/#{doi}' target='_blank'>#{doi}</a>"
     new_body = issue.body.gsub(/\*\*Archive:\*\*\s*(.*|Pending)/i, "**Archive:** #{doi_with_url}")
     settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
-    respond "OK, #{doi_with_url} is the archive."
+    respond "OK. #{doi_with_url} is the archive."
   else
     respond "#{doi_string} doesn't look like an archive DOI."
   end
@@ -142,7 +142,7 @@ def start_review
   url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
-  res = RestClient.post(url)
+  res = RestClient.post(url, "")
 end
 
 def issue
