@@ -76,8 +76,8 @@ def robawt_respond
     # TODO actually post something to the API
     word = $1
     if word && word == settings.magic_word
-      start_review
-      respond "OK starting the review"
+      review_issue_id = start_review
+      respond erb, :locals => { :review_issue_id => review_issue_id }
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
       halt
@@ -142,7 +142,9 @@ def start_review
   url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
-  res = RestClient.post(url, "")
+  respose = RestClient.post(url, "")
+  paper = JSON.parse(response)
+  return paper['review_issue_id']
 end
 
 def issue
