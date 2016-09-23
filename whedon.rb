@@ -98,7 +98,7 @@ end
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
   if doi
-    doi_with_url = "<a href='http://dx.doi.org/#{doi}' target='_blank'>#{doi}</a>"
+    doi_with_url = "<a href=\"http://dx.doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
     new_body = issue.body.gsub(/\*\*Archive:\*\*\s*(.*|Pending)/i, "**Archive:** #{doi_with_url}")
     settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
     respond "OK. #{doi_with_url} is the archive."
