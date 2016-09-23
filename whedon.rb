@@ -132,6 +132,11 @@ def assign_reviewer(new_reviewer)
   editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
   settings.github.add_collaborator(@nwo, new_reviewer)
+  puts "NWO: #{@nwo}"
+  puts "ISSUE ID: #{@issue_id}"
+  puts "TITLE: #{issue.title}"
+  puts "BODY: #{new_body}"
+  puts "ASSIGNEES #{[new_reviewer, editor]}"
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_reviewer, editor])
 end
 
