@@ -1,6 +1,6 @@
 # Whedon API
 
-A small service that provides the basic Whedon API
+A small service that provides the basic Whedon API. Used to help editors manage reviews for [The Journal of Open Source Software](http://joss.theoj.org). You can see him in action in [this review issue](https://github.com/openjournals/joss-reviews/issues/78).
 
 ### Here are some things that Whedon can do:
 
