@@ -9,7 +9,7 @@ set :joss_api_key, ENV['JOSS_API_KEY']
 set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
-               'katyhuff', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
+               'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
