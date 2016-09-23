@@ -137,7 +137,7 @@ def assign_reviewer(new_reviewer)
   puts "TITLE: #{issue.title}"
   puts "BODY: #{new_body}"
   puts "ASSIGNEES #{[new_reviewer, editor]}"
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_reviewer, editor])
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => editor)
 end
 
 def start_review
