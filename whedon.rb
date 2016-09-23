@@ -123,7 +123,8 @@ end
 def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_editor])
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+  update_assigness([new_editor])
 end
 
 # Change the reviewer listed at the top of the issue
@@ -137,7 +138,14 @@ def assign_reviewer(new_reviewer)
   puts "TITLE: #{issue.title}"
   puts "BODY: #{new_body}"
   puts "ASSIGNEES #{[new_reviewer, editor]}"
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignee => new_reviewer)
+  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+  update_assigness([new_reviewer, editor])
+end
+
+def update_assigness(assignees)
+  data = { "assignees" => assignees }
+  url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{ENV['GH_TOKEN']}"
+  RestClient.post(url, assignees.to_json)
 end
 
 def start_review
