@@ -9,7 +9,8 @@ set :joss_api_key, ENV['JOSS_API_KEY']
 set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
-               'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba', 'mgymrek', 'pjotrp', 'tracykteal']
+               'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
+               'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
@@ -121,22 +122,22 @@ end
 # 2. Update the editor listed at the top of the issue
 def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
-  new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\w*|Pending)/i, "**Editor:** @#{new_editor}")
+  new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_editor])
 end
 
 # Change the reviewer listed at the top of the issue
 def assign_reviewer(new_reviewer)
   new_reviewer = new_reviewer.gsub(/^\@/, "")
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[1]
-  new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\w*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
+  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+  new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
   settings.github.add_collaborator(@nwo, new_reviewer)
   settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [new_reviewer, editor])
 end
 
 def start_review
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\w*)/)[1]
-  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\w*)/)[1]
+  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
   url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
