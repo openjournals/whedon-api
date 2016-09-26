@@ -1,7 +1,10 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
+gem "mina"
+gem "mina-sidekiq", :require => false
+gem "mina-unicorn", :require => false
 gem "octokit"
 gem "rest-client"
 gem "sidekiq"
 gem "sinatra"
-gem "thin"
+gem "unicorn"
