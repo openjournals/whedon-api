@@ -14,7 +14,7 @@ set :term_mode, nil
 set :domain, '45.55.62.67'
 set :deploy_to, '/home/rails/whedon'
 set :repository, 'git@github.com:openjournals/whedon-api.git'
-set :branch, 'master'
+set :branch, 'mina'
 set :user, 'rails'
 set :forward_agent, true
 set :port, '22'
