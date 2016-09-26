@@ -25,7 +25,7 @@ set :rvm_path, '/usr/local/rvm/bin/rvm'
 
 # Manually create these paths in shared/ (eg: shared/config/database.yml) in your server.
 # They will be linked in the 'deploy:link_shared_paths' step.
-set :shared_paths, ['config/secrets.yml', 'log']
+set :shared_paths, ['config/secrets.yml', 'log', 'tmp']
 
 # Optional settings:
 #   set :user, 'foobar'    # Username in the server to SSH to.
@@ -78,7 +78,7 @@ task :deploy => :environment do
     invoke :'deploy:cleanup'
 
     to :launch do
-      # invoke :'sidekiq:restart'
+      invoke :'sidekiq:restart'
       invoke :'unicorn:restart'
     end
   end

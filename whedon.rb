@@ -95,6 +95,11 @@ def respond(comment)
   settings.github.add_comment(@nwo, @issue_id, comment)
 end
 
+# Download and compile the PDF
+def process_pdf
+  WhedonWorker.perform_async(@nwo)
+end
+
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
   if doi
@@ -170,5 +175,22 @@ def check_editor
   unless settings.editors.include?(@sender)
     respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only JOSS editors are allowed to do."
     halt 403
+  end
+end
+
+class WhedonWorker
+  include Sidekiq::Worker
+
+  def perform(repository)
+    download(repository)
+    compile(repository)
+  end
+
+  def download(repository)
+    puts "Downloading #{repository}"
+  end
+
+  def compile(repository)
+    puts "Compiling #{repository}"
   end
 end
