@@ -11,7 +11,7 @@ require 'mina/rbenv'
 #   branch       - Branch name to deploy. (needed by mina/git)
 
 set :term_mode, nil
-set :domain, '45.55.69.97'
+set :domain, 'whedon.theoj.org'
 set :deploy_to, '/home/deployer/whedon'
 set :repository, 'git@github.com:openjournals/whedon-api.git'
 set :branch, 'mina'
