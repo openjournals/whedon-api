@@ -2,11 +2,11 @@ require 'json'
 require 'octokit'
 require 'rest-client'
 require 'sinatra'
+require 'sinatra/config_file'
+
 
 set :views, Proc.new { File.join(root, "responses") }
-set :github, Octokit::Client.new(:access_token => ENV['GH_TOKEN'])
-set :joss_api_key, ENV['JOSS_API_KEY']
-set :joss_editor_team_id, 2009411
+set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
                'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
