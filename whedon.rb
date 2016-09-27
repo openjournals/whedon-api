@@ -55,7 +55,7 @@ def say_hello
   if assignees.any?
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
-    respond erb :welcome
+    respond erb :welcome, :locals => { :editor => nil }
   end
 end
 
