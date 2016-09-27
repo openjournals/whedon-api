@@ -39,7 +39,7 @@ before do
 end
 
 get '/heartbeat' do
-  "Hello"
+  "Hello moto"
 end
 
 post '/dispatch' do
