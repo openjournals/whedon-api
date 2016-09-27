@@ -15,6 +15,8 @@ set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
+  pass if %w[heartbeat].include? request.path_info.split('/')[1]
+
   sleep(2) # This seems to help with auto-updating GitHub issue threads
   params = JSON.parse(request.env["rack.input"].read)
 
@@ -32,6 +34,10 @@ before do
   @sender = params['sender']['login']
   @issue_id = params['issue']['number']
   @nwo = params['repository']['full_name']
+end
+
+get '/heartbeat' do
+  "Hello"
 end
 
 post '/dispatch' do
