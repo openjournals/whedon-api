@@ -4,6 +4,7 @@ require 'rest-client'
 require 'sinatra'
 require 'sinatra/config_file'
 
+config_file 'config/secrets.yml'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
