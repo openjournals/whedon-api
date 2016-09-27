@@ -17,25 +17,27 @@ set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
-  pass if %w[heartbeat].include? request.path_info.split('/')[1]
+  if %w[heartbeat].include? request.path_info.split('/')[1]
+    pass
+  else
+    sleep(2) # This seems to help with auto-updating GitHub issue threads
+    params = JSON.parse(request.env["rack.input"].read)
 
-  sleep(2) # This seems to help with auto-updating GitHub issue threads
-  params = JSON.parse(request.env["rack.input"].read)
+    # Only work with issues. Halt if there isn't an issue in the JSON
+    halt if params['issue'].nil?
+    @action = params['action']
+    @payload = params
 
-  # Only work with issues. Halt if there isn't an issue in the JSON
-  halt if params['issue'].nil?
-  @action = params['action']
-  @payload = params
+    if @action == 'opened'
+      @message = params['issue']['body']
+    elsif @action == 'created'
+      @message = params['comment']['body']
+    end
 
-  if @action == 'opened'
-    @message = params['issue']['body']
-  elsif @action == 'created'
-    @message = params['comment']['body']
+    @sender = params['sender']['login']
+    @issue_id = params['issue']['number']
+    @nwo = params['repository']['full_name']
   end
-
-  @sender = params['sender']['login']
-  @issue_id = params['issue']['number']
-  @nwo = params['repository']['full_name']
 end
 
 get '/heartbeat' do
