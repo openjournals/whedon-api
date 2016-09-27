@@ -1,6 +1,7 @@
 require 'json'
 require 'octokit'
 require 'rest-client'
+require 'sidekiq'
 require 'sinatra'
 require 'sinatra/config_file'
 
