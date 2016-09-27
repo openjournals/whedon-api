@@ -1,6 +1,5 @@
 require 'mina/bundler'
 require 'mina/git'
-require 'mina_sidekiq/tasks'
 require 'mina/unicorn'
 require 'mina/rbenv'
 
@@ -75,10 +74,31 @@ task :deploy => :environment do
     invoke :'deploy:cleanup'
 
     to :launch do
-      # invoke :'sidekiq:restart'
+      invoke :'sidekiq:stop'
+      invoke :'sidekiq:start'
       invoke :'unicorn:restart'
     end
   end
+end
+
+
+namespace :sidekiq do
+  desc "start sidekiq"
+  task :start => :environment do
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiq -r ./whedon.rb -d -L #{deploy_to}/#{shared_path}/log/sidekiq.log"
+  end
+
+  desc "stop sidekiq"
+  task :stop => :environment do
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiqctl stop #{deploy_to}/tmp/pids/sidekiq.pid"
+  end
+
+  desc "restart sidekiq"
+  task :restart => :environment do
+    invoke :'sidekiq:stop'
+    invoke :'sidekiq:start'
+  end
+
 end
 
 # For help in making your deploy script, see the Mina documentation:
