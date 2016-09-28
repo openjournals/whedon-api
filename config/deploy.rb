@@ -100,7 +100,7 @@ end
 namespace :sidekiq do
   desc "start sidekiq"
   task :start => :environment do
-    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiq -r ./whedon.rb -d -C config/sidekiq.yml"
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiq -r ./whedon.rb -d -L #{deploy_to}/#{shared_path}/log/sidekiq.log -P #{deploy_to}/#{shared_path}/tmp/pids/sidekiq.pid"
   end
 
   desc "stop sidekiq"
