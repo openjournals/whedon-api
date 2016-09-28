@@ -41,7 +41,7 @@ before do
 end
 
 get '/heartbeat' do
-  "Hello moto"
+  "BOOM boom. BOOM boom."
 end
 
 post '/dispatch' do
