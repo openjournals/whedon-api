@@ -105,7 +105,7 @@ namespace :sidekiq do
 
   desc "stop sidekiq"
   task :stop => :environment do
-    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiqctl stop #{deploy_to}/tmp/pids/sidekiq.pid"
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiqctl stop #{deploy_to}/#{current_path}/tmp/pids/sidekiq.pid"
   end
 
   desc "restart sidekiq"
