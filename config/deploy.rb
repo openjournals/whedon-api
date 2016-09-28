@@ -1,6 +1,5 @@
 require 'mina/bundler'
 require 'mina/git'
-require 'mina/unicorn'
 require 'mina/rbenv'
 
 # Basic settings:
@@ -17,7 +16,6 @@ set :branch, 'mina'
 set :user, 'deployer'
 set :forward_agent, true
 set :port, '22'
-set :unicorn_pid, "#{deploy_to}/shared/pids/unicorn.pid"
 
 # For system-wide RVM install.
 # set :rvm_path, '/usr/local/rvm/bin/rvm'
@@ -81,6 +79,23 @@ task :deploy => :environment do
   end
 end
 
+namespace :unicorn do
+  desc "start unicorn"
+  task :start => :environment do
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec unicorn -c config/unicorn.rb -D"
+  end
+
+  desc "stop unicorn"
+  task :stop => :environment do
+    queue "cd #{deploy_to}/#{current_path}/ &&  kill -QUIT `cat tmp/pids/unicorn.pid`"
+  end
+
+  desc "restart unicorn"
+  task :restart => :environment do
+    invoke :'unicorn:stop'
+    invoke :'unicorn:start'
+  end
+end
 
 namespace :sidekiq do
   desc "start sidekiq"
@@ -98,7 +113,6 @@ namespace :sidekiq do
     invoke :'sidekiq:stop'
     invoke :'sidekiq:start'
   end
-
 end
 
 # For help in making your deploy script, see the Mina documentation:
