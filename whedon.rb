@@ -97,6 +97,8 @@ def robawt_respond
     respond erb :editors, :locals => { :editors => editors }
   when /\A@whedon list reviewers/i
     respond reviewers
+  when /\A@whedon assignments/i
+    assignments
   end
 end
 
@@ -119,6 +121,13 @@ def assign_archive(doi_string)
     respond "OK. #{doi_with_url} is the archive."
   else
     respond "#{doi_string} doesn't look like an archive DOI."
+  end
+end
+
+def assignments
+  issues = settings.github.list_issues(@nwo, :state => 'open')
+  issues.each do |issue|
+    puts "ISSUE: #{issue.body}"
   end
 end
 
