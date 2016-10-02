@@ -98,7 +98,8 @@ def robawt_respond
   when /\A@whedon list reviewers/i
     respond reviewers
   when /\A@whedon assignments/i
-    assignments
+    reviewers, editors = assignments
+    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => reviewers }
   end
 end
 
@@ -126,9 +127,21 @@ end
 
 def assignments
   issues = settings.github.list_issues(@nwo, :state => 'open')
+  editors = Hash.new(0)
+  reviewers = Hash.new(0)
+
   issues.each do |issue|
-    puts "ISSUE: #{issue.body}"
+    editor = issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
+    reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
+
+    editors[editor] += 1
+    reviewers[reviewer] += 1
   end
+
+  sorted_editors = editors.sort_by {|_, value| value}.to_h
+  sorted_reviewers = reviewers.sort_by {|_, value| value}.to_h
+
+  return sorted_reviewers, sorted_editors
 end
 
 # Returns a string response with URL to Gist of reviewers
