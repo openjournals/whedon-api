@@ -3,8 +3,12 @@ Current JOSS review assignments
 ```
 EDITORIAL ASSIGNMENTS
 
-<% editors.each do |editor, count| %>
-<%= editor %>, <%= count %>
+<% all_editors.each do |joss_editor| %>
+  <% if editors.has_key?("@#{joss_editor}") %>
+@<%= editor %>, <%= count %>
+  <% else %>
+@<%= joss_editor %>, 0
+  <% end %>
 <% end %>
 
 REVIEWER ASSIGNMENTS

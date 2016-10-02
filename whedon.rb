@@ -99,7 +99,7 @@ def robawt_respond
     respond reviewers
   when /\A@whedon assignments/i
     reviewers, editors = assignments
-    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => reviewers }
+    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => settings.editors }
   end
 end
 
@@ -131,11 +131,15 @@ def assignments
   reviewers = Hash.new(0)
 
   issues.each do |issue|
-    editor = issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
-    reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
+    if issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)
+      editor = issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
+      editors[editor] += 1
+    end
 
-    editors[editor] += 1
-    reviewers[reviewer] += 1
+    if issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)
+      reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
+      reviewers[reviewer] += 1
+    end
   end
 
   sorted_editors = editors.sort_by {|_, value| value}.to_h
