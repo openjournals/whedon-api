@@ -1,19 +1,29 @@
+<% str = "" %>
+<% all_editors.each do |joss_editor| %>
+  <% if editors.has_key?("@#{joss_editor}") %>
+  <% editor_key = "@#{joss_editor}" %>
+    <% str.puts("| @#{joss_editor} | #{editors[editor_key]} |") %>
+  <% else %>
+    <% str.puts("| @#{joss_editor} | 0 |") %>
+  <% end %>
+<% end %>
+
+<% rev_str = "" %>
+<% reviewers.each do |reviewer, count| %>
+  <% rev_str.puts("| #{reviewer} | #{count} |") %>
+<% end %>
+
 Current JOSS review assignments
 
-```
-EDITORIAL ASSIGNMENTS
+**EDITORIAL ASSIGNMENTS**
 
-<%- all_editors.each do |joss_editor| -%>
-  <%- if editors.has_key?("@#{joss_editor}") -%>
-@<%= joss_editor %>, <%= editors["@#{joss_editor}"] %>
-  <%- else -%>
-@<%= joss_editor %>, 0
-  <%- end -%>
-<%- end -%>
+| Editor | Assignments |
+| ----- | ----- |
+<%= str %>
 
-REVIEWER ASSIGNMENTS
 
-<% reviewers.each do |reviewer, count| %>
-<%= reviewer %>, <%= count %>
-<% end %>
-```
+**REVIEWER ASSIGNMENTS**
+
+| Reviewer | Assignments |
+| ----- | ----- |
+<%= rev_str %>
