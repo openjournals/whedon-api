@@ -78,7 +78,7 @@ def robawt_respond
     word = $1
     if word && word == settings.magic_word
       review_issue_id = start_review
-      respond erb, :locals => { :review_issue_id => review_issue_id }
+      respond erb :start_review, :locals => { :review_issue_id => review_issue_id }
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
       halt
