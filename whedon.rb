@@ -109,7 +109,7 @@ end
 
 # Returns a string response with URL to Gist of reviewers
 def reviewers
-  "Here's the current list of JOSS reviewers: https://gist.github.com/arfon/5317c568cb32c7b917fea3c13958131d"
+  "Here's the current list of JOSS reviewers: https://github.com/openjournals/joss/blob/master/docs/reviewers.csv"
 end
 
 # Return an array of editor usernames for JOSS editor list
