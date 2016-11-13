@@ -88,7 +88,7 @@ def robawt_respond
     word = $1
     if word && word == settings.magic_word
       review_issue_id = start_review
-      respond erb, :locals => { :review_issue_id => review_issue_id }
+      respond erb :start_review, :locals => { :review_issue_id => review_issue_id }
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
       halt
@@ -150,7 +150,7 @@ end
 
 # Returns a string response with URL to Gist of reviewers
 def reviewers
-  "Here's the current list of JOSS reviewers: https://gist.github.com/arfon/5317c568cb32c7b917fea3c13958131d"
+  "Here's the current list of JOSS reviewers: https://github.com/openjournals/joss/blob/master/docs/reviewers.csv"
 end
 
 # Return an array of editor usernames for JOSS editor list
