@@ -185,7 +185,7 @@ end
 
 def update_assigness(assignees)
   data = { "assignees" => assignees }
-  url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{ENV['GH_TOKEN']}"
+  url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{settings.gh_token}"
   RestClient.post(url, data.to_json)
 end
 
