@@ -2,15 +2,15 @@
 <% all_editors.each do |joss_editor| %>
   <% if editors.has_key?("@#{joss_editor}") %>
   <% editor_key = "@#{joss_editor}" %>
-    <% str.puts("| @#{joss_editor} | #{editors[editor_key]} |") %>
+    <% str << "| @#{joss_editor} | #{editors[editor_key]} |" %>
   <% else %>
-    <% str.puts("| @#{joss_editor} | 0 |") %>
+    <% str << "| @#{joss_editor} | 0 |" %>
   <% end %>
 <% end %>
 
 <% rev_str = "" %>
 <% reviewers.each do |reviewer, count| %>
-  <% rev_str.puts("| #{reviewer} | #{count} |") %>
+  <% rev_str "| #{reviewer} | #{count} |" %>
 <% end %>
 
 Current JOSS review assignments
