@@ -11,7 +11,7 @@ require 'mina/rbenv'
 set :term_mode, nil
 set :domain, 'whedon.theoj.org'
 set :deploy_to, '/home/deployer/whedon'
-set :repository, 'git@github.com:openjournals/whedon-api.git'
+set :repository, 'https://github.com/openjournals/whedon-api.git'
 set :branch, 'mina'
 set :user, 'deployer'
 set :forward_agent, true

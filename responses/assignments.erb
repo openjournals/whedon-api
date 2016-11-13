@@ -10,7 +10,7 @@
 
 <% rev_str = "" %>
 <% reviewers.each do |reviewer, count| %>
-  <% rev_str "| #{reviewer} | #{count} |" %>
+  <% rev_str << "| #{reviewer} | #{count} |" %>
 <% end %>
 
 Current JOSS review assignments
