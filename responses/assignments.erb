@@ -2,9 +2,9 @@
 <% all_editors.each do |joss_editor| %>
   <% if editors.has_key?("@#{joss_editor}") %>
   <% editor_key = "@#{joss_editor}" %>
-    <% str << "| @#{joss_editor} | #{editors[editor_key]} |\n" %>
+    <% str << "| `@#{joss_editor}` | #{editors[editor_key]} |\n" %>
   <% else %>
-    <% str << "| @#{joss_editor} | 0 |\n" %>
+    <% str << "| `@#{joss_editor}` | 0 |\n" %>
   <% end %>
 <% end %>
 
