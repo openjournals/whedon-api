@@ -8,22 +8,13 @@
   <% end %>
 <% end %>
 
-<% rev_str = "" %>
-<% reviewers.each do |reviewer, count| %>
-  <% rev_str << "| #{reviewer} | #{count} |\n" %>
-<% end %>
-
-Current JOSS review assignments
+<%# rev_str = "" %>
+<%# reviewers.each do |reviewer, count| %>
+  <%# rev_str << "| #{reviewer} | #{count} |\n" %>
+<%# end %>
 
 **EDITORIAL ASSIGNMENTS**
 
 | Editor | Assignments |
 | ----- | ----- |
 <%= str %>
-
-
-**REVIEWER ASSIGNMENTS**
-
-| Reviewer | Assignments |
-| ----- | ----- |
-<%= rev_str %>
