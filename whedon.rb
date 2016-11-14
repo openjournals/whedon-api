@@ -10,7 +10,7 @@ config_file 'config/secrets.yml'
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
-set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
+set :editors, ['acabunoc', 'arfon', 'biorelated', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
                'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
                'mgymrek', 'pjotrp', 'tracykteal']
 
