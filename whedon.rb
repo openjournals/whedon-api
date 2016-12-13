@@ -54,7 +54,11 @@ post '/dispatch' do
 end
 
 def say_hello
-  if assignees.any?
+  if issue.title.match(/^\[REVIEW\]:/)
+    reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
+    respond erb :reviewer_welcome, :locals => { :reviewer => reviewer }
+  # Newly created [PRE REVIEW] issue. Time to say hello
+  elsif assignees.any?
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
     respond erb :welcome, :locals => { :editor => nil }
