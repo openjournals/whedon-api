@@ -10,7 +10,7 @@ set :joss_editor_team_id, 2009411
 set :magic_word, "bananas"
 set :editors, ['acabunoc', 'arfon', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
                'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
-               'mgymrek', 'pjotrp', 'tracykteal']
+               'mgymrek', 'pjotrp', 'tracykteal', 'lheagy']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
