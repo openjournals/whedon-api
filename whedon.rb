@@ -154,7 +154,7 @@ end
 
 # Returns a string response with URL to Gist of reviewers
 def reviewers
-  "Here's the current list of JOSS reviewers: https://is.gd/jossreviewers"
+  "Here's the current list of JOSS reviewers: https://bit.ly/joss-reviewers"
 end
 
 # Return an array of editor usernames for JOSS editor list
