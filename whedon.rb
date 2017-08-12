@@ -13,7 +13,7 @@ set :magic_word, "bananas"
 set :editors,['acabunoc', 'arfon', 'arokem', 'biorelated', 'brainstorm',
               'cMadan', 'danielskatz', 'jakevdp', 'jasonclark', 'karthik',
               'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
-              'lheagy', 'mgymrek', 'pjotrp', 'tracykteal']
+              'leeper', 'lheagy', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
