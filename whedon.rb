@@ -10,9 +10,10 @@ config_file 'config/secrets.yml'
 set :views, Proc.new { File.join(root, "responses") }
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
-set :editors, ['acabunoc', 'arfon', 'arokem', 'biorelated', 'brainstorm', 'cMadan', 'danielskatz', 'jakevdp', 'karthik',
-               'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba', 'lheagy',
-               'mgymrek', 'pjotrp', 'tracykteal']
+set :editors,['acabunoc', 'arfon', 'arokem', 'biorelated', 'brainstorm',
+              'cMadan', 'danielskatz', 'jakevdp', 'jasonclark', 'karthik',
+              'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
+              'lheagy', 'mgymrek', 'pjotrp', 'tracykteal']
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
