@@ -64,7 +64,7 @@ end
 def say_hello
   if issue.title.match(/^\[REVIEW\]:/)
     reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
-    respond erb :reviewer_welcome, :locals => { :reviewer => reviewer }
+    respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
     respond erb :welcome, :locals => { :editor => assignees.first }
@@ -100,7 +100,7 @@ def robawt_respond
     word = $1
     if word && word == settings.magic_word
       review_issue_id = start_review
-      respond erb :start_review, :locals => { :review_issue_id => review_issue_id }
+      respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
       halt
@@ -163,8 +163,9 @@ def assignments
 end
 
 # Returns a string response with URL to Gist of reviewers
+# TODO: Multi-repo
 def reviewers
-  "Here's the current list of JOSS reviewers: https://bit.ly/joss-reviewers"
+  "Here's the current list of reviewers: https://bit.ly/joss-reviewers"
 end
 
 # Change the editor on an issue. This is a two-step process:
