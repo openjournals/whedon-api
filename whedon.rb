@@ -1,19 +1,24 @@
+require 'yaml'
 require 'json'
 require 'octokit'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
-require 'sinatra/config_file'
+require 'dotenv'
 
-config_file 'config/secrets.yml'
+Dotenv.load
 
 set :views, Proc.new { File.join(root, "responses") }
+set :gh_token, ENV["GH_TOKEN"]
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
-set :editors,['acabunoc', 'arfon', 'arokem', 'biorelated', 'brainstorm',
-              'cMadan', 'danielskatz', 'jakevdp', 'jasonclark', 'karthik',
-              'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
-              'leeper', 'lheagy', 'mgymrek', 'pjotrp', 'tracykteal']
+
+set :configs, {}
+YAML.load_file("config/settings.yml").each do |nwo, config|
+  team_id = config["editor_team_id"]
+  config["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+  settings.configs[nwo] = OpenStruct.new config
+end
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
@@ -38,6 +43,8 @@ before do
     @sender = params['sender']['login']
     @issue_id = params['issue']['number']
     @nwo = params['repository']['full_name']
+    @config = settings.configs[@nwo]
+    halt unless @config # We probably want to restrict this
   end
 end
 
@@ -99,12 +106,14 @@ def robawt_respond
       halt
     end
   when /\A@whedon list editors/i
-    respond erb :editors, :locals => { :editors => editors }
+    respond erb :editors, :locals => { :editors => @config.editors }
   when /\A@whedon list reviewers/i
     respond reviewers
   when /\A@whedon assignments/i
     reviewers, editors = assignments
-    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => settings.editors }
+    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
+  when /\A@whedon generate pdf/i
+    # TO-DO: Pass to sidekiq/the whedon gem
   end
 end
 
@@ -158,11 +167,6 @@ def reviewers
   "Here's the current list of JOSS reviewers: https://bit.ly/joss-reviewers"
 end
 
-# Return an array of editor usernames for JOSS editor list
-def editors
-  @editors ||= settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
-end
-
 # Change the editor on an issue. This is a two-step process:
 # 1. Change the review issue assignee
 # 2. Update the editor listed at the top of the issue
@@ -213,8 +217,8 @@ end
 
 # Check that the person sending the command is an editor
 def check_editor
-  unless settings.editors.include?(@sender)
-    respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only JOSS editors are allowed to do."
+  unless @config.editors.include?(@sender)
+    respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
     halt 403
   end
 end

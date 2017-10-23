@@ -1,0 +1,11 @@
+openjournals/joss-reviews:
+  editor_team_id: 2009411
+  papers: openjournals/joss-papers
+
+openjournals/jose-reviews:
+  editor_team_id: 2414911
+  papers: openjournals/jose-papers
+
+openjournals/joss-reviews-testing:
+  editor_team_id: 2529104
+  papers: openjournals/joss-papers-testing
