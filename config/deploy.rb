@@ -17,12 +17,18 @@ set :user, 'deployer'
 set :forward_agent, true
 set :port, '22'
 
+
+# set :domain, 'whedon-staging.theoj.org'
+# set :repository, 'https://github.com/parrish/whedon-api.git'
+# set :branch, 'generalize'
+
+
 # For system-wide RVM install.
 # set :rvm_path, '/usr/local/rvm/bin/rvm'
 
 # Manually create these paths in shared/ (eg: shared/config/database.yml) in your server.
 # They will be linked in the 'deploy:link_shared_paths' step.
-set :shared_paths, ['config/secrets.yml', 'log', 'tmp']
+set :shared_paths, ['.env', 'log', 'tmp']
 
 # Optional settings:
 #   set :user, 'foobar'    # Username in the server to SSH to.
@@ -39,8 +45,8 @@ task :setup => :environment do
   queue! %[mkdir -p "#{deploy_to}/#{shared_path}/config"]
   queue! %[chmod g+rx,u+rwx "#{deploy_to}/#{shared_path}/config"]
 
-  queue! %[touch "#{deploy_to}/#{shared_path}/config/secrets.yml"]
-  queue  %[echo "-----> Be sure to edit '#{deploy_to}/#{shared_path}/config/database.yml' and 'secrets.yml'."]
+  queue! %[touch "#{deploy_to}/#{shared_path}/config/.env"]
+  queue  %[echo "-----> Be sure to edit '#{deploy_to}/#{shared_path}/.env'."]
 
   if repository
     repo_host = repository.split(%r{@|://}).last.split(%r{:|\/}).first
@@ -105,7 +111,7 @@ namespace :sidekiq do
 
   desc "stop sidekiq"
   task :stop => :environment do
-    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiqctl stop #{deploy_to}/#{current_path}/tmp/pids/sidekiq.pid"
+    queue "cd #{deploy_to}/#{current_path}/ && bundle exec sidekiqctl stop #{deploy_to}/#{current_path}/tmp/pids/sidekiq.pid; true"
   end
 
   desc "restart sidekiq"

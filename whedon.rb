@@ -1,19 +1,25 @@
+require 'yaml'
 require 'json'
 require 'octokit'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
-require 'sinatra/config_file'
+require 'dotenv'
 
-config_file 'config/secrets.yml'
+Dotenv.load
 
 set :views, Proc.new { File.join(root, "responses") }
+set :gh_token, ENV["GH_TOKEN"]
+set :joss_api_key, ENV["JOSS_API_KEY"]
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
-set :editors,['acabunoc', 'arfon', 'arokem', 'biorelated', 'brainstorm',
-              'cMadan', 'danielskatz', 'jakevdp', 'jasonclark', 'karthik',
-              'katyhuff', 'Kevin-Mattheus-Moerman', 'kyleniemeyer', 'labarba',
-              'leeper', 'lheagy', 'mgymrek', 'pjotrp', 'tracykteal']
+
+set :configs, {}
+YAML.load_file("config/settings.yml").each do |nwo, config|
+  team_id = config["editor_team_id"]
+  config["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+  settings.configs[nwo] = OpenStruct.new config
+end
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
@@ -38,6 +44,8 @@ before do
     @sender = params['sender']['login']
     @issue_id = params['issue']['number']
     @nwo = params['repository']['full_name']
+    @config = settings.configs[@nwo]
+    halt unless @config # We probably want to restrict this
   end
 end
 
@@ -57,7 +65,7 @@ end
 def say_hello
   if issue.title.match(/^\[REVIEW\]:/)
     reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
-    respond erb :reviewer_welcome, :locals => { :reviewer => reviewer }
+    respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
     respond erb :welcome, :locals => { :editor => assignees.first }
@@ -93,18 +101,20 @@ def robawt_respond
     word = $1
     if word && word == settings.magic_word
       review_issue_id = start_review
-      respond erb :start_review, :locals => { :review_issue_id => review_issue_id }
+      respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
     else
       respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
       halt
     end
   when /\A@whedon list editors/i
-    respond erb :editors, :locals => { :editors => editors }
+    respond erb :editors, :locals => { :editors => @config.editors }
   when /\A@whedon list reviewers/i
     respond reviewers
   when /\A@whedon assignments/i
     reviewers, editors = assignments
-    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => settings.editors }
+    respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
+  when /\A@whedon generate pdf/i
+    # TO-DO: Pass to sidekiq/the whedon gem
   end
 end
 
@@ -155,12 +165,7 @@ end
 
 # Returns a string response with URL to Gist of reviewers
 def reviewers
-  "Here's the current list of JOSS reviewers: https://bit.ly/joss-reviewers"
-end
-
-# Return an array of editor usernames for JOSS editor list
-def editors
-  @editors ||= settings.github.team_members(settings.joss_editor_team_id).collect { |e| e.login }
+  "Here's the current list of reviewers: #{@config.reviewers}"
 end
 
 # Change the editor on an issue. This is a two-step process:
@@ -199,7 +204,7 @@ def start_review
   reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
-  url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
@@ -213,8 +218,8 @@ end
 
 # Check that the person sending the command is an editor
 def check_editor
-  unless settings.editors.include?(@sender)
-    respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only JOSS editors are allowed to do."
+  unless @config.editors.include?(@sender)
+    respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
     halt 403
   end
 end
