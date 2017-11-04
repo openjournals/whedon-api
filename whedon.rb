@@ -204,7 +204,7 @@ def start_review
   reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
-  url = "http://joss.theoj.org/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
