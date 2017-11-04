@@ -10,6 +10,7 @@ Dotenv.load
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
+set :joss_api_key, ENV["JOSS_API_KEY"]
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
 
@@ -163,9 +164,8 @@ def assignments
 end
 
 # Returns a string response with URL to Gist of reviewers
-# TODO: Multi-repo
 def reviewers
-  "Here's the current list of reviewers: https://bit.ly/joss-reviewers"
+  "Here's the current list of reviewers: #{@config.reviewers}"
 end
 
 # Change the editor on an issue. This is a two-step process:

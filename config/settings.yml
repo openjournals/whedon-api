@@ -1,11 +1,15 @@
 openjournals/joss-reviews:
   editor_team_id: 2009411
   papers: openjournals/joss-papers
+  reviewers: https://bit.ly/joss-reviewers
 
 openjournals/jose-reviews:
   editor_team_id: 2414911
   papers: openjournals/jose-papers
+  # TODO: Create this spreadsheet or equivalent
+  reviewers: https://bit.ly/joss-reviewers
 
 openjournals/joss-reviews-testing:
   editor_team_id: 2529104
   papers: openjournals/joss-papers-testing
+  reviewers: "https://github.com/search?q=reviewers"
