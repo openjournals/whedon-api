@@ -49,7 +49,7 @@ before do
 end
 
 get '/heartbeat' do
-  "BOOM boom. BOOM boom."
+  "BOOM boom. BOOM boom. BOOM boom."
 end
 
 post '/dispatch' do
