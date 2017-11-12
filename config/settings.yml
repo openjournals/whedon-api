@@ -3,6 +3,7 @@ openjournals/joss-reviews:
   papers: openjournals/joss-papers
   reviewers: https://bit.ly/joss-reviewers
   site_host: http://joss.theoj.org
+  site_api_key: ENV['JOSS_API_KEY']
 
 openjournals/jose-reviews:
   editor_team_id: 2414911
@@ -11,9 +12,11 @@ openjournals/jose-reviews:
   reviewers: https://bit.ly/joss-reviewers
   # TODO: Wherever this is deployed
   site_host: http://joss.theoj.org
+  site_api_key: ENV['JOSE_API_KEY']
 
 openjournals/joss-reviews-testing:
   editor_team_id: 2529104
   papers: openjournals/joss-papers-testing
   reviewers: "https://github.com/search?q=reviewers"
   site_host: http://joss.theoj.org
+  site_api_key: ENV['JOSS_API_KEY_TESTING']

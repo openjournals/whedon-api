@@ -10,7 +10,6 @@ Dotenv.load
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
-set :joss_api_key, ENV["JOSS_API_KEY"]
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
 
@@ -204,7 +203,7 @@ def start_review
   reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
-  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{settings.joss_api_key}"
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{@config.site_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")

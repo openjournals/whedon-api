@@ -15,7 +15,13 @@
   },
   "env": {
     "JOSS_API_KEY": {
-      "description": "The API key for the JOSS API"
+      "description": "The API key for the JOSS site API"
+    },
+    "JOSE_API_KEY": {
+      "description": "The API key for the JOSE site API"
+    },
+    "JOSS_API_KEY_TESTING": {
+      "description": "Test API key"
     },
     "GH_TOKEN": {
       "description": "The GitHub token for Whedon"
