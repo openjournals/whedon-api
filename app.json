@@ -14,9 +14,11 @@
     "postdeploy": "bundle"
   },
   "env": {
-    "SECRET_TOKEN": {
-      "description": "A secret key for verifying the integrity of signed cookies.",
-      "generator": "secret"
+    "JOSS_API_KEY": {
+      "description": "The API key for the JOSS API"
+    },
+    "GH_TOKEN": {
+      "description": "The GitHub token for Whedon"
     }
   },
   "formation": {
