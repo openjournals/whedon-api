@@ -1,0 +1,46 @@
+{
+  "name": "Whedon API",
+  "description": "This app does one little thing, and does it well.",
+  "keywords": [
+    "Whedon",
+    "JOSS",
+    "Open Journals",
+    "bots"
+  ],
+  "website": "http://openjournals.org",
+  "repository": "https://github.com/openjournals/whedon-api/tree/multi-whedon",
+  "success_url": "/heartbeat",
+  "scripts": {
+    "postdeploy": "bundle"
+  },
+  "env": {
+    "SECRET_TOKEN": {
+      "description": "A secret key for verifying the integrity of signed cookies.",
+      "generator": "secret"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "hobby"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "hobby"
+    }
+  },
+  "image": "heroku/ruby",
+  "addons": [ "redistogo:nano", "heroku-postgresql:hobby-dev"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/openjournals/heroku-buildpack-tex"
+    }
+  ],
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "bundle exec rake test"
+      }
+    }
+  }
+}
