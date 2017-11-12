@@ -36,11 +36,13 @@
       "size": "hobby"
     }
   },
-  "image": "heroku/ruby",
   "addons": [ "redistogo:nano", "heroku-postgresql:hobby-dev"],
   "buildpacks": [
     {
       "url": "https://github.com/openjournals/heroku-buildpack-tex"
+    },
+    {
+      "url": "heroku/ruby"
     }
   ],
   "environments": {
