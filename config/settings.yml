@@ -15,7 +15,7 @@ openjournals/jose-reviews:
   site_api_key: ENV['JOSE_API_KEY']
 
 openjournals/joss-reviews-testing:
-  editor_team_id: 2529104
+  editor_team_id: 2009411
   papers: openjournals/joss-papers-testing
   reviewers: "https://github.com/search?q=reviewers"
   site_host: http://joss.theoj.org
