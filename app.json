@@ -34,9 +34,6 @@
   },
   "buildpacks": [
     {
-      "url": "https://github.com/openjournals/heroku-buildpack-tex"
-    },
-    {
       "url": "heroku/ruby"
     }
   ],
