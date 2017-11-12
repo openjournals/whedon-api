@@ -4,9 +4,6 @@ require 'octokit'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
-require 'dotenv'
-
-Dotenv.load
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]

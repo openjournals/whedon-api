@@ -10,7 +10,6 @@ GEM
     connection_pool (2.2.1)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.2.1)
     faraday (0.13.1)
       multipart-post (>= 1.2, < 3)
     http-cookie (1.0.3)
@@ -76,7 +75,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  dotenv (~> 2.2.1)
   octokit (= 4.7.0)
   pry-byebug
   rest-client (= 2.0.2)

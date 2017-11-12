@@ -1,6 +1,5 @@
 source "https://rubygems.org"
 
-gem "dotenv", "~> 2.2.1"
 gem "octokit", "4.7.0"
 gem "rest-client", "2.0.2"
 gem "sidekiq", "5.0.5"
