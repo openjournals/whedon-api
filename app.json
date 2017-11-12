@@ -1,6 +1,6 @@
 {
   "name": "Whedon API",
-  "description": "This app does one little thing, and does it well.",
+  "description": "The Whedon Bot for interacting with reviewers on JOSS, JOSE and other journals",
   "keywords": [
     "Whedon",
     "JOSS",
