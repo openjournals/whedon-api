@@ -124,8 +124,8 @@ end
 # Download and compile the PDF
 def process_pdf
   puts "In #process_pdf"
-  WhedonWorker.perform_async(@config, @nwo, @issue_id)
-
+  # TODO refactor this so we're not passing so many arguments to the method
+  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
   return "I compiled your stinkin' PDF"
 end
 
@@ -228,8 +228,10 @@ end
 class WhedonWorker
   include Sidekiq::Worker
 
-  def perform(config, nwo, issue_id)
-    set_env(config, nwo)
+  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+
+  def perform(papers, site_host, site_name, nwo, issue_id)
+    set_env(papers, site_host, site_name, nwo)
     download(issue_id)
     compile(issue_id)
   end
@@ -246,13 +248,11 @@ class WhedonWorker
 
   # The Whedon gem expects a bunch of environment variables to be available
   # and this method sets them.
-  def set_env(config, nwo)
-    puts "Setting the env config: #{config}, nwo: #{nwo}"
-    config=eval(config)
+  def set_env(papers, site_host, site_name, nwo)
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = "10.21105"
-    ENV['PAPER_REPOSITORY'] = config.papers
-    ENV['JOURNAL_URL'] = config.site_host
-    ENV['JOURNAL_NAME'] = config.site_name
+    ENV['PAPER_REPOSITORY'] = papers
+    ENV['JOURNAL_URL'] = site_host
+    ENV['JOURNAL_NAME'] = site_name
   end
 end
