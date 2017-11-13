@@ -121,7 +121,7 @@ def respond(comment)
 end
 
 # Download and compile the PDF
-def process_pdf
+def process_pdf(@config, @nwo, @issue_id)
   WhedonWorker.perform_async(@config, @nwo, @issue_id)
 
   return "I compiled your stinkin' PDF"
