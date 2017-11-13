@@ -146,7 +146,7 @@ end
 # GitHub stuff (to be refactored!)
 
 def get_master_ref
-  settings.github.refs("openjournals/joss-papers-testing").select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
+  settings.github.refs(@config.papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
 end
 
 # Create or update branch
@@ -155,21 +155,21 @@ def create_or_update_git_branch
 
   begin
     # If the PDF is there already then delete it
-    settings.github.contents('openjournals/joss-papers-testing', :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
-    blob_sha = settings.github.contents("openjournals/joss-papers-testing", :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
-    settings.github.delete_contents("openjournals/joss-papers-testing",
+    settings.github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
+    blob_sha = settings.github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+    settings.github.delete_contents(@config.papers,
                                     "10.21105.joss.#{id}.pdf",
                                     "Deleting 10.21105.joss.#{id}.pdf",
                                     blob_sha,
                                     :branch => "joss.#{id}")
   rescue Octokit::NotFound
-    settings.github.create_ref("openjournals/joss-papers-testing", "heads/joss.#{id}", get_master_ref)
+    settings.github.create_ref(@config.papers, "heads/joss.#{id}", get_master_ref)
   end
 end
 
 def create_git_pdf(file_path)
   id = "%05d" % @issue_id
-  gh_response = settings.github.create_contents("openjournals/joss-papers-testing",
+  gh_response = settings.github.create_contents(@config.papers,
                                                 "10.21105.joss.#{id}.pdf",
                                                 "Creating 10.21105.joss.#{id}.pdf",
                                                 File.open("#{file_path.strip}").read,
