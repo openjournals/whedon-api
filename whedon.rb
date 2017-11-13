@@ -117,7 +117,7 @@ def robawt_respond
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
     puts "Attempting to compile PDF"
-    respond "```\nPDF at: #{process_pdf}```"
+    respond "```\nPDF at: #{process_pdf}\n```"
   end
 end
 
