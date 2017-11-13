@@ -170,6 +170,8 @@ def create_or_update_git_branch
 end
 
 def create_git_pdf(file_path)
+  sleep(2) # This seems to help with GitHub
+
   id = "%05d" % @issue_id
 
   puts "CURRENT DIRECTORY"
