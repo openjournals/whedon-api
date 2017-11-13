@@ -111,6 +111,7 @@ def robawt_respond
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
+    puts "Attempting to compile PDF"
     respond process_pdf
   end
 end
@@ -122,6 +123,7 @@ end
 
 # Download and compile the PDF
 def process_pdf
+  puts "In #process_pdf"
   WhedonWorker.perform_async(@config, @nwo, @issue_id)
 
   return "I compiled your stinkin' PDF"
@@ -245,6 +247,7 @@ class WhedonWorker
   # The Whedon gem expects a bunch of environment variables to be available
   # and this method sets them.
   def set_env(config, nwo)
+    puts "Setting the env config: #{config}, nwo: #{nwo}"
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = "10.21105"
     ENV['PAPER_REPOSITORY'] = config.papers
