@@ -156,8 +156,8 @@ def create_or_update_git_branch
   begin
     # If the PDF is there already then delete it
     settings.github.contents('openjournals/joss-papers-testing', :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
-    blob_sha = settings.github.contents("openjournals/joss-reviews-testing", :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
-    settings.github.delete_contents("openjournals/joss-reviews-testing",
+    blob_sha = settings.github.contents("openjournals/joss-papers-testing", :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+    settings.github.delete_contents("openjournals/joss-papers-testing",
                                     "10.21105.joss.#{id}.pdf",
                                     "Deleting 10.21105.joss.#{id}.pdf",
                                     blob_sha,
