@@ -172,6 +172,8 @@ end
 def create_git_pdf(file_path)
   id = "%05d" % @issue_id
 
+  puts "CURRENT DIRECTORY"
+  puts Dir.pwd
   settings.github.create_contents("openjournals/joss-reviews-testing",
                                   "10.21105.joss.#{id}.pdf",
                                   "Creating 10.21105.joss.#{id}.pdf",
