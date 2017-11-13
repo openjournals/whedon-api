@@ -228,8 +228,6 @@ end
 class WhedonWorker
   include Sidekiq::Worker
 
-  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
-
   def perform(papers, site_host, site_name, nwo, issue_id)
     set_env(papers, site_host, site_name, nwo)
     download(issue_id)
