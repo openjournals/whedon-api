@@ -139,6 +139,8 @@ def process_pdf
   create_or_update_git_branch
 
   puts "Uploading #{pdf_path}"
+
+  puts `ls tmp`
   create_git_pdf(pdf_path)
   # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
