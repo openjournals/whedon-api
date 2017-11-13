@@ -111,7 +111,7 @@ def robawt_respond
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
-    respond process_pdf(@config, @nwo, @issue_id)
+    respond process_pdf
   end
 end
 
@@ -121,7 +121,7 @@ def respond(comment)
 end
 
 # Download and compile the PDF
-def process_pdf(@config, @nwo, @issue_id)
+def process_pdf
   WhedonWorker.perform_async(@config, @nwo, @issue_id)
 
   return "I compiled your stinkin' PDF"
