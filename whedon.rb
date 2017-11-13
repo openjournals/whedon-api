@@ -8,7 +8,7 @@ require 'whedon'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
-set :github, Octokit::Client.new(:access_token => ENV["GH_TOKEN")
+set :github, Octokit::Client.new(:access_token => ENV["GH_TOKEN"])
 set :magic_word, "bananas"
 
 set :configs, {}
