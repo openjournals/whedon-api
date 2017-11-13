@@ -18,6 +18,11 @@ YAML.load_file("config/settings.yml").each do |nwo, config|
   settings.configs[nwo] = OpenStruct.new config
 end
 
+# Sidekiq configuration
+Sidekiq.configure_server do |config|
+  config.redis = { :url => ENV["REDISTOGO_URL"] }
+end
+
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
