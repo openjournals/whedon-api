@@ -125,7 +125,7 @@ end
 def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
-  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+  WhedonWorker.new.perform(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
 def assign_archive(doi_string)
