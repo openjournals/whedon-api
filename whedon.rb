@@ -175,7 +175,7 @@ def create_git_pdf(file_path)
   settings.github.create_contents("openjournals/joss-reviews-testing",
                                   "10.21105.joss.#{id}.pdf",
                                   "Creating 10.21105.joss.#{id}.pdf",
-                                  File.open("../#{file_path}").read,
+                                  File.open("~/#{file_path}").read,
                                   :branch => "joss.#{id}")
 end
 
