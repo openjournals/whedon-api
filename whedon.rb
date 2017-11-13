@@ -4,6 +4,7 @@ require 'octokit'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
+require 'whedon'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
@@ -110,7 +111,7 @@ def robawt_respond
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
-    respond process_pdf
+    respond process_pdf(@config, @nwo, @issue_id)
   end
 end
 
@@ -121,7 +122,7 @@ end
 
 # Download and compile the PDF
 def process_pdf
-  WhedonWorker.perform_async(@nwo)
+  WhedonWorker.perform_async(@config, @nwo, @issue_id)
 
   return "I compiled your stinkin' PDF"
 end
@@ -225,16 +226,29 @@ end
 class WhedonWorker
   include Sidekiq::Worker
 
-  def perform(repository)
-    download(repository)
-    compile(repository)
+  def perform(config, nwo, issue_id)
+    set_env(config, nwo)
+    download(issue_id)
+    compile(issue_id)
   end
 
-  def download(repository)
-    puts "Downloading #{repository}"
+  def download(issue_id)
+    puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
+    `whedon download #{issue_id}`
   end
 
-  def compile(repository)
-    puts "Compiling #{repository}"
+  def compile(issue_id)
+    puts "Compiling #{ENV['REVIEW_REPOSITORY']}"
+    `whedon prepare #{issue_id}`
+  end
+
+  # The Whedon gem expects a bunch of environment variables to be available
+  # and this method sets them.
+  def set_env(config, nwo)
+    ENV['REVIEW_REPOSITORY'] = nwo
+    ENV['DOI_PREFIX'] = "10.21105"
+    ENV['PAPER_REPOSITORY'] = config.papers
+    ENV['JOURNAL_URL'] = config.site_host
+    ENV['JOURNAL_NAME'] = config.site_name
   end
 end

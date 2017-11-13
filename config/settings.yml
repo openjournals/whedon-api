@@ -4,6 +4,8 @@ openjournals/joss-reviews:
   reviewers: https://bit.ly/joss-reviewers
   site_host: http://joss.theoj.org
   site_api_key: ENV['JOSS_API_KEY']
+  site_name: Journal of Open Source Software
+
 
 openjournals/jose-reviews:
   editor_team_id: 2414911
@@ -13,6 +15,7 @@ openjournals/jose-reviews:
   # TODO: Wherever this is deployed
   site_host: http://joss.theoj.org
   site_api_key: ENV['JOSE_API_KEY']
+  site_name: Journal of Open Source Education
 
 openjournals/joss-reviews-testing:
   editor_team_id: 2009411
@@ -20,3 +23,4 @@ openjournals/joss-reviews-testing:
   reviewers: "https://github.com/search?q=reviewers"
   site_host: http://joss.theoj.org
   site_api_key: ENV['JOSS_API_KEY_TESTING']
+  site_name: Foo Bar Baz
