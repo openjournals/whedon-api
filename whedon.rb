@@ -236,7 +236,7 @@ class WhedonWorker
   include Sidekiq::Worker
 
   def perform(papers, site_host, site_name, nwo, issue_id)
-    respond("Hello from the background worker", nwo, issue_id)
+    bg_respond("Hello from the background worker", nwo, issue_id)
     set_env(papers, site_host, site_name, nwo)
     download(issue_id)
     compile(issue_id)
@@ -250,6 +250,10 @@ class WhedonWorker
   def compile(issue_id)
     puts "Compiling #{ENV['REVIEW_REPOSITORY']}"
     `whedon prepare #{issue_id}`
+  end
+
+  def bg_respond(one, two, three)
+    puts ENV
   end
 
   # The Whedon gem expects a bunch of environment variables to be available
