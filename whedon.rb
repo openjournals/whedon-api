@@ -117,7 +117,7 @@ def robawt_respond
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
     puts "Attempting to compile PDF"
-    respond "```\n#{process_pdf}```"
+    respond "```\nPDF at: #{process_pdf}```"
   end
 end
 
@@ -139,8 +139,6 @@ def process_pdf
   create_or_update_git_branch
 
   puts "Uploading #{pdf_path}"
-
-  puts `ls tmp/49/paper`
   create_git_pdf(pdf_path)
   # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
@@ -171,14 +169,12 @@ end
 
 def create_git_pdf(file_path)
   id = "%05d" % @issue_id
-
-  puts "CURRENT DIRECTORY"
-  puts Dir.pwd
-  settings.github.create_contents("openjournals/joss-papers-testing",
-                                  "10.21105.joss.#{id}.pdf",
-                                  "Creating 10.21105.joss.#{id}.pdf",
-                                  File.open("#{file_path.strip}").read,
-                                  :branch => "master")
+  gh_response = settings.github.create_contents("openjournals/joss-papers-testing",
+                                                "10.21105.joss.#{id}.pdf",
+                                                "Creating 10.21105.joss.#{id}.pdf",
+                                                File.open("#{file_path.strip}").read,
+                                                :branch => "joss.#{id}")
+  return gh_response.content.html_url
 end
 
 def assign_archive(doi_string)
