@@ -180,7 +180,7 @@ def create_git_pdf(file_path)
                                   "10.21105.joss.#{id}.pdf",
                                   "Creating 10.21105.joss.#{id}.pdf",
                                   File.open("#{file_path.strip}").read,
-                                  :branch => "joss.#{id}")
+                                  :branch => "master")
 end
 
 def assign_archive(doi_string)
