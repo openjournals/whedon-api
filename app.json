@@ -39,10 +39,13 @@
   "addons": [ "redistogo:nano"],
   "buildpacks": [
     {
+      "url": "heroku/ruby"
+    },
+    {
       "url": "https://github.com/openjournals/heroku-buildpack-tex"
     },
     {
-      "url": "heroku/ruby"
+      "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
     }
   ],
   "environments": {
