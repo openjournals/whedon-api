@@ -30,9 +30,17 @@
     "web": {
       "quantity": 1,
       "size": "hobby"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "hobby"
     }
   },
+  "addons": [ "redistogo:nano"],
   "buildpacks": [
+    {
+      "url": "https://github.com/openjournals/heroku-buildpack-tex"
+    },
     {
       "url": "heroku/ruby"
     }
