@@ -8,7 +8,7 @@ require 'whedon'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
-set :github, Octokit::Client.new(:access_token => settings.gh_token)
+set :github, Octokit::Client.new(:access_token => ENV["GH_TOKEN")
 set :magic_word, "bananas"
 
 set :configs, {}
@@ -132,8 +132,49 @@ end
 def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
-  WhedonWorker.new.perform(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+
+  pdf_path = WhedonWorker.new.perform(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+
+  puts "Creating Git branch"
+  create_or_update_git_branch
+
+  puts "Uploading #{pdf_path}"
+  create_git_pdf(pdf_path)
   # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+end
+
+# GitHub stuff (to be refactored!)
+
+def get_master_ref
+  settings.github.refs("openjournals/joss-papers-testing").select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
+end
+
+# Create or update branch
+def create_or_update_git_branch
+  id = "%05d" % @issue_id
+
+  begin
+    # If the PDF is there already then delete it
+    settings.github.contents('openjournals/joss-papers-testing', :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
+    blob_sha = settings.github.contents("openjournals/joss-reviews-testing", :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+    settings.github.delete_contents("openjournals/joss-reviews-testing",
+                                    "10.21105.joss.#{id}.pdf",
+                                    "Deleting 10.21105.joss.#{id}.pdf",
+                                    blob_sha,
+                                    :branch => "joss.#{id}")
+  rescue Octokit::NotFound
+    settings.github.create_ref("openjournals/joss-papers-testing", "heads/joss.#{id}", get_master_ref)
+  end
+end
+
+def create_git_pdf(file_path)
+  id = "%05d" % @issue_id
+
+  settings.github.create_contents("openjournals/joss-reviews-testing",
+                                  "10.21105.joss.#{id}.pdf",
+                                  "Creating 10.21105.joss.#{id}.pdf",
+                                  File.open(file_path).read,
+                                  :branch => "joss.#{id}")
 end
 
 def assign_archive(doi_string)
