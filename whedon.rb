@@ -140,7 +140,7 @@ def process_pdf
 
   puts "Uploading #{pdf_path}"
 
-  puts `ls tmp`
+  puts `ls tmp/49`
   create_git_pdf(pdf_path)
   # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
