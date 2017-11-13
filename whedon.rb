@@ -2,6 +2,7 @@ require 'yaml'
 require 'json'
 require 'octokit'
 require 'rest-client'
+require 'sidekiq'
 require 'sinatra'
 
 set :views, Proc.new { File.join(root, "responses") }
@@ -108,12 +109,21 @@ def robawt_respond
   when /\A@whedon assignments/i
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
+  when /\A@whedon generate pdf/i
+    respond process_pdf
   end
 end
 
 # How Whedon talks
 def respond(comment)
   settings.github.add_comment(@nwo, @issue_id, comment)
+end
+
+# Download and compile the PDF
+def process_pdf
+  WhedonWorker.perform_async(@nwo)
+
+  return "I compiled your stinkin' PDF"
 end
 
 def assign_archive(doi_string)
@@ -209,5 +219,22 @@ def check_editor
   unless @config.editors.include?(@sender)
     respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
     halt 403
+  end
+end
+
+class WhedonWorker
+  include Sidekiq::Worker
+
+  def perform(repository)
+    download(repository)
+    compile(repository)
+  end
+
+  def download(repository)
+    puts "Downloading #{repository}"
+  end
+
+  def compile(repository)
+    puts "Compiling #{repository}"
   end
 end
