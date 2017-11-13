@@ -248,6 +248,7 @@ class WhedonWorker
   # and this method sets them.
   def set_env(config, nwo)
     puts "Setting the env config: #{config}, nwo: #{nwo}"
+    config=eval(config)
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = "10.21105"
     ENV['PAPER_REPOSITORY'] = config.papers
