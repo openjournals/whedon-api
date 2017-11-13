@@ -122,8 +122,10 @@ def robawt_respond
 end
 
 # How Whedon talks
-def respond(comment)
-  settings.github.add_comment(@nwo, @issue_id, comment)
+def respond(comment, nwo=nil, issue_id=nil)
+  nwo ||= @nwo
+  issue_id ||= @issue_id
+  settings.github.add_comment(nwo, issue_id, comment)
 end
 
 # Download and compile the PDF
@@ -234,7 +236,7 @@ class WhedonWorker
   include Sidekiq::Worker
 
   def perform(papers, site_host, site_name, nwo, issue_id)
-    respond "Hello from the background worker"
+    respond("Hello from the background worker", nwo, issue_id)
     set_env(papers, site_host, site_name, nwo)
     download(issue_id)
     compile(issue_id)
