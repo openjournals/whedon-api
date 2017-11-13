@@ -170,13 +170,11 @@ def create_or_update_git_branch
 end
 
 def create_git_pdf(file_path)
-  sleep(2) # This seems to help with GitHub
-
   id = "%05d" % @issue_id
 
   puts "CURRENT DIRECTORY"
   puts Dir.pwd
-  settings.github.create_contents("openjournals/joss-reviews-testing",
+  settings.github.create_contents("openjournals/joss-papers-testing",
                                   "10.21105.joss.#{id}.pdf",
                                   "Creating 10.21105.joss.#{id}.pdf",
                                   File.open("#{file_path.strip}").read,
