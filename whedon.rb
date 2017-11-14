@@ -1,3 +1,4 @@
+require_relative 'github'
 require 'yaml'
 require 'json'
 require 'octokit'
@@ -6,21 +7,16 @@ require 'sidekiq'
 require 'sinatra'
 require 'whedon'
 
+include GitHub
+
 set :views, Proc.new { File.join(root, "responses") }
-set :gh_token, ENV["GH_TOKEN"]
-set :github, Octokit::Client.new(:access_token => ENV["GH_TOKEN"])
 set :magic_word, "bananas"
 
 set :configs, {}
 YAML.load_file("config/settings.yml").each do |nwo, config|
   team_id = config["editor_team_id"]
-  config["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+  config["editors"] = @github.team_members(team_id).collect { |e| e.login }.sort
   settings.configs[nwo] = OpenStruct.new config
-end
-
-# Sidekiq configuration
-Sidekiq.configure_server do |config|
-  config.redis = { :url => ENV["REDISTOGO_URL"] }
 end
 
 # Before we handle the request we extract the issue body to grab the whedon
@@ -77,7 +73,7 @@ def say_hello
 end
 
 def assignees
-  @assignees ||= settings.github.issue(@nwo, @issue_id).assignees.collect { |a| a.login }
+  @assignees ||= @github.issue(@nwo, @issue_id).assignees.collect { |a| a.login }
 end
 
 def robawt_respond
@@ -125,7 +121,7 @@ end
 def respond(comment, nwo=nil, issue_id=nil)
   nwo ||= @nwo
   issue_id ||= @issue_id
-  settings.github.add_comment(nwo, issue_id, comment)
+  @github.add_comment(nwo, issue_id, comment)
 end
 
 # Download and compile the PDF
@@ -146,7 +142,7 @@ end
 # GitHub stuff (to be refactored!)
 
 def get_master_ref
-  settings.github.refs(@config.papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
+  @github.refs(@config.papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
 end
 
 # Create or update branch
@@ -155,25 +151,25 @@ def create_or_update_git_branch
 
   begin
     # If the PDF is there already then delete it
-    settings.github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
-    blob_sha = settings.github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
-    settings.github.delete_contents(@config.papers,
-                                    "10.21105.joss.#{id}.pdf",
-                                    "Deleting 10.21105.joss.#{id}.pdf",
-                                    blob_sha,
-                                    :branch => "joss.#{id}")
+    @github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
+    blob_sha = @github.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+    @github.delete_contents(@config.papers,
+                            "10.21105.joss.#{id}.pdf",
+                            "Deleting 10.21105.joss.#{id}.pdf",
+                            blob_sha,
+                            :branch => "joss.#{id}")
   rescue Octokit::NotFound
-    settings.github.create_ref(@config.papers, "heads/joss.#{id}", get_master_ref)
+    @github.create_ref(@config.papers, "heads/joss.#{id}", get_master_ref)
   end
 end
 
 def create_git_pdf(file_path)
   id = "%05d" % @issue_id
-  gh_response = settings.github.create_contents(@config.papers,
-                                                "10.21105.joss.#{id}.pdf",
-                                                "Creating 10.21105.joss.#{id}.pdf",
-                                                File.open("#{file_path.strip}").read,
-                                                :branch => "joss.#{id}")
+  gh_response = @github.create_contents(@config.papers,
+                                        "10.21105.joss.#{id}.pdf",
+                                        "Creating 10.21105.joss.#{id}.pdf",
+                                        File.open("#{file_path.strip}").read,
+                                        :branch => "joss.#{id}")
   return gh_response.content.html_url
 end
 
@@ -182,7 +178,7 @@ def assign_archive(doi_string)
   if doi
     doi_with_url = "<a href=\"http://dx.doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
     new_body = issue.body.gsub(/\*\*Archive:\*\*\s*(.*|Pending)/i, "**Archive:** #{doi_with_url}")
-    settings.github.update_issue(@nwo, @issue_id, issue.title, new_body)
+    @github.update_issue(@nwo, @issue_id, issue.title, new_body)
     respond "OK. #{doi_with_url} is the archive."
   else
     respond "#{doi_string} doesn't look like an archive DOI."
@@ -190,7 +186,7 @@ def assign_archive(doi_string)
 end
 
 def assignments
-  issues = settings.github.list_issues(@nwo, :state => 'open')
+  issues = @github.list_issues(@nwo, :state => 'open')
   editors = Hash.new(0)
   reviewers = Hash.new(0)
 
@@ -223,7 +219,7 @@ end
 def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+  @github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
   update_assigness([new_editor])
 end
 
@@ -232,13 +228,13 @@ def assign_reviewer(new_reviewer)
   new_reviewer = new_reviewer.gsub(/^\@/, "")
   editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
-  settings.github.add_collaborator(@nwo, new_reviewer)
+  @github.add_collaborator(@nwo, new_reviewer)
   puts "NWO: #{@nwo}"
   puts "ISSUE ID: #{@issue_id}"
   puts "TITLE: #{issue.title}"
   puts "BODY: #{new_body}"
   puts "ASSIGNEES #{[new_reviewer, editor]}"
-  settings.github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+  @github.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
   update_assigness([new_reviewer, editor])
 end
 
@@ -262,7 +258,7 @@ def start_review
 end
 
 def issue
-  @issue ||= settings.github.issue(@nwo, @issue_id)
+  @issue ||= @github.issue(@nwo, @issue_id)
 end
 
 # Check that the person sending the command is an editor
