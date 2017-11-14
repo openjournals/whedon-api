@@ -24,6 +24,10 @@
     },
     "GH_TOKEN": {
       "description": "The GitHub token for Whedon"
+    },
+    "REDIS_PROVIDER": {
+      "description": "The expected REDIS environment variable name for Sidekiq",
+      "value": REDISTOGO_URL
     }
   },
   "formation": {
