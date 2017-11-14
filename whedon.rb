@@ -129,13 +129,13 @@ def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
 
-  pdf_path = WhedonWorker.new.perform(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+  pdf_path = WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 
   puts "Creating Git branch"
-  create_or_update_git_branch
+  # create_or_update_git_branch
 
   puts "Uploading #{pdf_path}"
-  create_git_pdf(pdf_path)
+  # create_git_pdf(pdf_path)
   # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
@@ -272,11 +272,14 @@ end
 class WhedonWorker
   include Sidekiq::Worker
 
+  # Including this should mean we can talk to GitHub from the background worker.
+  include GitHub
+
   def perform(papers, site_host, site_name, nwo, issue_id)
     bg_respond("Hello from the background worker", nwo, issue_id)
-    set_env(papers, site_host, site_name, nwo)
-    download(issue_id)
-    compile(issue_id)
+    # set_env(papers, site_host, site_name, nwo)
+    # download(issue_id)
+    # compile(issue_id)
   end
 
   def download(issue_id)
@@ -289,8 +292,8 @@ class WhedonWorker
     `whedon prepare #{issue_id}`
   end
 
-  def bg_respond(one, two, three)
-    puts ENV
+  def bg_respond(comment, nwo, issue_id)
+    github_client.add_comment(comment, nwo, issue_id)
   end
 
   # The Whedon gem expects a bunch of environment variables to be available
