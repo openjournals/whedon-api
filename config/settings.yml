@@ -1,22 +1,23 @@
-openjournals/joss-reviews:
-  editor_team_id: 2009411
-  papers: openjournals/joss-papers
-  reviewers: https://bit.ly/joss-reviewers
-  site_host: http://joss.theoj.org
-  site_api_key: <%= ENV['JOSS_API_KEY'] %>
+journals:
+  - openjournals/joss-reviews:
+      editor_team_id: 2009411
+      papers: openjournals/joss-papers
+      reviewers: https://bit.ly/joss-reviewers
+      site_host: http://joss.theoj.org
+      site_api_key: <%= ENV['JOSS_API_KEY'] %>
 
-openjournals/jose-reviews:
-  editor_team_id: 2414911
-  papers: openjournals/jose-papers
-  # TODO: Create this spreadsheet or equivalent
-  reviewers: https://bit.ly/joss-reviewers
-  # TODO: Wherever this is deployed
-  site_host: http://joss.theoj.org
-  site_api_key: <%= ENV['JOSE_API_KEY'] %>
+  - openjournals/jose-reviews:
+      editor_team_id: 2414911
+      papers: openjournals/jose-papers
+      # TODO: Create this spreadsheet or equivalent
+      reviewers: https://bit.ly/joss-reviewers
+      # TODO: Wherever this is deployed
+      site_host: http://joss.theoj.org
+      site_api_key: <%= ENV['JOSE_API_KEY'] %>
 
-openjournals/joss-reviews-testing:
-  editor_team_id: 2009411
-  papers: openjournals/joss-papers-testing
-  reviewers: "https://github.com/search?q=reviewers"
-  site_host: http://joss.theoj.org
-  site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
+  - openjournals/joss-reviews-testing:
+      editor_team_id: 2009411
+      papers: openjournals/joss-papers-testing
+      reviewers: "https://github.com/search?q=reviewers"
+      site_host: http://joss.theoj.org
+      site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>

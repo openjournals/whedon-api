@@ -3,17 +3,23 @@ require 'json'
 require 'octokit'
 require 'rest-client'
 require 'sinatra'
+require 'sinatra/config_file'
 
 set :views, Proc.new { File.join(root, "responses") }
 set :gh_token, ENV["GH_TOKEN"]
 set :github, Octokit::Client.new(:access_token => settings.gh_token)
 set :magic_word, "bananas"
 
+config_file 'config/settings.yml'
 set :configs, {}
-YAML.load_file("config/settings.yml").each do |nwo, config|
-  team_id = config["editor_team_id"]
-  config["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
-  settings.configs[nwo] = OpenStruct.new config
+
+# 'settings.journals' comes from sinatra/config_file
+settings.journals.each do |journal|
+  journal.each do |nwo, params|
+    team_id = params["editor_team_id"]
+    params["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+    settings.configs[nwo] = OpenStruct.new params
+  end
 end
 
 # Before we handle the request we extract the issue body to grab the whedon
@@ -192,7 +198,7 @@ def start_review
   reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
   raise unless (editor && reviewer)
-  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{ENV['JOSS_API_KEY']}"
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{@config.site_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
