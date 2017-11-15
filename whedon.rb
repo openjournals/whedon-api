@@ -14,10 +14,12 @@ config_file 'config/settings.yml'
 set :configs, {}
 
 # 'settings.journals' comes from sinatra/config_file
-settings.journals.each do |nwo, config|
-  team_id = config["editor_team_id"]
-  config["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
-  settings.configs[nwo] = OpenStruct.new config
+settings.journals.each do |journal|
+  journal.each do |nwo, params|
+    team_id = params["editor_team_id"]
+    params["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+    settings.configs[nwo] = OpenStruct.new params
+  end
 end
 
 # Before we handle the request we extract the issue body to grab the whedon
