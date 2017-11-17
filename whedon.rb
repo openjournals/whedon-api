@@ -129,14 +129,7 @@ def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
 
-  pdf_path = WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
-
-  puts "Creating Git branch"
-  # create_or_update_git_branch
-
-  puts "Uploading #{pdf_path}"
-  # create_git_pdf(pdf_path)
-  # WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
 # GitHub stuff (to be refactored!)
@@ -276,10 +269,10 @@ class WhedonWorker
   include GitHub
 
   def perform(papers, site_host, site_name, nwo, issue_id)
-    bg_respond(nwo, issue_id, "Hello from the background worker")
-    # set_env(papers, site_host, site_name, nwo)
-    # download(issue_id)
-    # compile(issue_id)
+    set_env(papers, site_host, site_name, nwo)
+    download(issue_id)
+    response = compile(issue_id)
+    bg_respond(nwo, issue_id, response)
   end
 
   def download(issue_id)
@@ -292,7 +285,7 @@ class WhedonWorker
     `whedon prepare #{issue_id}`
   end
 
-  def bg_respond(comment, nwo, issue_id)
+  def bg_respond(nwo, issue_id, comment)
     github_client.add_comment(nwo, issue_id, comment)
   end
 
