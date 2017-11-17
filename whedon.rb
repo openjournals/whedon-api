@@ -293,7 +293,7 @@ class WhedonWorker
   end
 
   def bg_respond(comment, nwo, issue_id)
-    github_client.add_comment(comment, nwo, issue_id)
+    github_client.add_comment(nwo, issue_id, comment)
   end
 
   # The Whedon gem expects a bunch of environment variables to be available
