@@ -132,39 +132,7 @@ def process_pdf
   WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
-# GitHub stuff (to be refactored!)
 
-def get_master_ref
-  github_client.refs(@config.papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
-end
-
-# Create or update branch
-def create_or_update_git_branch
-  id = "%05d" % @issue_id
-
-  begin
-    # If the PDF is there already then delete it
-    github_client.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
-    blob_sha = github_client.contents(@config.papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
-    github_client.delete_contents(@config.papers,
-                            "10.21105.joss.#{id}.pdf",
-                            "Deleting 10.21105.joss.#{id}.pdf",
-                            blob_sha,
-                            :branch => "joss.#{id}")
-  rescue Octokit::NotFound
-    github_client.create_ref(@config.papers, "heads/joss.#{id}", get_master_ref)
-  end
-end
-
-def create_git_pdf(file_path)
-  id = "%05d" % @issue_id
-  gh_response = github_client.create_contents(@config.papers,
-                                        "10.21105.joss.#{id}.pdf",
-                                        "Creating 10.21105.joss.#{id}.pdf",
-                                        File.open("#{file_path.strip}").read,
-                                        :branch => "joss.#{id}")
-  return gh_response.content.html_url
-end
 
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
@@ -268,11 +236,17 @@ class WhedonWorker
   # Including this should mean we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(papers, site_host, site_name, nwo, issue_id)
-    set_env(papers, site_host, site_name, nwo)
+  def perform(papers_repo, site_host, site_name, nwo, issue_id)
+    set_env(papers_repo, site_host, site_name, nwo)
     download(issue_id)
-    response = compile(issue_id)
-    bg_respond(nwo, issue_id, response)
+    pdf_path = compile(issue_id)
+
+    puts "Creating Git branch"
+    create_or_update_git_branch(issue_id, papers_repo)
+
+    puts "Uploading #{pdf_path}"
+    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
+    bg_respond(nwo, issue_id, pdf_url)
   end
 
   def download(issue_id)
@@ -287,6 +261,39 @@ class WhedonWorker
 
   def bg_respond(nwo, issue_id, comment)
     github_client.add_comment(nwo, issue_id, comment)
+  end
+
+  # GitHub stuff (to be refactored!)
+  def get_master_ref(papers)
+    github_client.refs(papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
+  end
+
+  # Create or update branch
+  def create_or_update_git_branch(issue_id, papers)
+    id = "%05d" % issue_id
+
+    begin
+      # If the PDF is there already then delete it
+      github_client.contents(papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
+      blob_sha = github_client.contents(papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+      github_client.delete_contents(papers,
+                                    "10.21105.joss.#{id}.pdf",
+                                    "Deleting 10.21105.joss.#{id}.pdf",
+                                    blob_sha,
+                                    :branch => "joss.#{id}")
+    rescue Octokit::NotFound
+      github_client.create_ref(papers, "heads/joss.#{id}", get_master_ref(papers))
+    end
+  end
+
+  def create_git_pdf(file_path, issue_id, papers)
+    id = "%05d" % issue_id
+    gh_response = github_client.create_contents(papers,
+                                                "10.21105.joss.#{id}.pdf",
+                                                "Creating 10.21105.joss.#{id}.pdf",
+                                                File.open("#{file_path.strip}").read,
+                                                :branch => "joss.#{id}")
+    return gh_response.content.html_url
   end
 
   # The Whedon gem expects a bunch of environment variables to be available
