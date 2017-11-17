@@ -113,7 +113,8 @@ def robawt_respond
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
     puts "Attempting to compile PDF"
-    respond "```\nAttempting PDF compilation.\n\nReticulating splines etc...\n```"
+    process_pdf
+    respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
   end
 end
 
@@ -246,7 +247,7 @@ class WhedonWorker
     pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
 
     response = "```\n#{pdf_url}\n```"
-    bg_respond(nwo, issue_id, pdf_url)
+    bg_respond(nwo, issue_id, response)
   end
 
   def download(issue_id)
