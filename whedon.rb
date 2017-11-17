@@ -276,7 +276,7 @@ class WhedonWorker
   include GitHub
 
   def perform(papers, site_host, site_name, nwo, issue_id)
-    bg_respond("Hello from the background worker", nwo, issue_id)
+    bg_respond(nwo, issue_id, "Hello from the background worker")
     # set_env(papers, site_host, site_name, nwo)
     # download(issue_id)
     # compile(issue_id)
