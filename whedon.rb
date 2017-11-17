@@ -113,7 +113,7 @@ def robawt_respond
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
     puts "Attempting to compile PDF"
-    respond "```\nPDF at: #{process_pdf}\n```"
+    respond "```\nAttempting PDF compilation.\n\nReticulating splines etc...\n```"
   end
 end
 
@@ -131,8 +131,6 @@ def process_pdf
 
   WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
-
-
 
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
@@ -246,6 +244,8 @@ class WhedonWorker
 
     puts "Uploading #{pdf_path}"
     pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
+
+    response = "```\n#{pdf_url}\n```"
     bg_respond(nwo, issue_id, pdf_url)
   end
 
