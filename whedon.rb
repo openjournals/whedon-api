@@ -20,7 +20,7 @@ set :configs, {}
 settings.journals.each do |journal|
   journal.each do |nwo, params|
     team_id = params["editor_team_id"]
-    params["editors"] = settings.github.team_members(team_id).collect { |e| e.login }.sort
+    params["editors"] = github_client.team_members(team_id).collect { |e| e.login }.sort
     settings.configs[nwo] = OpenStruct.new params
   end
 end
