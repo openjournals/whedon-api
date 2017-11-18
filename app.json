@@ -24,17 +24,32 @@
     },
     "GH_TOKEN": {
       "description": "The GitHub token for Whedon"
+    },
+    "REDIS_PROVIDER": {
+      "description": "The expected REDIS environment variable name for Sidekiq (don't modify this)",
+      "value": "REDISTOGO_URL"
     }
   },
   "formation": {
     "web": {
       "quantity": 1,
       "size": "hobby"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "hobby"
     }
   },
+  "addons": [ "redistogo:nano"],
   "buildpacks": [
     {
       "url": "heroku/ruby"
+    },
+    {
+      "url": "https://github.com/openjournals/heroku-buildpack-tex"
+    },
+    {
+      "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
     }
   ],
   "environments": {
