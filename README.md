@@ -11,10 +11,10 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 # Assign a GitHub user as the reviewer of this submission
 @whedon assign @username as reviewer
 
-# List the GitHub usernames of the JOSS editors
+# List of editor GitHub usernames
 @whedon list editors
 
-# List of JOSS reviewers together with programming language preferences and domain expertise
+# List of reviewers together with programming language preferences and domain expertise
 @whedon list reviewers
 
 # Change editorial assignment
@@ -25,4 +25,10 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 
 # Open the review issue
 @whedon start review
+
+🚧 🚧 🚧 Experimental Whedon features 🚧 🚧 🚧
+
+# Compile the paper
+@whedon generate pdf
+
 ```
