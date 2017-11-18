@@ -1,0 +1,62 @@
+{
+  "name": "Whedon API",
+  "description": "The Whedon Bot for interacting with reviewers on JOSS, JOSE and other journals",
+  "keywords": [
+    "Whedon",
+    "JOSS",
+    "Open Journals",
+    "bots"
+  ],
+  "website": "http://openjournals.org",
+  "repository": "https://github.com/openjournals/whedon-api/tree/multi-whedon",
+  "success_url": "/heartbeat",
+  "scripts": {
+  },
+  "env": {
+    "JOSS_API_KEY": {
+      "description": "The API key for the JOSS site API"
+    },
+    "JOSE_API_KEY": {
+      "description": "The API key for the JOSE site API"
+    },
+    "JOSS_API_KEY_TESTING": {
+      "description": "Test API key"
+    },
+    "GH_TOKEN": {
+      "description": "The GitHub token for Whedon"
+    },
+    "REDIS_PROVIDER": {
+      "description": "The expected REDIS environment variable name for Sidekiq (don't modify this)",
+      "value": "REDISTOGO_URL"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "hobby"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "hobby"
+    }
+  },
+  "addons": [ "redistogo:nano"],
+  "buildpacks": [
+    {
+      "url": "heroku/ruby"
+    },
+    {
+      "url": "https://github.com/openjournals/heroku-buildpack-tex"
+    },
+    {
+      "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
+    }
+  ],
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "bundle exec rake test"
+      }
+    }
+  }
+}

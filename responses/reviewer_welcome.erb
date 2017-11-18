@@ -1,0 +1,26 @@
+<% if reviewer %>
+Hello human, I'm @whedon. I'm here to help you with some common editorial tasks. <%= reviewer %> it looks like you're currently assigned as the reviewer for this paper :tada:.
+
+**:star: Important :star:**
+
+If you haven't already, you should seriously consider unsubscribing from GitHub notifications for this (https://github.com/<%= nwo %>) repository. As as reviewer, you're probably currently watching this repository which means for GitHub's default behaviour you will receive notifications (emails) for all reviews 😿
+
+To fix this do the following two things:
+
+1. Set yourself as 'Not watching' https://github.com/<%= nwo %>:
+
+![watching](https://cloud.githubusercontent.com/assets/4483/20250593/64d7ce48-a9de-11e6-9225-d3dfb3e48e68.png)
+
+2. You may also like to change your default settings for this watching repositories in your GitHub profile here: https://github.com/settings/notifications
+
+![notifications](https://cloud.githubusercontent.com/assets/4483/20250604/79eb3144-a9de-11e6-9e51-0fe940966689.png)
+
+<% else %>
+Hello human, I'm @whedon. I'm here to help you with some common editorial tasks.
+<% end %>
+
+For a list of things I can do to help you, just type:
+
+```
+@whedon commands
+```
