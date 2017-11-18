@@ -230,6 +230,8 @@ def check_editor
 end
 
 class WhedonWorker
+  require 'open3'
+
   include Sidekiq::Worker
 
   # Including this should mean we can talk to GitHub from the background worker.
@@ -241,13 +243,20 @@ class WhedonWorker
     pdf_path = compile(issue_id)
 
     puts "Creating Git branch"
-    create_or_update_git_branch(issue_id, papers_repo)
+    stdout, stderr, status = Open3.capture3("create_or_update_git_branch(#{issue_id}, #{papers_repo})")
+
+    unless !status.success?
+      bg_respond(nwo, issue_id, "Failed to create temporary Git branch for #{issue_id}") and return
+    end
 
     puts "Uploading #{pdf_path}"
-    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
+    pdf_url, stderr, status = Open3.capture3("create_git_pdf(#{pdf_path}, #{issue_id}, #{papers_repo})")
 
-    response = "```\n#{pdf_url}\n```"
-    bg_respond(nwo, issue_id, response)
+    if status.success?
+      bg_respond(nwo, issue_id, pdf_url)
+    else
+      bg_respond(nwo, issue_id, "Failed to compile PDF for #{issue_id} with error: \n\n#{stderr}")
+    end
   end
 
   def download(issue_id)
@@ -261,7 +270,7 @@ class WhedonWorker
   end
 
   def bg_respond(nwo, issue_id, comment)
-    github_client.add_comment(nwo, issue_id, comment)
+    github_client.add_comment(nwo, issue_id, "```\n#{comment}\n```")
   end
 
   # GitHub stuff (to be refactored!)
