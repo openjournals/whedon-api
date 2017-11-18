@@ -8,7 +8,7 @@
     "bots"
   ],
   "website": "http://openjournals.org",
-  "repository": "https://github.com/openjournals/whedon-api/tree/multi-whedon",
+  "repository": "https://github.com/openjournals/whedon-api/tree/master",
   "success_url": "/heartbeat",
   "scripts": {
   },
