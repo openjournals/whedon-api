@@ -239,34 +239,40 @@ class WhedonWorker
 
   def perform(papers_repo, site_host, site_name, nwo, issue_id)
     set_env(papers_repo, site_host, site_name, nwo)
-    download(issue_id)
-    pdf_path = compile(issue_id)
 
-    puts "Creating Git branch"
-    stdout, stderr, status = Open3.capture3("create_or_update_git_branch(#{issue_id}, #{papers_repo})")
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
 
-    unless !status.success?
-      bg_respond(nwo, issue_id, "Failed to create temporary Git branch for #{issue_id}") and return
+    if !status.success?
+      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
+
+    # Compile the paper
+    pdf_path, stderr, status = compile(issue_id)
+
+    if !status.success?
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+    end
+
+    # If we've got this far then push a copy of the PDF to the papers repository
+    puts "Creating Git branch"
+    create_or_update_git_branch(issue_id, papers_repo)
 
     puts "Uploading #{pdf_path}"
-    pdf_url, stderr, status = Open3.capture3("create_git_pdf(#{pdf_path}, #{issue_id}, #{papers_repo})")
+    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
 
-    if status.success?
-      bg_respond(nwo, issue_id, pdf_url)
-    else
-      bg_respond(nwo, issue_id, "Failed to compile PDF for #{issue_id} with error: \n\n#{stderr}")
-    end
+    # Finally, respond in the review issue with the PDF URL
+    bg_respond(nwo, issue_id, pdf_url)
   end
 
   def download(issue_id)
     puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
-    `whedon download #{issue_id}`
+    Open3.capture3("whedon download #{issue_id}")
   end
 
   def compile(issue_id)
     puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
-    `whedon prepare #{issue_id}`
+    Open3.capture3("whedon prepare #{issue_id}")
   end
 
   def bg_respond(nwo, issue_id, comment)
