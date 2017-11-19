@@ -76,6 +76,7 @@ def say_hello
   else
     respond erb :welcome, :locals => { :editor => nil }
   end
+  process_pdf
 end
 
 def assignees
@@ -118,9 +119,7 @@ def robawt_respond
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
   when /\A@whedon generate pdf/i
-    puts "Attempting to compile PDF"
     process_pdf
-    respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
   end
 end
 
@@ -135,7 +134,7 @@ end
 def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
-
+  respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
   WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
