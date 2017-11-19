@@ -2,6 +2,7 @@ require_relative 'github'
 require 'yaml'
 require 'json'
 require 'octokit'
+require 'fileutils'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
@@ -273,6 +274,7 @@ class WhedonWorker
 
   def download(issue_id)
     puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 
