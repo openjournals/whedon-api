@@ -295,13 +295,14 @@ class WhedonWorker
   # Create or update branch
   def create_or_update_git_branch(issue_id, papers)
     id = "%05d" % issue_id
+    pdf_path = "joss.#{id}/10.21105.joss.#{id}.pdf"
 
     begin
       # If the PDF is there already then delete it
-      github_client.contents(papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}")
-      blob_sha = github_client.contents(papers, :path => "10.21105.joss.#{id}.pdf", :ref => "heads/joss.#{id}").sha
+      github_client.contents(papers, :path => pdf_path, :ref => "heads/joss.#{id}")
+      blob_sha = github_client.contents(papers, :path => pdf_path, :ref => "heads/joss.#{id}").sha
       github_client.delete_contents(papers,
-                                    "10.21105.joss.#{id}.pdf",
+                                    pdf_path,
                                     "Deleting 10.21105.joss.#{id}.pdf",
                                     blob_sha,
                                     :branch => "joss.#{id}")
@@ -312,8 +313,10 @@ class WhedonWorker
 
   def create_git_pdf(file_path, issue_id, papers)
     id = "%05d" % issue_id
+    pdf_path = "joss.#{id}/10.21105.joss.#{id}.pdf"
+
     gh_response = github_client.create_contents(papers,
-                                                "10.21105.joss.#{id}.pdf",
+                                                pdf_path,
                                                 "Creating 10.21105.joss.#{id}.pdf",
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "joss.#{id}")
