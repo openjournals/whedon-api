@@ -74,11 +74,12 @@ def say_hello
     respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
+    detect_languages
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
+    detect_languages
     respond erb :welcome, :locals => { :editor => nil }
   end
-  detect_languages
   process_pdf
 end
 
