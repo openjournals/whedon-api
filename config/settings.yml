@@ -4,6 +4,9 @@ journals:
       papers: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
       site_host: http://joss.theoj.org
+      doi_prefix: 10.21105
+      doi_journal: joss
+      reviewers: "https://bit.ly/joss-reviewers"
       site_name: Journal of Open Source Software
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
 
@@ -14,6 +17,9 @@ journals:
       reviewers: https://bit.ly/joss-reviewers
       # TODO: Wherever this is deployed
       site_host: http://joss.theoj.org
+      doi_prefix: 10.21105
+      doi_journal: jose
+      reviewers: "https://bit.ly/jose-reviewers"
       site_name: Journal of Open Source Education
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
 
@@ -22,5 +28,8 @@ journals:
       papers: openjournals/joss-papers-testing
       reviewers: "https://github.com/search?q=reviewers"
       site_host: http://staging.joss.theoj.org
+      doi_prefix: 10.21105
+      doi_journal: joss
+      reviewers: "https://bit.ly/joss-reviewers-testing"
       site_name: Journal of Open Source Software Testing
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>

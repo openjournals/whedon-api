@@ -41,7 +41,7 @@ before do
     @action = params['action']
     @payload = params
 
-    if @action == 'opened'
+    if @action == 'opened' || @action == 'closed'
       @message = params['issue']['body']
     elsif @action == 'created'
       @message = params['comment']['body']
@@ -65,9 +65,20 @@ post '/dispatch' do
     halt
   end
 
+  if @action == "closed"
+    say_goodbye
+    halt
+  end
+
   robawt_respond if @message
 end
 
+# When an issue is first opened we want to do a few things:
+# - If this is the main REVIEW issue then we want to respond with the welcome
+#   message and also try and compile the paper
+# - If this is a PRE-REVIEW issue then we want to respond with the welcome
+#   message but we also want to detect the programming languages of the project
+#   to help with editor and reviewer assignments
 def say_hello
   if issue.title.match(/^\[REVIEW\]:/)
     reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
@@ -81,6 +92,23 @@ def say_hello
     respond erb :welcome, :locals => { :editor => nil }
   end
   process_pdf
+end
+
+# When an issue is closed we want to encourage authors to add the JOSS status
+# badge to their README but also potentially donate to JOSS (and sign up as a
+# future reviewer)
+def say_goodbye
+  if issue.title.match(/^\[REVIEW\]:/)
+    # If the REVIEW has been marked as 'accepted'
+    if issue.labels.collect {|l| l.name }.include?('accepted')
+      respond erb :goodbye, :locals => {:site_host => @config.site_host,
+                                        :site_name => @config.site_name,
+                                        :reviewers => @config.reviewers,
+                                        :doi_prefix => @config.doi_prefix,
+                                        :doi_journal => @config.doi_journal,
+                                        :issue_id => @issue_id}
+    end
+  end
 end
 
 def assignees
