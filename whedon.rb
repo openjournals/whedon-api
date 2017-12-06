@@ -167,7 +167,7 @@ def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
   respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
-  PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+  PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal)
 end
 
 # Detect the languages of the review repository
@@ -333,7 +333,7 @@ class PDFWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(papers_repo, site_host, site_name, nwo, issue_id)
+  def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias)
     set_env(papers_repo, site_host, site_name, nwo)
 
     # Download the paper
@@ -352,10 +352,10 @@ class PDFWorker
 
     # If we've got this far then push a copy of the PDF to the papers repository
     puts "Creating Git branch"
-    create_or_update_git_branch(issue_id, papers_repo)
+    create_or_update_git_branch(issue_id, papers_repo, journal_alias)
 
     puts "Uploading #{pdf_path}"
-    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo)
+    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo, journal_alias)
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pdf_url)
@@ -382,33 +382,33 @@ class PDFWorker
   end
 
   # Create or update branch
-  def create_or_update_git_branch(issue_id, papers)
+  def create_or_update_git_branch(issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
-    pdf_path = "joss.#{id}/10.21105.joss.#{id}.pdf"
+    pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
 
     begin
       # If the PDF is there already then delete it
-      github_client.contents(papers, :path => pdf_path, :ref => "heads/joss.#{id}")
-      blob_sha = github_client.contents(papers, :path => pdf_path, :ref => "heads/joss.#{id}").sha
-      github_client.delete_contents(papers,
+      github_client.contents(papers_repo, :path => pdf_path, :ref => "heads/#{journal_alias}.#{id}")
+      blob_sha = github_client.contents(papers_repo, :path => pdf_path, :ref => "heads/#{journal_alias}.#{id}").sha
+      github_client.delete_contents(papers_repo,
                                     pdf_path,
-                                    "Deleting 10.21105.joss.#{id}.pdf",
+                                    "Deleting 10.21105.#{journal_alias}.#{id}.pdf",
                                     blob_sha,
-                                    :branch => "joss.#{id}")
+                                    :branch => "#{journal_alias}.#{id}")
     rescue Octokit::NotFound
-      github_client.create_ref(papers, "heads/joss.#{id}", get_master_ref(papers))
+      github_client.create_ref(papers, "heads/#{journal_alias}.#{id}", get_master_ref(papers))
     end
   end
 
-  def create_git_pdf(file_path, issue_id, papers)
+  def create_git_pdf(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
-    pdf_path = "joss.#{id}/10.21105.joss.#{id}.pdf"
+    pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
 
-    gh_response = github_client.create_contents(papers,
+    gh_response = github_client.create_contents(papers_repo,
                                                 pdf_path,
-                                                "Creating 10.21105.joss.#{id}.pdf",
+                                                "Creating 10.21105.#{journal_alias}.#{id}.pdf",
                                                 File.open("#{file_path.strip}").read,
-                                                :branch => "joss.#{id}")
+                                                :branch => "#{journal_alias}.#{id}")
     return gh_response.content.html_url
   end
 
