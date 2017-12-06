@@ -46,13 +46,13 @@
       "url": "heroku/ruby"
     },
     {
+      "url": "https://github.com/openjournals/rugged_buildpack"
+    },
+    {
       "url": "https://github.com/openjournals/heroku-buildpack-tex"
     },
     {
       "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
-    },
-    {
-      "url": "https://github.com/openjournals/rugged_buildpack"
     }
   ],
   "environments": {
