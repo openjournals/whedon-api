@@ -2,11 +2,10 @@ journals:
   - openjournals/joss-reviews:
       editor_team_id: 2009411
       papers: openjournals/joss-papers
-      reviewers: https://bit.ly/joss-reviewers
+      reviewers: http://joss.theoj.org/reviewer-signup.html
       site_host: http://joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
-      reviewers: "https://bit.ly/joss-reviewers"
       site_name: Journal of Open Source Software
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
 
@@ -14,22 +13,20 @@ journals:
       editor_team_id: 2414911
       papers: openjournals/jose-papers
       # TODO: Create this spreadsheet or equivalent
-      reviewers: https://bit.ly/joss-reviewers
+      reviewers: http://jose.theoj.org/reviewer-signup.html
       # TODO: Wherever this is deployed
-      site_host: http://joss.theoj.org
+      site_host: http://jose.theoj.org
       doi_prefix: 10.21105
       doi_journal: jose
-      reviewers: "https://bit.ly/jose-reviewers"
       site_name: Journal of Open Source Education
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
 
   - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
       papers: openjournals/joss-papers-testing
-      reviewers: "https://github.com/search?q=reviewers"
+      reviewers: "http://staging.joss.theoj.org/reviewer-signup.html"
       site_host: http://staging.joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
-      reviewers: "https://bit.ly/joss-reviewers-testing"
       site_name: Journal of Open Source Software Testing
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
