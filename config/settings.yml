@@ -21,6 +21,6 @@ journals:
       editor_team_id: 2009411
       papers: openjournals/joss-papers-testing
       reviewers: "https://github.com/search?q=reviewers"
-      site_host: http://joss.theoj.org
+      site_host: http://staging.joss.theoj.org
       site_name: Journal of Open Source Software Testing
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
