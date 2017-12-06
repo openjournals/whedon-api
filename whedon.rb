@@ -141,6 +141,12 @@ def process_pdf
   PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
 end
 
+# Detect the languages of the review repository
+def detect_languages
+  puts "In #process_pdf"
+  LanguageWorker.perform_async(@nwo, @issue_id)
+end
+
 def assign_archive(doi_string)
   doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
   if doi
