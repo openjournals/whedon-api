@@ -105,6 +105,8 @@ def say_goodbye
 
     if issue.labels.collect {|l| l.name }.include?('accepted')
       respond erb :goodbye, :locals => {:site_host => @config.site_host,
+                                        :site_name => @config.site_name,
+                                        :reviewers => @config.reviewers,
                                         :doi_prefix => @config.doi_prefix,
                                         :doi_journal => @config.doi_journal,
                                         :issue_id => @issue_id}
