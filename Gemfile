@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+gem 'github-linguist', '~> 5.3'
 gem "octokit", "4.7.0"
 gem "rest-client", "2.0.2"
 gem "sidekiq", "5.0.5"
