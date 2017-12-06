@@ -25,14 +25,21 @@ GEM
     bibtex-ruby (4.4.4)
       latex-decode (~> 0.0)
     byebug (9.1.0)
+    charlock_holmes (0.7.5)
     coderay (1.1.1)
     concurrent-ruby (1.0.5)
     connection_pool (2.2.1)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.2.1)
+    escape_utils (1.1.1)
     faraday (0.13.1)
       multipart-post (>= 1.2, < 3)
+    github-linguist (5.3.2)
+      charlock_holmes (~> 0.7.5)
+      escape_utils (~> 1.1.0)
+      mime-types (>= 1.19)
+      rugged (>= 0.25.1)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     httparty (0.13.7)
@@ -75,6 +82,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rugged (0.26.0)
     sawyer (0.8.1)
       addressable (>= 2.3.5, < 2.6)
       faraday (~> 0.8, < 1.0)
@@ -109,6 +117,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  github-linguist (~> 5.3)
   octokit (= 4.7.0)
   pry-byebug
   rest-client (= 2.0.2)

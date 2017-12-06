@@ -1,13 +1,14 @@
 require_relative 'github'
-require 'yaml'
+require 'fileutils'
 require 'json'
 require 'octokit'
-require 'fileutils'
 require 'rest-client'
 require 'sidekiq'
 require 'sinatra'
 require 'sinatra/config_file'
 require 'whedon'
+require 'yaml'
+
 
 include GitHub
 
@@ -73,8 +74,10 @@ def say_hello
     respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
+    detect_languages
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
+    detect_languages
     respond erb :welcome, :locals => { :editor => nil }
   end
   process_pdf
@@ -136,7 +139,13 @@ def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
   respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
-  WhedonWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+  PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id)
+end
+
+# Detect the languages of the review repository
+def detect_languages
+  puts "In #process_pdf"
+  LanguageWorker.perform_async(@nwo, @issue_id)
 end
 
 def assign_archive(doi_string)
@@ -235,12 +244,65 @@ def check_editor
   end
 end
 
-class WhedonWorker
+########################
+#  Background workers  #
+########################
+
+class LanguageWorker
+  require 'rugged'
+  require 'linguist'
+
+  include Sidekiq::Worker
+
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(nwo, issue_id)
+    set_env(nwo)
+
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
+
+    if status.success?
+      languages = detect_languages(issue_id)
+      label_issue(nwo, issue_id, languages) if languages.any?
+    else
+      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+  def label_issue(nwo, issue_id, languages)
+    github_client.add_labels_to_an_issue(nwo, issue_id, languages)
+  end
+
+  def detect_languages(issue_id)
+    repo = Rugged::Repository.new("tmp/#{issue_id}")
+    project = Linguist::Repository.new(repo, repo.head.target_id)
+
+    # Take top three languages from Linguist
+    project.languages.keys.take(3)
+  end
+
+  def download(issue_id)
+    puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    Open3.capture3("whedon download #{issue_id}")
+  end
+
+  # The Whedon gem expects a bunch of environment variables to be available
+  # and this method sets them.
+  def set_env(nwo)
+    ENV['REVIEW_REPOSITORY'] = nwo
+  end
+end
+
+# This is the Sidekiq worked that processes PDFs
+class PDFWorker
   require 'open3'
 
   include Sidekiq::Worker
 
-  # Including this should mean we can talk to GitHub from the background worker.
+  # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
   def perform(papers_repo, site_host, site_name, nwo, issue_id)

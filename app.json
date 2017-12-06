@@ -43,6 +43,9 @@
   "addons": [ "redistogo:nano"],
   "buildpacks": [
     {
+      "url": "https://github.com/openjournals/rugged_buildpack"
+    },
+    {
       "url": "heroku/ruby"
     },
     {
