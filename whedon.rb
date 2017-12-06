@@ -276,6 +276,9 @@ end
 #  Background workers  #
 ########################
 
+# This worker runs Linguist (https://github.com/github/linguist) on the software
+# being reviewed and adds labels to the PRE-REVIEW issue for the top three
+# detected languages
 class LanguageWorker
   require 'rugged'
   require 'linguist'
@@ -324,7 +327,9 @@ class LanguageWorker
   end
 end
 
-# This is the Sidekiq worked that processes PDFs
+# This is the Sidekiq worked that processes PDFs. It leverages the Whedon gem to
+# carry out the majority of its actions. Where possible, we try and capture
+# errors from any of the executed tasks and report them back to the review issue
 class PDFWorker
   require 'open3'
 
@@ -361,17 +366,20 @@ class PDFWorker
     bg_respond(nwo, issue_id, pdf_url)
   end
 
+  # Use the Whedon gem to download the software to a local tmp directory
   def download(issue_id)
     puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 
+  # Use the Whedon gem to compile the paper
   def compile(issue_id)
     puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
     Open3.capture3("whedon prepare #{issue_id}")
   end
 
+  # This method allows the background worker to post messages to GitHub.
   def bg_respond(nwo, issue_id, comment)
     github_client.add_comment(nwo, issue_id, "```\n#{comment}\n```")
   end
@@ -381,7 +389,9 @@ class PDFWorker
     github_client.refs(papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
   end
 
-  # Create or update branch
+  # Create or update branch on GitHub in the papers repository
+  # If the branch already exists, delete the paper that's already in the branch.
+  # If the branch doesn't exist, create it.
   def create_or_update_git_branch(issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
@@ -400,6 +410,9 @@ class PDFWorker
     end
   end
 
+  # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
+  # to write the compiled PDF to a named branch.
+  # Returns the URL to the PDF on GitHub
   def create_git_pdf(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
