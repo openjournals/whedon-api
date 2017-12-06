@@ -50,6 +50,9 @@
     },
     {
       "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
+    },
+    {
+      "url": "https://github.com/openjournals/rugged_buildpack"
     }
   ],
   "environments": {
