@@ -101,9 +101,9 @@ def say_goodbye
   if issue.title.match(/^\[REVIEW\]:/)
     # If the REVIEW has been marked as 'accepted'
     puts "ISSUE LABELS #{issue.labels}"
-    puts issue.labels.select {|l| l.name }
-    
-    if issue.labels.select {|l| l.name }.include?('accepted')
+    puts issue.labels.collect {|l| l.name }
+
+    if issue.labels.collect {|l| l.name }.include?('accepted')
       respond erb :goodbye, :locals => {:site_host => @config.site_host,
                                         :doi_prefix => @config.doi_prefix,
                                         :doi_journal => @config.doi_journal,
