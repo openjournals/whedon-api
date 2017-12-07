@@ -406,7 +406,7 @@ class PDFWorker
                                     blob_sha,
                                     :branch => "#{journal_alias}.#{id}")
     rescue Octokit::NotFound
-      github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers))
+      github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
     end
   end
 
