@@ -397,9 +397,8 @@ class PDFWorker
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
 
     begin
-      # If the PDF is there already then delete it
-      github_client.contents(papers_repo, :path => pdf_path, :ref => "heads/#{journal_alias}.#{id}")
-      blob_sha = github_client.contents(papers_repo, :path => pdf_path, :ref => "heads/#{journal_alias}.#{id}").sha
+      ref_sha = github_client.refs(papers_repo, "heads/#{journal_alias}.#{id}").object.sha
+      blob_sha = github_client.commit(papers_repo, ref_sha).files.first.sha
       github_client.delete_contents(papers_repo,
                                     pdf_path,
                                     "Deleting 10.21105.#{journal_alias}.#{id}.pdf",
@@ -422,6 +421,7 @@ class PDFWorker
                                                 "Creating 10.21105.#{journal_alias}.#{id}.pdf",
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "#{journal_alias}.#{id}")
+
     return gh_response.content.html_url
   end
 
