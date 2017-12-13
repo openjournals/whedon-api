@@ -52,7 +52,7 @@
       "url": "https://github.com/openjournals/heroku-buildpack-tex"
     },
     {
-      "url": "https://github.com/illustrativemathematics/pandoc-buildpack"
+      "url": "https://github.com/openjournals/pandoc-buildpack"
     }
   ],
   "environments": {
