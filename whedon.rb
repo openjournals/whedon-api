@@ -357,6 +357,7 @@ class PDFWorker
 
     puts "WHAT IS IN THIS DIRECTORY?!"
     puts `ls tmp/59/paper/`
+    puts `cat tmp/59/paper/10.21105.joss.00059.pdf`
 
     # If we've got this far then push a copy of the PDF to the papers repository
     puts "Creating Git branch"
