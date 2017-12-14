@@ -167,7 +167,7 @@ def process_pdf
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
   respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
-  PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal)
+  PDFWorker.new(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal).perform
 end
 
 # Detect the languages of the review repository
