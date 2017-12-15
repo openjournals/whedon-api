@@ -355,6 +355,9 @@ class PDFWorker
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
+    puts "WHAT IS IN THIS DIRECTORY?!"
+    puts `ls tmp/59/paper/`
+
     # If we've got this far then push a copy of the PDF to the papers repository
     puts "Creating Git branch"
     create_or_update_git_branch(issue_id, papers_repo, journal_alias)
@@ -416,6 +419,8 @@ class PDFWorker
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
 
+    puts "FILE PATH IS #{file_path}"
+    puts `cat #{file_path }`
     gh_response = github_client.create_contents(papers_repo,
                                                 pdf_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.pdf",
