@@ -3,6 +3,7 @@ journals:
       editor_team_id: 2009411
       papers: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
+      reviewers_signup: http://joss.theoj.org/reviewer-signup.html
       site_host: http://joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
@@ -14,6 +15,7 @@ journals:
       papers: openjournals/jose-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jose-reviewers
+      reviewers_signup: http://jose.theoj.org/reviewer-signup.html
       # TODO: Wherever this is deployed
       site_host: http://jose.theoj.org
       doi_prefix: 10.21105
