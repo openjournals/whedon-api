@@ -8,4 +8,4 @@ gem "sinatra", "2.0.0"
 gem "sinatra-contrib", "2.0.0"
 gem "unicorn", "5.3.1"
 gem "pry-byebug"
-gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '4bc3ad988bea444753fd621b6ca2fe2b915440d8'
+gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '8307502c3aee289c55959c34670b063e898f2684'
