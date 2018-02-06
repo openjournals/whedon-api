@@ -8,6 +8,7 @@ journals:
       doi_prefix: 10.21105
       doi_journal: joss
       site_name: Journal of Open Source Software
+      donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
 
   - openjournals/jose-reviews:
@@ -21,6 +22,7 @@ journals:
       doi_prefix: 10.21105
       doi_journal: jose
       site_name: Journal of Open Source Education
+      donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3ODA=
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
 
   - openjournals/joss-reviews-testing:
@@ -31,4 +33,5 @@ journals:
       doi_prefix: 10.21105
       doi_journal: joss
       site_name: Journal of Open Source Software Testing
+      donate_url: http://example.com
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>

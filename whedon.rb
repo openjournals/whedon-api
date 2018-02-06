@@ -106,7 +106,8 @@ def say_goodbye
                                         :reviewers => @config.reviewers_signup,
                                         :doi_prefix => @config.doi_prefix,
                                         :doi_journal => @config.doi_journal,
-                                        :issue_id => @issue_id}
+                                        :issue_id => @issue_id,
+                                        :donate_url => @config.donate_url}
     end
   end
 end
