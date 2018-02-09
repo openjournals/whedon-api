@@ -363,8 +363,10 @@ class PDFWorker
     puts "Uploading #{pdf_path}"
     pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo, journal_alias)
 
+    pdf_response = "[--> Check article proof :page_facing_up: <--](#{pdf_url})"
+
     # Finally, respond in the review issue with the PDF URL
-    bg_respond(nwo, issue_id, pdf_url)
+    bg_respond(nwo, issue_id, pdf_response)
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
