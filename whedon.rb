@@ -384,7 +384,7 @@ class PDFWorker
 
   # This method allows the background worker to post messages to GitHub.
   def bg_respond(nwo, issue_id, comment)
-    github_client.add_comment(nwo, issue_id, "```\n#{comment}\n```")
+    github_client.add_comment(nwo, issue_id, comment)
   end
 
   # GitHub stuff (to be refactored!)
