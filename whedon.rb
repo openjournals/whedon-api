@@ -340,7 +340,7 @@ class PDFWorker
   include GitHub
 
   def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias)
-    set_env(papers_repo, site_host, site_name, nwo)
+    set_env(papers_repo, site_host, site_name, journal_alias, nwo)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
@@ -432,9 +432,10 @@ class PDFWorker
 
   # The Whedon gem expects a bunch of environment variables to be available
   # and this method sets them.
-  def set_env(papers, site_host, site_name, nwo)
+  def set_env(papers, site_host, site_name, journal_alias, nwo)
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = "10.21105"
+    ENV['JOURNAL_ALIAS'] = journal_alias
     ENV['PAPER_REPOSITORY'] = papers
     ENV['JOURNAL_URL'] = site_host
     ENV['JOURNAL_NAME'] = site_name
