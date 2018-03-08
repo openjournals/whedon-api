@@ -7,6 +7,7 @@ journals:
       site_host: http://joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
+      journal_launch_date: '2016-05-05'
       site_name: Journal of Open Source Software
       donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
@@ -20,6 +21,7 @@ journals:
       site_host: https://jose.theoj.org
       doi_prefix: 10.21105
       doi_journal: jose
+      journal_launch_date: '2018-03-07'
       site_name: Journal of Open Source Education
       donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3ODA=
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
