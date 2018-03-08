@@ -17,8 +17,7 @@ journals:
       # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jose-reviewers
       reviewers_signup: http://jose.theoj.org/reviewer-signup.html
-      # TODO: Wherever this is deployed
-      site_host: https://jose-production.herokuapp.com
+      site_host: https://jose.theoj.org
       doi_prefix: 10.21105
       doi_journal: jose
       site_name: Journal of Open Source Education
