@@ -275,11 +275,10 @@ def update_assignees(logins)
 end
 
 def start_review
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
-  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
-  raise unless (editor && reviewer)
-  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{@config.site_api_key}"
+  raise if reviewers.empty?
+  raise unless editor
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewers.join(',')}&secret=#{@config.site_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
