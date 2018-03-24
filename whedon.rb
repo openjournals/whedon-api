@@ -277,8 +277,9 @@ end
 def start_review
   # Check we have an editor and a reviewer
   raise if reviewers.empty?
+  reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
   raise unless editor
-  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewers.join(',')}&secret=#{@config.site_api_key}"
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewer_logins.join(',')}&secret=#{@config.site_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
