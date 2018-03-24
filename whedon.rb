@@ -126,6 +126,14 @@ def robawt_respond
     check_editor
     assign_reviewer($1)
     respond "OK, the reviewer is #{$1}"
+  when /\A@whedon add (.*) as reviewer/i
+    check_editor
+    add_reviewer($1)
+    respond "OK, #{$1} is now a reviewer"
+  when /\A@whedon remove (.*) as reviewer/i
+    check_editor
+    remove_reviewer($1)
+    respond "OK, #{$1} is no longer a reviewer"
   when /\A@whedon assign (.*) as editor/i
     check_editor
     assign_editor($1)
@@ -147,7 +155,7 @@ def robawt_respond
   when /\A@whedon list editors/i
     respond erb :editors, :locals => { :editors => @config.editors }
   when /\A@whedon list reviewers/i
-    respond reviewers
+    respond all_reviewers
   when /\A@whedon assignments/i
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
@@ -213,7 +221,7 @@ def assignments
 end
 
 # Returns a string response with URL to Gist of reviewers
-def reviewers
+def all_reviewers
   "Here's the current list of reviewers: #{@config.reviewers}"
 end
 
@@ -224,36 +232,54 @@ def assign_editor(new_editor)
   new_editor = new_editor.gsub(/^\@/, "")
   new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
   github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
-  update_assigness([new_editor])
+  reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
+  update_assignees([new_editor] | reviewer_logins)
 end
 
 # Change the reviewer listed at the top of the issue
 def assign_reviewer(new_reviewer)
-  new_reviewer = new_reviewer.gsub(/^\@/, "")
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
-  new_body = issue.body.gsub(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i, "**Reviewer:** @#{new_reviewer}")
-  github_client.add_collaborator(@nwo, new_reviewer)
-  puts "NWO: #{@nwo}"
-  puts "ISSUE ID: #{@issue_id}"
-  puts "TITLE: #{issue.title}"
-  puts "BODY: #{new_body}"
-  puts "ASSIGNEES #{[new_reviewer, editor]}"
-  github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
-  update_assigness([new_reviewer, editor])
+  set_reviewers([new_reviewer])
 end
 
-def update_assigness(assignees)
-  data = { "assignees" => assignees }
+def add_reviewer(reviewer)
+  set_reviewers(reviewers + [reviewer])
+end
+
+def remove_reviewer(reviewer)
+  set_reviewers(reviewers - [reviewer])
+end
+
+def set_reviewers(reviewer_list)
+  reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
+  label = reviewer_list.empty? ? "Pending" : reviewer_list.join(", ")
+  new_body = issue.body.gsub(/\*\*Reviewers?:\*\*\s*(.+?)\r?\n/i, "**Reviewers:** #{label}\r\n")
+  reviewer_logins.each do |reviewer_name|
+    github_client.add_collaborator(@nwo, reviewer_name)
+  end
+  github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+  update_assignees([editor] | reviewer_logins)
+end
+
+def editor
+  issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+end
+
+def reviewers
+  issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+end
+
+def update_assignees(logins)
+  data = { "assignees" => logins }
   url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{ENV['GH_TOKEN']}"
   RestClient.post(url, data.to_json)
 end
 
 def start_review
-  editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
-  reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*.@(\S*)/)[1]
   # Check we have an editor and a reviewer
-  raise unless (editor && reviewer)
-  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewer=#{reviewer}&secret=#{@config.site_api_key}"
+  raise if reviewers.empty?
+  reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
+  raise unless editor
+  url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewer_logins.join(',')}&secret=#{@config.site_api_key}"
   # TODO let's do some error handling here please
   puts "POSTING TO #{url}"
   response = RestClient.post(url, "")
