@@ -203,15 +203,11 @@ def assignments
   reviewers = Hash.new(0)
 
   issues.each do |issue|
-    if issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)
-      editor = issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
-      editors[editor] += 1
-    end
+    editor = issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+    editors[editor] += 1
 
-    if issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)
-      reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
-      reviewers[reviewer] += 1
-    end
+    reviewers = issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+    reviewers[reviewer] += 1
   end
 
   sorted_editors = editors.sort_by {|_, value| value}.to_h
