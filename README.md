@@ -32,3 +32,9 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 @whedon generate pdf
 
 ```
+
+### Deploying
+
+To deploy a version of Whedon on Heroku, an `app.json` template is provided:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/openjournals/whedon-api)
