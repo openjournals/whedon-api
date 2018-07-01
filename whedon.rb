@@ -145,11 +145,11 @@ def robawt_respond
     check_editor
     # TODO actually post something to the API
     word = $1
-    if word && word == settings.magic_word
+    if editor && reviewers.any?
       review_issue_id = start_review
       respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
     else
-      respond erb :magic_word, :locals => { :magic_word => settings.magic_word }
+      respond erb :missing_editor_reviewer
       halt
     end
   when /\A@whedon list editors/i
