@@ -13,7 +13,6 @@ require 'yaml'
 include GitHub
 
 set :views, Proc.new { File.join(root, "responses") }
-set :magic_word, "bananas"
 
 config_file 'config/settings.yml'
 set :configs, {}
@@ -141,10 +140,8 @@ def robawt_respond
   when /\A@whedon set (.*) as archive/
     check_editor
     assign_archive($1)
-  when /\A@whedon start review magic-word=(.*)|\A@whedon start review/i
+  when /\A@whedon start review/i
     check_editor
-    # TODO actually post something to the API
-    word = $1
     if editor && reviewers.any?
       review_issue_id = start_review
       respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
