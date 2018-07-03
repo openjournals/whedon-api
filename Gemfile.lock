@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 195e6d124d0fbd5346b87659e695325df9a18334
-  ref: 195e6d124d0fbd5346b87659e695325df9a18334
+  revision: e0f72c5e8125f47dfa9e77aecd0a506c5cbc2f4c
+  ref: e0f72c5e8125f47dfa9e77aecd0a506c5cbc2f4c
   specs:
     whedon (0.1.0)
       bibtex-ruby
@@ -33,7 +33,7 @@ GEM
     connection_pool (2.2.2)
     domain_name (0.5.20180417)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.4.0)
+    dotenv (2.5.0)
     escape_utils (1.1.1)
     faraday (0.15.2)
       multipart-post (>= 1.2, < 3)
