@@ -5,7 +5,14 @@
 If you would like to include a link to your paper from your README use the following code snippet:
 
 ```
+Markdown:
 [![DOI](<%= site_host %>/papers/<%= doi_prefix %>/<%= doi_journal %>.<%= id %>/status.svg)](https://doi.org/<%= doi_prefix %>/<%= doi_journal %>.<%= id %>)
+
+HTML:
+<a style="border-width:0" href="https://doi.org/<%= doi_prefix %>/<%= doi_journal %>">
+  <img src="<%= site_host %>/papers/<%= doi_prefix %>/<%= doi_journal %>.<%= id %>/status.svg" alt="DOI badge" >
+</a>
+
 ```
 This is how it will look in your documentation:
 
