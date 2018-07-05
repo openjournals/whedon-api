@@ -9,7 +9,6 @@ require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
 
-
 include GitHub
 
 set :views, Proc.new { File.join(root, "responses") }
@@ -84,12 +83,10 @@ def say_hello
     respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
-    detect_languages
-    detect_license
+    repo_detect
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
-    detect_languages
-    detect_license
+    repo_detect
     respond erb :welcome, :locals => { :editor => nil }
   end
   process_pdf
@@ -178,13 +175,9 @@ def process_pdf
   PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
 end
 
-# Detect the languages of the review repository
-def detect_languages
-  LanguageWorker.perform_async(@nwo, @issue_id)
-end
-
-def detect_license
-  LicenseWorker.perform_async(@nwo, @issue_id)
+# Detect the languages and license of the review repository
+def repo_detect
+  RepoWorker.perform_async(@nwo, @issue_id, @config.journal_launch_date)
 end
 
 def assign_archive(doi_string)
@@ -305,38 +298,15 @@ end
 #  Background workers  #
 ########################
 
-class LicenseWorker
-  require 'rugged'
-  require 'licensee'
-
-  include Sidekiq::Worker
-  # Including this means we can talk to GitHub from the background worker.
-  include GitHub
-
-  def perform(nwo, issue_id)
-    set_env(nwo)
-
-    # Download the paper
-    stdout, stderr, status = download(issue_id)
-
-    if status.success?
-      license = detect_license(issue_id)
-      bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
-    else
-      bg_respond(nwo, issue_id, "Downloading of the repository (to check the license) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
-    end
-  end
-
-  def detect_license(issue_id)
-    return Licensee.project("tmp/#{issue_id}").license
-  end
-end
-
 # This worker runs Linguist (https://github.com/github/linguist) on the software
 # being reviewed and adds labels to the PRE-REVIEW issue for the top three
-# detected languages
-class LanguageWorker
+# detected languages.
+# In addition, it tries to detect an open source license. If it doesn't find one
+# it will complain.
+
+class RepoWorker
   require 'rugged'
+  require 'licensee'
   require 'linguist'
 
   include Sidekiq::Worker
@@ -344,18 +314,29 @@ class LanguageWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id)
-    set_env(nwo)
+  def perform(nwo, issue_id, journal_launch_date)
+    set_env(nwo, journal_launch_date)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
 
     if status.success?
       languages = detect_languages(issue_id)
+      license = detect_license(issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
+      bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
+  end
+
+  def detect_license(issue_id)
+    return Licensee.project("tmp/#{issue_id}").license
+  end
+
+  # This method allows the background worker to post messages to GitHub.
+  def bg_respond(nwo, issue_id, comment)
+    github_client.add_comment(nwo, issue_id, comment)
   end
 
   def label_issue(nwo, issue_id, languages)
@@ -378,8 +359,9 @@ class LanguageWorker
 
   # The Whedon gem expects a bunch of environment variables to be available
   # and this method sets them.
-  def set_env(nwo)
+  def set_env(nwo, journal_launch_date)
     ENV['REVIEW_REPOSITORY'] = nwo
+    ENV['JOURNAL_LAUNCH_DATE'] = journal_launch_date
   end
 end
 
