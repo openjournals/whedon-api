@@ -33,6 +33,7 @@ journals:
       site_host: http://staging.joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
+      journal_launch_date: '2016-05-05'
       site_name: Journal of Open Source Software Testing
       donate_url: http://example.com
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
