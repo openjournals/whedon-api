@@ -8,8 +8,14 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 # List all of Whedon's capabilities
 @whedon commands
 
-# Assign a GitHub user as the reviewer of this submission
+# Assign a GitHub user as the sole reviewer of this submission
 @whedon assign @username as reviewer
+
+# Add a GitHub user to the reviewers of this submission
+@whedon add @username as reviewer
+
+# Remove a GitHub user from the reviewers of this submission
+@whedon remove @username as reviewer
 
 # List of editor GitHub usernames
 @whedon list editors
