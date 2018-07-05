@@ -85,9 +85,11 @@ def say_hello
   # Newly created [PRE REVIEW] issue. Time to say hello
   elsif assignees.any?
     detect_languages
+    detect_license
     respond erb :welcome, :locals => { :editor => assignees.first }
   else
     detect_languages
+    detect_license
     respond erb :welcome, :locals => { :editor => nil }
   end
   process_pdf
@@ -178,8 +180,11 @@ end
 
 # Detect the languages of the review repository
 def detect_languages
-  puts "In #process_pdf"
   LanguageWorker.perform_async(@nwo, @issue_id)
+end
+
+def detect_license
+  LicenseWorker.perform_async(@nwo, @issue_id)
 end
 
 def assign_archive(doi_string)
@@ -299,7 +304,6 @@ end
 ########################
 #  Background workers  #
 ########################
-
 
 class LicenseWorker
   require 'licensee'
