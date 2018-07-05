@@ -300,6 +300,33 @@ end
 #  Background workers  #
 ########################
 
+
+class LicenseWorker
+  require 'licensee'
+
+  include Sidekiq::Worker
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(nwo, issue_id)
+    set_env(nwo)
+
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
+
+    if status.success?
+      license = detect_license(issue_id)
+      bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
+    else
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the license) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+  def detect_license(issue_id)
+    return Licensee.project("tmp/#{issue_id}").license
+  end
+end
+
 # This worker runs Linguist (https://github.com/github/linguist) on the software
 # being reviewed and adds labels to the PRE-REVIEW issue for the top three
 # detected languages
@@ -322,7 +349,7 @@ class LanguageWorker
       languages = detect_languages(issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
     else
-      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
   end
 
@@ -373,7 +400,6 @@ class PDFWorker
     # Not sure if this is because the repository hasn't downloaded yet.
     # Adding in a sleep statement to see if this helps.
     sleep(5)
-
 
     if !status.success?
       bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return

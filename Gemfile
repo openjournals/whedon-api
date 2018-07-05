@@ -1,7 +1,8 @@
 source "https://rubygems.org"
 
 gem 'github-linguist', '~> 5.3'
-gem "octokit", "4.7.0"
+gem 'licensee', '~> 9.9'
+gem "octokit", '~> 4.8'
 gem 'rest-client', '~> 1.8'
 gem "sidekiq", "5.0.5"
 gem "sinatra", "2.0.0"
