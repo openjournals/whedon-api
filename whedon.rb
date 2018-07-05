@@ -119,7 +119,11 @@ def robawt_respond
   puts "MESSAGE: #{@message}"
   case @message
   when /\A@whedon commands/i
-    respond erb :commands
+    if @config.editors.include?(@sender)
+      respond erb :commands
+    else
+      respond erb :commands_public
+    end
   when /\A@whedon assign (.*) as reviewer/i
     check_editor
     assign_reviewer($1)
