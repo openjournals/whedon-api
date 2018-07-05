@@ -306,6 +306,7 @@ end
 ########################
 
 class LicenseWorker
+  require 'rugged'
   require 'licensee'
 
   include Sidekiq::Worker
