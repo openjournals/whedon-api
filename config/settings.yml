@@ -30,7 +30,7 @@ journals:
       editor_team_id: 2009411
       papers: openjournals/joss-papers-testing
       reviewers: "http://staging.joss.theoj.org/reviewer-signup.html"
-      site_host: http://staging.joss.theoj.org
+      site_host: http://joss.theoj.org
       doi_prefix: 10.21105
       doi_journal: joss
       journal_launch_date: '2016-05-05'
