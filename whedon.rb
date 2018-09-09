@@ -159,6 +159,8 @@ def robawt_respond
   when /\A@whedon assignments/i
     reviewers, editors = assignments
     respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
+  when /\A@whedon generate pdf from branch (.*)/
+    process_pdf($1)
   when /\A@whedon generate pdf/i
     process_pdf
   end
@@ -172,11 +174,16 @@ def respond(comment, nwo=nil, issue_id=nil)
 end
 
 # Download and compile the PDF
-def process_pdf
+def process_pdf(custom_branch=nil)
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
-  respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
-  PDFWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
+  if custom_branch
+    respond "```\nAttempting PDF compilation for custom branch #{custom_branch}. Reticulating splines etc...\n```"
+  else
+    respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
+  end
+  
+  PDFWorker.perform_async(@config.papers, custom_branch, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
 end
 
 # Detect the languages and license of the review repository
@@ -380,7 +387,7 @@ class PDFWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias, journal_launch_date)
+  def perform(papers_repo, custom_branch, site_host, site_name, nwo, issue_id, journal_alias, journal_launch_date)
     set_env(papers_repo, site_host, site_name, journal_alias, journal_launch_date, nwo)
 
     # Download the paper
@@ -397,7 +404,7 @@ class PDFWorker
     end
 
     # Compile the paper
-    pdf_path, stderr, status = compile(issue_id)
+    pdf_path, stderr, status = compile(issue_id, custom_branch)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -424,9 +431,13 @@ class PDFWorker
   end
 
   # Use the Whedon gem to compile the paper
-  def compile(issue_id)
+  def compile(issue_id, custom_branch=nil)
     puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
-    Open3.capture3("whedon prepare #{issue_id}")
+    if custom_branch
+      Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
+    else
+      Open3.capture3("whedon prepare #{issue_id}")
+    end
   end
 
   # This method allows the background worker to post messages to GitHub.
