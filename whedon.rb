@@ -13,11 +13,14 @@ include GitHub
 
 set :views, Proc.new { File.join(root, "responses") }
 
-config_file 'config/settings.yml'
+config_file "config/settings-#{ENV['RACK_ENV']}.yml"
 set :configs, {}
 
 # 'settings.journals' comes from sinatra/config_file
+# FIXME: Don't initialize settings unless production
+
 settings.journals.each do |journal|
+  next unless ENV['RACK_ENV'] == "production"
   journal.each do |nwo, params|
     team_id = params["editor_team_id"]
     params["editors"] = github_client.team_members(team_id).collect { |e| e.login }.sort
