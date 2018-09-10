@@ -178,11 +178,11 @@ def process_pdf(custom_branch=nil)
   puts "In #process_pdf"
   # TODO refactor this so we're not passing so many arguments to the method
   if custom_branch
-    respond "```\nAttempting PDF compilation for custom branch #{custom_branch}. Reticulating splines etc...\n```"
+    respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
   else
     respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
   end
-  
+
   PDFWorker.perform_async(@config.papers, custom_branch, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
 end
 
