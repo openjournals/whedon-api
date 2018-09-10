@@ -10,3 +10,8 @@ gem "sinatra-contrib", "2.0.2"
 gem "unicorn", "5.3.1"
 gem "pry-byebug"
 gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '2caaf5cba519510f4f9586ded4abf68d19640560'
+
+group :test do
+  gem 'rack-test'
+  gem 'rspec'
+end
