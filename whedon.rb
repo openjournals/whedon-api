@@ -8,7 +8,6 @@ require 'sinatra'
 require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
-require 'pry'
 
 include GitHub
 
