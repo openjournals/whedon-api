@@ -8,6 +8,7 @@ require 'sinatra'
 require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
+require 'pry'
 
 include GitHub
 
@@ -15,22 +16,13 @@ set :views, Proc.new { File.join(root, "responses") }
 
 config_file "config/settings-#{ENV['RACK_ENV']}.yml"
 set :configs, {}
-
-# 'settings.journals' comes from sinatra/config_file
-# FIXME: Don't initialize settings unless production
-
-settings.journals.each do |journal|
-  next unless ENV['RACK_ENV'] == "production"
-  journal.each do |nwo, params|
-    team_id = params["editor_team_id"]
-    params["editors"] = github_client.team_members(team_id).collect { |e| e.login }.sort
-    settings.configs[nwo] = OpenStruct.new params
-  end
-end
+set :initialized, false
 
 # Before we handle the request we extract the issue body to grab the whedon
 # command (if present).
 before do
+  set_configs unless journal_configs_initialized?
+
   if %w[heartbeat].include? request.path_info.split('/')[1]
     pass
   else
@@ -54,6 +46,23 @@ before do
     @config = settings.configs[@nwo]
     halt unless @config # We probably want to restrict this
   end
+end
+
+def journal_configs_initialized?
+  settings.initialized
+end
+
+def set_configs
+  # 'settings.journals' comes from sinatra/config_file
+  settings.journals.each do |journal|
+    journal.each do |nwo, params|
+      team_id = params["editor_team_id"]
+      params["editors"] = github_client.team_members(team_id).collect { |e| e.login }.sort
+      settings.configs[nwo] = OpenStruct.new params
+    end
+  end
+
+  settings.initialized = true
 end
 
 get '/heartbeat' do
