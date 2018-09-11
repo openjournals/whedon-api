@@ -1,7 +1,7 @@
 journals:
-  - openjournals/joss-reviews:
+  - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
-      papers: openjournals/joss-papers
+      papers: openjournals/joss-papers-testing
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html
       site_host: http://joss.theoj.org
