@@ -1,6 +1,5 @@
 class FakeGitHub < Sinatra::Base
   get '/teams/:id/members' do
-    puts "Hello FakeGitHub"
     json_response 200, 'team.json'
   end
 

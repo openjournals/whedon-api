@@ -14,4 +14,5 @@ gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '2ca
 group :test do
   gem 'rack-test'
   gem 'rspec'
+  gem 'webmock'
 end
