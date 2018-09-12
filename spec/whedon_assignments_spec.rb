@@ -11,7 +11,9 @@ describe WhedonApi do
   let(:whedon_commands_from_non_editor_response) { erb_response('commands_public.erb')}
 
   subject do
-    app = described_class.new!
+    app = described_class.allocate
+    app.send :initialize
+    app
   end
 
   context 'with @whedon commands as editor' do
@@ -77,6 +79,7 @@ describe WhedonApi do
   context 'with @whedon assign @username reviewer as editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(subject).to receive(:assign_reviewer).once
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, the reviewer is @reviewer/)
       post '/dispatch', whedon_assign_reviewer_from_editor, {'CONTENT_TYPE' => 'application/json'}
     end
