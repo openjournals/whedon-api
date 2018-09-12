@@ -12,6 +12,8 @@ describe WhedonApi do
 
   context 'with junk params' do
     before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).never
       post '/dispatch', junk_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -22,6 +24,8 @@ describe WhedonApi do
 
   context 'with a payload from an unknown repository' do
     before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).never
       post '/dispatch', wrong_repo_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -34,6 +38,8 @@ describe WhedonApi do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).twice
       post '/dispatch', pre_review_created_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -48,6 +54,7 @@ describe WhedonApi do
 
   context 'when closing an issue' do
     before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once
       post '/dispatch', review_closed_payload, {'CONTENT_TYPE' => 'application/json'}
     end
