@@ -4,6 +4,7 @@ describe WhedonApi do
   let(:pre_review_created_payload) { json_fixture('pre-review-created-with-editor.json') }
   let(:wrong_repo_payload) { json_fixture('pre-review-created-with-editor-for-wrong-repo.json') }
   let(:junk_payload) { json_fixture('junk-payload.json') }
+  let(:pre_review_closed_payload) { json_fixture('pre-review-issue-closed-936.json') }
   let(:review_closed_payload) { json_fixture('review-issue-closed-937.json') }
 
   subject do
@@ -52,11 +53,23 @@ describe WhedonApi do
     end
   end
 
-  context 'when closing an issue' do
+  context 'when closing a REVIEW issue' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once
       post '/dispatch', review_closed_payload, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when closing a PRE-REVIEW issue' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).never
+      post '/dispatch', pre_review_closed_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should initialize properly" do
