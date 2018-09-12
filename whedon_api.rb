@@ -10,6 +10,7 @@ require 'sidekiq'
 require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
+require 'pry'
 
 include GitHub
 
@@ -47,6 +48,7 @@ class WhedonApi < Sinatra::Base
       @issue_id = params['issue']['number']
       @nwo = params['repository']['full_name']
       @config = settings.configs[@nwo]
+
       halt 422 unless @config # We probably want to restrict this
     end
   end
@@ -170,7 +172,6 @@ class WhedonApi < Sinatra::Base
 
   # Download and compile the PDF
   def process_pdf(custom_branch=nil)
-    puts "In #process_pdf"
     # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
