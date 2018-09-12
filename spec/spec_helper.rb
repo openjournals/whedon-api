@@ -15,6 +15,10 @@ module RSpecMixin
   def json_fixture(file_name)
     File.open(File.dirname(__FILE__) + '/support/fixtures/' + file_name, 'rb').read
   end
+
+  def erb_response(file_name)
+    File.open(File.expand_path '../responses/' + file_name, 'rb').read
+  end
 end
 
 RSpec.configure do |config|

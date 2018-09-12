@@ -112,8 +112,6 @@ class WhedonApi < Sinatra::Base
   end
 
   def robawt_respond
-    puts "ACTION: #{@action}"
-    puts "MESSAGE: #{@message}"
     case @message
     when /\A@whedon commands/i
       if @config.editors.include?(@sender)
