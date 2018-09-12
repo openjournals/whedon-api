@@ -12,6 +12,10 @@ class FakeGitHub < Sinatra::Base
     json_response 201, 'pre-review-issue-comment-created-936.json'
   end
 
+  patch '/repos/openjournals/joss-reviews-testing/issues/936' do
+    json_response 200, 'pre-review-issue-comment-updated-936.json'
+  end
+
   # Review issue
   get '/repos/openjournals/joss-reviews-testing/issues/937' do
     json_response 200, 'review-issue-937.json'
@@ -19,6 +23,11 @@ class FakeGitHub < Sinatra::Base
 
   post '/repos/openjournals/joss-reviews-testing/issues/937/comments' do
     json_response 201, 'pre-review-issue-comment-created-937.json'
+  end
+
+  # Assignees
+  post '/repos/openjournals/joss-reviews-testing/issues/936/assignees' do
+    json_response 201, 'updated-assignees-pre-review-issue-936.json'
   end
 
   private
