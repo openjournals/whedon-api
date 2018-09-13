@@ -40,10 +40,11 @@ describe WhedonApi do
     end
   end
 
-  context 'with @whedon assign @username as non-editor' do
+  context 'with @whedon assign @arfon as editor as non-editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm afraid I can't do that. That's something only editors are allowed to do./)
+      expect_any_instance_of(WhedonApi).to receive(:assign_editor).never
       post '/dispatch', whedon_assign_editor_from_non_editor, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -52,10 +53,11 @@ describe WhedonApi do
     end
   end
 
-  context 'with @whedon assign @username as editor' do
+  context 'with @whedon assign @arfon as editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, the editor is @arfon/)
+      expect_any_instance_of(WhedonApi).to receive(:assign_editor).once.with('@arfon')
       post '/dispatch', whedon_assign_editor_from_editor, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -64,10 +66,11 @@ describe WhedonApi do
     end
   end
 
-  context 'with @whedon assign @username reviewer as non-editor' do
+  context 'with @whedon assign @reviewer reviewer as non-editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm afraid I can't do that. That's something only editors are allowed to do./)
+      expect_any_instance_of(WhedonApi).to receive(:assign_reviewer).never
       post '/dispatch', whedon_assign_reviewer_from_non_editor, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -76,10 +79,10 @@ describe WhedonApi do
     end
   end
 
-  context 'with @whedon assign @username reviewer as editor' do
+  context 'with @whedon assign @reviewer reviewer as editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(subject).to receive(:assign_reviewer).once
+      expect_any_instance_of(WhedonApi).to receive(:assign_reviewer).once.with('@reviewer')
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, the reviewer is @reviewer/)
       post '/dispatch', whedon_assign_reviewer_from_editor, {'CONTENT_TYPE' => 'application/json'}
     end

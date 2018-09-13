@@ -238,6 +238,7 @@ class WhedonApi < Sinatra::Base
 
   # Change the reviewer listed at the top of the issue
   def assign_reviewer(new_reviewer)
+    puts "I AM BEING CALLED"
     set_reviewers([new_reviewer])
   end
 
