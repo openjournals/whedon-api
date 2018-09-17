@@ -76,4 +76,9 @@ describe WhedonApi do
       expect(last_response).to be_ok
     end
   end
+
+  # To test:
+  # - Start review (as editor)
+  # - Start review (as non-editor)
+  # - generate pdf
 end

@@ -91,4 +91,12 @@ describe WhedonApi do
       expect(last_response).to be_ok
     end
   end
+
+  # To test:
+  # - Add reviewer (as editor)
+  # - Add reviewer (as non-editor)
+  # - Remove reviewer (as editor)
+  # - Remove editor (as editor)
+  # - Remove reviewer (as non-editor)
+  # - Remove editor (as non-editor)
 end
