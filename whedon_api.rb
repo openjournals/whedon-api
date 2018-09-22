@@ -93,7 +93,7 @@ class WhedonApi < Sinatra::Base
   # badge to their README but also potentially donate to JOSS (and sign up as a
   # future reviewer)
   def say_goodbye
-    if issue.title.match(/^\[REVIEW\]:/)
+    if review_issue?
       # If the REVIEW has been marked as 'accepted'
       if issue.labels.collect {|l| l.name }.include?('accepted')
         respond erb :goodbye, :locals => {:site_host => @config.site_host,
@@ -105,6 +105,10 @@ class WhedonApi < Sinatra::Base
                                           :donate_url => @config.donate_url}
       end
     end
+  end
+
+  def review_issue?
+    issue.title.match(/^\[REVIEW\]:/)
   end
 
   def assignees
@@ -276,9 +280,22 @@ class WhedonApi < Sinatra::Base
 
   def start_review
     # Check we have an editor and a reviewer
-    raise if reviewers.empty?
+    if review_issue? # Don't start a review if it has already started
+      respond "Can't start a review when the review has already started"
+      halt 422
+    end
+
+    if reviewers.empty?
+      respond "Can't start a review without reviewers"
+      halt 422
+    end
+
+    if !editor
+      respond "Can't start a review without an editor"
+      halt 422
+    end
+
     reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
-    raise unless editor
     url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewer_logins.join(',')}&secret=#{@config.site_api_key}"
     # TODO let's do some error handling here please
     response = RestClient.post(url, "")

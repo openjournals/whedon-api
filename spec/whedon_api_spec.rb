@@ -7,8 +7,10 @@ describe WhedonApi do
   let(:pre_review_closed_payload) { json_fixture('pre-review-issue-closed-936.json') }
   let(:review_closed_payload) { json_fixture('review-issue-closed-937.json') }
   let(:whedon_start_review_from_editor_not_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-936.json') }
+  let(:whedon_start_review_on_review_issue) { json_fixture('whedon-start-review-on-review-issue-937.json') }
   let(:whedon_start_review_from_editor_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-935.json') }
   let(:whedon_start_review_from_non_editor_ready) { json_fixture('whedon-start-review-non-editor-on-pre-review-issue-935.json') }
+  let(:whedon_generate_pdf) { json_fixture('whedon-generate-pdf-936.json') }
 
 
   subject do
@@ -93,6 +95,18 @@ describe WhedonApi do
     end
   end
 
+  context 'when starting review on a REVIEW issue' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Can't start a review when the review has already started/)
+      post '/dispatch', whedon_start_review_on_review_issue, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_unprocessable
+    end
+  end
+
   context 'when starting review WITH reviewer and editor assignments as editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
@@ -117,6 +131,16 @@ describe WhedonApi do
     end
   end
 
-  # To test:
-  # - generate pdf
+  context 'when generating a pdf' do
+    before do
+      expect(PDFWorker).to receive(:perform_async).once
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting PDF compilation. Reticulating splines etc.../)
+      post '/dispatch', whedon_generate_pdf, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
 end
