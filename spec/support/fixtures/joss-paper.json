@@ -1,0 +1,26 @@
+{
+   "id":636,
+   "title":"Lithology: A Landlab submodule for spatially variable rock properties",
+   "state":"submitted",
+   "repository_url":"https://github.com/landlab/landlab",
+   "archive_doi":null,
+   "sha":"74487c5a6820fb2fe2898960ad6d2ea0",
+   "body":"The surface of the Earth reflects the competing advection of rock by tectonic processes and the erosion of rock by wind, water, and ice. Rock properties influence erosion rates by changing the processes responsible for erosion and the rate at which rock is weathered, detached, and turned into mobile sediment. Landlab is an Open Source Python package that provides a framework for the development of 2D numerical models, typically in Earth surface dynamics. This contribution describes ``Lithology``, a Landlab submodule designed to support the representation of 3D variations in rock material properties within the Landlab framework.\\r\\n\\r\\n@lheagy would be another potential editor. \\r\\n\\r\\nA few additional notes:\\r\\n\\r\\n- I wrote version 1.5.4 because this is the number of the first `release` version of Landlab that I anticipate this submission being a part of (our next release is in December, we are currently at v1.5.3, and this submission is on the master `branch`). I haven't tagged a commit because that triggers automatic building of packages. \\r\\n\\r\\n- This submission only pertains to the Lithology submodule of Landlab (located at `landlab/landlab/components/lithology`), not Landlab as a whole. The `paper.md` is located at `landlab/landlab/components/lithology/joss/paper.md`. I discussed the appropriate way to handle this submission at [Issue #433](https://github.com/openjournals/joss/issues/443) and in the interim of implementing a more formal method for specifying the submodule of interest, @arfon recommended that I just make a note here. ",
+   "user_id":1255,
+   "created_at":"2018-09-22T00:29:23.530Z",
+   "updated_at":"2018-09-22T00:29:23.530Z",
+   "review_issue_id":"1234",
+   "software_version":"1.5.4",
+   "doi":null,
+   "paper_body":null,
+   "meta_review_issue_id":"935",
+   "suggested_editor":"@kthyng",
+   "authors":null,
+   "citation_string":null,
+   "accepted_at":null,
+   "kind":null,
+   "editor_id":null,
+   "reviewers":[
+
+   ]
+}

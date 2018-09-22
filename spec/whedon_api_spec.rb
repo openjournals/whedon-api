@@ -6,6 +6,10 @@ describe WhedonApi do
   let(:junk_payload) { json_fixture('junk-payload.json') }
   let(:pre_review_closed_payload) { json_fixture('pre-review-issue-closed-936.json') }
   let(:review_closed_payload) { json_fixture('review-issue-closed-937.json') }
+  let(:whedon_start_review_from_editor_not_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-936.json') }
+  let(:whedon_start_review_from_editor_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-935.json') }
+  let(:whedon_start_review_from_non_editor_ready) { json_fixture('whedon-start-review-non-editor-on-pre-review-issue-935.json') }
+
 
   subject do
     app = described_class.new!
@@ -77,8 +81,42 @@ describe WhedonApi do
     end
   end
 
+  context 'when starting review WITHOUT reviewer and editor assignments' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /It looks like you don't have an editor and reviewer assigned yet so I can't start the review./)
+      post '/dispatch', whedon_start_review_from_editor_not_ready, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when starting review WITH reviewer and editor assignments as editor' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, I've started the review over in https:\/\/github.com\/openjournals\/joss-reviews-testing\/issues\/1234. Feel free to close this issue now!/)
+      post '/dispatch', whedon_start_review_from_editor_ready, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when starting review WITH reviewer and editor assignments as non editor' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry @barfon, I'm afraid I can't do that. That's something only editors are allowed to do./)
+      post '/dispatch', whedon_start_review_from_non_editor_ready, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_forbidden
+    end
+  end
+
   # To test:
-  # - Start review (as editor)
-  # - Start review (as non-editor)
   # - generate pdf
 end

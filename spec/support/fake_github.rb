@@ -16,6 +16,12 @@ class FakeGitHub < Sinatra::Base
     json_response 200, 'pre-review-issue-comment-updated-936.json'
   end
 
+  # Pre-review issue with editor and reviewer assigned
+
+  get '/repos/openjournals/joss-reviews-testing/issues/935' do
+    json_response 200, 'pre-review-issue-935.json'
+  end
+
   # Review issue
   get '/repos/openjournals/joss-reviews-testing/issues/937' do
     json_response 200, 'review-issue-937.json'
