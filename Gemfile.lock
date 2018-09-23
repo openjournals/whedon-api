@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 2caaf5cba519510f4f9586ded4abf68d19640560
-  ref: 2caaf5cba519510f4f9586ded4abf68d19640560
+  revision: dbdd2bfb2d310b24cf9e483d0a745cd3657b5218
+  ref: dbdd2bfb2d310b24cf9e483d0a745cd3657b5218
   specs:
     whedon (0.1.0)
       bibtex-ruby
@@ -13,6 +13,7 @@ GIT
       rest-client (~> 1.8)
       thor (~> 0.19)
       tilt
+      unicode (~> 0.4.4)
 
 GEM
   remote: https://rubygems.org/
@@ -133,6 +134,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.5)
+    unicode (0.4.4.4)
     unicorn (5.3.1)
       kgio (~> 2.6)
       raindrops (~> 0.7)
