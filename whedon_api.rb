@@ -1,6 +1,5 @@
 require_relative 'github'
-require_relative 'repo_worker'
-require_relative 'pdf_worker'
+require_relative 'workers'
 require 'sinatra/base'
 require 'fileutils'
 require 'json'
