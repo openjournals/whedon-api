@@ -39,6 +39,10 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 
 ```
 
+### Development
+
+Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?branch=master)](https://travis-ci.org/openjournals/whedon-api)
+
 ### Deploying
 
 To deploy a version of Whedon on Heroku, an `app.json` template is provided:
