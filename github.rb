@@ -1,3 +1,5 @@
+require 'octokit'
+
 module GitHub
   # Authenticated Octokit
 
