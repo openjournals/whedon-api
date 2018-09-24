@@ -39,11 +39,19 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 
 ```
 
-### Development
+## Development
 
 Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?branch=master)](https://travis-ci.org/openjournals/whedon-api)
 
-### Deploying
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
+## Deploying
 
 To deploy a version of Whedon on Heroku, an `app.json` template is provided:
 
