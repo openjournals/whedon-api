@@ -230,10 +230,21 @@ class WhedonApi < Sinatra::Base
   # Change the editor on an issue. This is a two-step process:
   # 1. Change the review issue assignee
   # 2. Update the editor listed at the top of the issue
+
+  # TODO: Refactor this mess
   def assign_editor(new_editor)
     new_editor = new_editor.gsub(/^\@/, "")
     new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
+    # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
+
+    if @config.site_host == "http://joss.theoj.org"
+      # Next update JOSS application to notify the editor has been changed
+      # Currently we're only doing this for JOSS
+      url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
+      response = RestClient.post(url, "")
+    end
+
     reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
   end
