@@ -1,13 +1,14 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: dbdd2bfb2d310b24cf9e483d0a745cd3657b5218
-  ref: dbdd2bfb2d310b24cf9e483d0a745cd3657b5218
+  revision: 7ea7c17cf2a10286da327b4501f412dc6f7b2c83
+  ref: 7ea7c17cf2a10286da327b4501f412dc6f7b2c83
   specs:
     whedon (0.1.0)
       bibtex-ruby
       dotenv
       latex-decode
       metamatter (~> 0.2.0)
+      nameable (~> 1.1)
       octokit (~> 4.0)
       redcarpet (~> 3.3)
       rest-client (~> 1.8)
@@ -71,6 +72,7 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.0.0)
     mustermann (1.0.2)
+    nameable (1.1.4)
     netrc (0.11.0)
     octokit (4.8.0)
       sawyer (~> 0.8.0, >= 0.5.3)
