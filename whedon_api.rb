@@ -176,8 +176,8 @@ class WhedonApi < Sinatra::Base
   def deposit(dry_run=true)
     if review_issue?
       # should check here that the archive DOI is set...
-      
-      github_client.add_labels_to_an_issue(@nwo, @issue_id, 'accepted')
+
+      github_client.add_labels_to_an_issue(@nwo, @issue_id, ['accepted'])
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance\n```"
