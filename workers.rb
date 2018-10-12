@@ -329,7 +329,7 @@ class DepositWorker
     puts "FILE PATH IS #{file_path}"
     puts `cat #{file_path}`
     gh_response = github_client.create_contents(papers_repo,
-                                                pdf_path,
+                                                crossref_xml_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.crossref.xml",
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "#{journal_alias}.#{id}")
