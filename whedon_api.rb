@@ -160,6 +160,9 @@ class WhedonApi < Sinatra::Base
       process_pdf($1)
     when /\A@whedon generate pdf/i
       process_pdf
+    when /\A@whedon accept/i
+      check_editor
+      deposit
     end
   end
 
@@ -168,6 +171,23 @@ class WhedonApi < Sinatra::Base
     nwo ||= @nwo
     issue_id ||= @issue_id
     github_client.add_comment(nwo, issue_id, comment)
+  end
+
+  def deposit(dry_run=true)
+    if review_issue?
+      # should check here that the archive DOI is set...
+      
+      github_client.add_labels_to_an_issue(@nwo, @issue_id, 'accepted')
+
+      if dry_run == true
+        respond "```\nAttempting dry run of processing paper acceptance\n```"
+        DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=true)
+      else
+        DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=false)
+      end
+    else
+      respond "Can't accept a paper that hasn't been reviewed!"
+    end
   end
 
   # Download and compile the PDF
