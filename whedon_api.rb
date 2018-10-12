@@ -233,7 +233,7 @@ class WhedonApi < Sinatra::Base
 
   # TODO: Refactor this mess
   def assign_editor(new_editor)
-    new_editor = new_editor.gsub(/^\@/, "")
+    new_editor = new_editor.gsub(/^\@/, "").strip!
     new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
     # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
