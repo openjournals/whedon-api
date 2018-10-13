@@ -160,12 +160,12 @@ class WhedonApi < Sinatra::Base
       process_pdf($1)
     when /\A@whedon generate pdf/i
       process_pdf
-    when /\A@whedon accept/i
-      check_editor
-      deposit(dry_run=true)
     when /\A@whedon accept deposit=true/i
       check_editor
       deposit(dry_run=false)
+    when /\A@whedon accept/i
+      check_editor
+      deposit(dry_run=true)
     end
   end
 
