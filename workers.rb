@@ -286,6 +286,9 @@ class DepositWorker
                                     blob_sha,
                                     :branch => "#{journal_alias}.#{id}")
 
+      ref_sha = github_client.refs(papers_repo, "heads/#{journal_alias}.#{id}").object.sha
+      blob_sha = github_client.commit(papers_repo, ref_sha).files.first.sha
+
       # Delete the Crossref XML
       github_client.delete_contents(papers_repo,
                                     crossref_path,
