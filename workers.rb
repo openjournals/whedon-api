@@ -272,29 +272,22 @@ class DepositWorker
   # If the branch doesn't exist, create it.
   def create_or_update_git_branch(issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
-    pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
-    crossref_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"
+    branch = "#{journal_alias}.#{id}"
+    ref = "heads/#{branch}"
 
     begin
-      ref_sha = github_client.refs(papers_repo, "heads/#{journal_alias}.#{id}").object.sha
-      blob_sha = github_client.commit(papers_repo, ref_sha).files.first.sha
+      # First grab the files in this branch
+      files = github_client.contents(papers_repo,
+                                     :path => branch,
+                                     :ref => ref)
 
-      # Delete the PDF
-      github_client.delete_contents(papers_repo,
-                                    pdf_path,
-                                    "Deleting 10.21105.#{journal_alias}.#{id}.pdf",
-                                    blob_sha,
-                                    :branch => "#{journal_alias}.#{id}")
-
-      ref_sha = github_client.refs(papers_repo, "heads/#{journal_alias}.#{id}").object.sha
-      blob_sha = github_client.commit(papers_repo, ref_sha).files.first.sha
-
-      # Delete the Crossref XML
-      github_client.delete_contents(papers_repo,
-                                    crossref_path,
-                                    "Deleting 10.21105.#{journal_alias}.#{id}.crossref.xml",
-                                    blob_sha,
-                                    :branch => "#{journal_alias}.#{id}")
+      files.each do |file|
+        github_client.delete_contents(papers_repo,
+                                      file.path,
+                                      "Deleting #{file.name}",
+                                      file.sha,
+                                      :branch => branch)
+      end
     rescue Octokit::NotFound
       github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
     end
