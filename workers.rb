@@ -239,7 +239,7 @@ class DepositWorker
     if dry_run == true
       pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
-      pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission:\n``` \n1. Compile again with the flag 'deposit=true' e.g. @whedon accept deposit=true\n2. Wait a couple of minutes for things to happen in the background at Crossref (DOI creation etc.)\n3. Check that the Crossref DOI resolves\n4. Party!\n```"
+      pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission:\n\n0. Compile again with the flag 'deposit=true' e.g. @whedon accept deposit=true\n1. Wait a couple of minutes for things to happen in the background at Crossref (DOI creation etc.)\n2. Check that the Crossref DOI resolves\n3. Party!\n"
     else
       pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
@@ -249,7 +249,7 @@ class DepositWorker
       id = "%05d" % issue_id
       doi = "https://doi.org/#{ENV['DOI_PREFIX']}/#{journal_alias}.#{id}"
 
-      pr_response = "⚠️**THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{journal_alias.upcase}**⚠️\n\n Here's what you must now do:\n\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper :tada:"
+      pr_response = "⚠️**THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{journal_alias.upcase}**⚠️\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper :tada:\n\n Any issues? notify your editorial technical team..."
     end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
