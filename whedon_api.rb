@@ -213,7 +213,7 @@ class WhedonApi < Sinatra::Base
                                     @config.crossref_password)
       end
     else
-      respond "Can't accept a paper that hasn't been reviewed!"
+      respond "I can't accept a paper that hasn't been reviewed!"
     end
   end
 
