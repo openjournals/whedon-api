@@ -176,9 +176,23 @@ class WhedonApi < Sinatra::Base
     github_client.add_comment(nwo, issue_id, comment)
   end
 
+  def archive_doi?
+    archive = issue.body[/(?<=\*\*Archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
   def deposit(dry_run)
     if review_issue?
       # should check here that the archive DOI is set...
+
+      if !archive_doi?
+        respond "No archive DOI set. Exiting..."
+        return
+      end
 
       github_client.add_labels_to_an_issue(@nwo, @issue_id, ['accepted'])
 
