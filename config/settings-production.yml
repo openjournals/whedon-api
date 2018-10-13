@@ -11,6 +11,8 @@ journals:
       site_name: Journal of Open Source Software
       donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
+      crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
+      crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
 
   - openjournals/jose-reviews:
       editor_team_id: 2414911
@@ -25,6 +27,8 @@ journals:
       site_name: Journal of Open Source Education
       donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3ODA=
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
+      crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
+      crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
 
   - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
@@ -37,3 +41,5 @@ journals:
       site_name: Journal of Open Source Software Testing
       donate_url: http://example.com
       site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
+      crossref_username: foo
+      crossref_password: bar

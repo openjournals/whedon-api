@@ -184,10 +184,19 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance\n```"
-        DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=true)
+        DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=true, nil, nil)
       else
         respond "```\nDoing it live! Attempting automated processing paper acceptance...\n```"
-        DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=false)
+        DepositWorker.perform_async(@config.papers,
+                                    @config.site_host,
+                                    @config.site_name,
+                                    @nwo,
+                                    @issue_id,
+                                    @config.doi_journal,
+                                    @config.journal_launch_date,
+                                    dry_run=false,
+                                    @config.crossref_username,
+                                    @config.crossref_password)
       end
     else
       respond "Can't accept a paper that hasn't been reviewed!"
