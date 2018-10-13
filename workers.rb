@@ -342,7 +342,7 @@ class DepositWorker
     gh_response = github_client.create_pull_request(papers_repo, "master", "#{journal_alias}.#{id}",
   "Creating pull request for 10.21105.#{journal_alias}.#{id}", "If this looks good then :shipit:")
 
-    return gh_response.content.html_url
+    return gh_response.html_url
   end
 
   # The Whedon gem expects a bunch of environment variables to be available
