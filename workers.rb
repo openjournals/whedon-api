@@ -316,9 +316,6 @@ class DepositWorker
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "#{journal_alias}.#{id}")
 
-    github_client.create_pull_request(papers_repo, "master", "#{journal_alias}.#{id}",
-"Creating pull request for 10.21105.#{journal_alias}.#{id}", "If this looks good then :shipit:")
-
     return gh_response.content.html_url
   end
 
