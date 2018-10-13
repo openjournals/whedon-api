@@ -236,10 +236,21 @@ class DepositWorker
     puts "Uploading #{crossref_xml_path}"
     crossref_url = create_git_xml(crossref_xml_path, issue_id, papers_repo, journal_alias)
 
-    pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias)
+    if dry_run == true
+      pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
-    pr_response = "Check final proof :point_right: #{pr_url}"
+      pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission:\n``` \n1. Compile again with the flag 'deposit=true' e.g. @whedon accept deposit=true\n2. Wait a couple of minutes for things to happen in the background at Crossref (DOI creation etc.)\n3. Check that the Crossref DOI resolves\n4. Party!\n```"
+    else
+      pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
+      # Deposit with journal and Crossref
+      deposit(issue_id)
+
+      id = "%05d" % issue_id
+      doi = "https://doi.org/#{ENV['DOI_PREFIX']}/#{journal_alias}.#{id}"
+
+      pr_response = "⚠️**THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{journal_alias.upcase}**⚠️\n\n Here's what you must now do:\n\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper :tada:"
+    end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
   end
@@ -255,6 +266,12 @@ class DepositWorker
   def compile(issue_id)
     puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
     Open3.capture3("whedon compile #{issue_id}")
+  end
+
+  def deposit(issue_id)
+    puts "Depositing #{ENV['REVIEW_REPOSITORY']}/#{issue_id} with Crossref and JOSS"
+
+    #Open3.capture3("whedon deposit #{issue_id}")
   end
 
   # This method allows the background worker to post messages to GitHub.
@@ -335,11 +352,16 @@ class DepositWorker
     return gh_response.content.html_url
   end
 
-  def create_deposit_pr(issue_id, papers_repo, journal_alias)
+  def create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
     id = "%05d" % issue_id
 
     gh_response = github_client.create_pull_request(papers_repo, "master", "#{journal_alias}.#{id}",
   "Creating pull request for 10.21105.#{journal_alias}.#{id}", "If this looks good then :shipit:")
+
+    # Merge it!
+    if dry_run == false
+      github_client.merge_pull_request(papers_repo, gh_response.number, 'Merging by @whedon bot')
+    end
 
     return gh_response.html_url
   end
