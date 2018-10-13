@@ -239,7 +239,7 @@ class DepositWorker
     if dry_run == true
       pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
-      pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission:\n\n0. Compile again with the flag 'deposit=true' e.g. @whedon accept deposit=true\n1. Wait a couple of minutes for things to happen in the background at Crossref (DOI creation etc.)\n2. Check that the Crossref DOI resolves\n3. Party!\n"
+      pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true\n```"
     else
       pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
 
