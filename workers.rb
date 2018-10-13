@@ -288,6 +288,12 @@ class DepositWorker
                                       file.sha,
                                       :branch => branch)
       end
+
+      # Delete the old branch
+      github_client.delete_ref(papers_repo, "heads/#{journal_alias}.#{id}")
+
+      # Then create it again
+      github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
     rescue Octokit::NotFound
       github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
     end
