@@ -238,7 +238,7 @@ class DepositWorker
 
     pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias)
 
-    pr_response = "Check final proof :point_right: #{pr}"
+    pr_response = "Check final proof :point_right: #{pr_url}"
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
