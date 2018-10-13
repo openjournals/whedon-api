@@ -183,7 +183,7 @@ class WhedonApi < Sinatra::Base
       github_client.add_labels_to_an_issue(@nwo, @issue_id, ['accepted'])
 
       if dry_run == true
-        respond "```\nAttempting dry run of processing paper acceptance\n```"
+        respond "```\nAttempting dry run of processing paper acceptance...\n```"
         DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=true, nil, nil)
       else
         respond "```\nDoing it live! Attempting automated processing paper acceptance...\n```"

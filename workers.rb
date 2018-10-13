@@ -360,6 +360,8 @@ class DepositWorker
 
     # Merge it!
     if dry_run == false
+      #GitHub needs us to slow down sometimes: "Base branch was modified. Review and try the merge again."
+      sleep(5)
       github_client.merge_pull_request(papers_repo, gh_response.number, 'Merging by @whedon bot')
     end
 
