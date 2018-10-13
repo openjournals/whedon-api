@@ -306,7 +306,6 @@ class DepositWorker
   def create_git_pdf(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
-    crossref_xml_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"
 
     puts "FILE PATH IS #{file_path}"
     puts `cat #{file_path}`
