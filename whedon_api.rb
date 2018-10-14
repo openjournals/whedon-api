@@ -200,7 +200,7 @@ class WhedonApi < Sinatra::Base
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
         DepositWorker.perform_async(@config.papers, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date, dry_run=true, nil, nil)
       else
-        respond "```\nDoing it live! Attempting automated processing paper acceptance...\n```"
+        respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
         DepositWorker.perform_async(@config.papers,
                                     @config.site_host,
                                     @config.site_name,
