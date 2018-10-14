@@ -194,7 +194,7 @@ class WhedonApi < Sinatra::Base
         return
       end
 
-      github_client.add_labels_to_an_issue(@nwo, @issue_id, ['accepted'])
+      label_issue(@nwo, @issue_id, ['accepted'])
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
