@@ -17,6 +17,7 @@ module GitHub
     github_client.add_labels_to_an_issue(nwo, issue_id, languages)
   end
 
+  # Get the SHA for the last commit in the master branch of the papers repo
   def get_master_ref(papers)
     github_client.refs(papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha
   end
@@ -50,11 +51,10 @@ module GitHub
 
       # Then create it again
       github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
-    rescue Octokit::NotFound
+    rescue Octokit::NotFound # If the branch doesn't exist, create it!
       github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
     end
   end
-
 
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
   # to write the compiled PDF to a named branch.
@@ -100,7 +100,8 @@ module GitHub
 
     # Merge it!
     if dry_run == false
-      #GitHub needs us to slow down sometimes: "Base branch was modified. Review and try the merge again."
+      #GitHub needs us to slow down sometimes: "Base branch was modified.
+      # Review and try the merge again."
       sleep(5)
       github_client.merge_pull_request(papers_repo, gh_response.number, 'Merging by @whedon bot')
     end
