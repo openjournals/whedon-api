@@ -145,8 +145,9 @@ class DepositWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias, journal_launch_date, dry_run, crossref_username, crossref_password)
-    set_env(papers_repo, site_host, site_name, journal_alias, journal_launch_date, nwo, crossref_username, crossref_password)
+  def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias, journal_issn, journal_launch_date, dry_run, crossref_username, crossref_password, whedon_secret)
+
+    set_env(papers_repo, site_host, site_name, journal_alias, journal_issn, journal_launch_date, nwo, crossref_username, crossref_password, whedon_secret)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
@@ -218,15 +219,17 @@ class DepositWorker
 
   # The Whedon gem expects a bunch of environment variables to be available
   # and this method sets them.
-  def set_env(papers, site_host, site_name, journal_alias, journal_launch_date, nwo, crossref_username, crossref_password)
+  def set_env(papers, site_host, site_name, journal_alias, journal_issn, journal_launch_date, nwo, crossref_username, crossref_password, whedon_secret)
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = "10.21105"
     ENV['JOURNAL_ALIAS'] = journal_alias
     ENV['PAPER_REPOSITORY'] = papers
     ENV['JOURNAL_URL'] = site_host
     ENV['JOURNAL_NAME'] = site_name
+    ENV['JOURNAL_ISSN'] = journal_issn
     ENV['JOURNAL_LAUNCH_DATE'] = journal_launch_date
     ENV['CROSSREF_USERNAME'] = crossref_username
     ENV['CROSSREF_PASSWORD'] = crossref_password
+    ENV['WHEDON_SECRET'] = whedon_secret
   end
 end
