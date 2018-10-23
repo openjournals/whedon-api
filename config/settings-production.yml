@@ -3,6 +3,8 @@ journals:
       editor_team_id: 2009411
       eics:
         - arfon
+        - labarba
+        - danielskatz
       papers: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html
