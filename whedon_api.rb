@@ -161,7 +161,7 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon generate pdf/i
       process_pdf
     when /\A@whedon accept deposit=true/i
-      check_editor
+      check_eic
       deposit(dry_run=false)
     when /\A@whedon accept/i
       check_editor
@@ -379,6 +379,14 @@ class WhedonApi < Sinatra::Base
   def check_editor
     unless @config.editors.include?(@sender)
       respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
+      halt 403
+    end
+  end
+
+  # Check that the person sending the command is an editor-in-chief
+  def check_eic
+    unless @config.eics.include?(@sender)
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do."
       halt 403
     end
   end

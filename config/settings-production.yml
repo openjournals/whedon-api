@@ -1,6 +1,8 @@
 journals:
   - openjournals/joss-reviews:
       editor_team_id: 2009411
+      eics:
+        - arfon
       papers: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html
@@ -17,6 +19,8 @@ journals:
 
   - openjournals/jose-reviews:
       editor_team_id: 2414911
+      eics:
+        - labarba
       papers: openjournals/jose-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jose-reviewers
@@ -34,6 +38,8 @@ journals:
 
   - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
+      eics:
+        - arfon
       papers: openjournals/joss-papers-testing
       reviewers: "http://staging.joss.theoj.org/reviewer-signup.html"
       site_host: http://joss.theoj.org
