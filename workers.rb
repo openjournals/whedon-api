@@ -53,7 +53,7 @@ class RepoWorker
   end
 end
 
-# This is the Sidekiq worked that processes PDFs. It leverages the Whedon gem to
+# This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
 # carry out the majority of its actions. Where possible, we try and capture
 # errors from any of the executed tasks and report them back to the review issue
 class PDFWorker
@@ -132,7 +132,7 @@ class PDFWorker
   end
 end
 
-# This is the Sidekiq worked that processes PDFs. It leverages the Whedon gem to
+# This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
 # carry out the majority of its actions. Where possible, we try and capture
 # errors from any of the executed tasks and report them back to the review issue
 class DepositWorker
@@ -142,7 +142,7 @@ class DepositWorker
 
   include Sidekiq::Worker
 
-  # Including this means we can talk to GitHub from the background worker.
+  # Include to communicate from background worker to GitHub
   include GitHub
 
   def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias, journal_issn, journal_launch_date, dry_run, crossref_username, crossref_password, whedon_secret)
