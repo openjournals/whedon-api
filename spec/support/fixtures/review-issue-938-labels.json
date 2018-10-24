@@ -1,0 +1,18 @@
+[
+  {
+    "id": 330461591,
+    "node_id": "MDU6TGFiZWwzMzA0NjE1OTE=",
+    "url": "https://api.github.com/repos/openjournals/joss-reviews/labels/accepted",
+    "name": "accepted",
+    "color": "159818",
+    "default": false
+  },
+  {
+    "id": 330465313,
+    "node_id": "MDU6TGFiZWwzMzA0NjUzMTM=",
+    "url": "https://api.github.com/repos/openjournals/joss-reviews/labels/review",
+    "name": "review",
+    "color": "fbca04",
+    "default": false
+  }
+]

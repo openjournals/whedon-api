@@ -11,6 +11,11 @@ describe WhedonApi do
   let(:whedon_start_review_from_editor_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-935.json') }
   let(:whedon_start_review_from_non_editor_ready) { json_fixture('whedon-start-review-non-editor-on-pre-review-issue-935.json') }
   let(:whedon_generate_pdf) { json_fixture('whedon-generate-pdf-936.json') }
+  let(:whedon_accept_no_doi) { json_fixture('whedon-accept-no-doi-on-review-issue-937.json')}
+  let(:whedon_accept_with_doi) { json_fixture('whedon-accept-with-doi-on-review-issue-938.json')}
+  let(:whedon_accept_for_reals_with_doi) { json_fixture('whedon-accept-for-reals-with-doi-on-review-issue-938.json')}
+  let(:whedon_accept_non_eic_for_reals_with_doi
+) { json_fixture('whedon-accept-non-eic-for-reals-with-doi-on-review-issue-938.json')}
 
 
   subject do
@@ -124,6 +129,55 @@ describe WhedonApi do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry @barfon, I'm afraid I can't do that. That's something only editors are allowed to do./)
       post '/dispatch', whedon_start_review_from_non_editor_ready, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_forbidden
+    end
+  end
+
+  context 'when accepting a paper as an editor without an archive DOI' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /No archive DOI set. Exiting.../)
+      post '/dispatch', whedon_accept_no_doi, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when accepting a paper as an editor with an archive DOI' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting dry run of processing paper acceptance/)
+      expect(github_client).to receive(:label_issue).never
+      post '/dispatch', whedon_accept_with_doi, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when accepting a paper (for reals) as an (EiC) editor with an archive DOI' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Doing it live! Attempting automated processing of paper acceptance.../)
+      post '/dispatch', whedon_accept_for_reals_with_doi, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when accepting a paper (for reals) as an editor with an archive DOI' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry @barf, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do./)
+      post '/dispatch', whedon_accept_non_eic_for_reals_with_doi, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should initialize properly" do
