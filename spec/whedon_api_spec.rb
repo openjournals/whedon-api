@@ -163,6 +163,7 @@ describe WhedonApi do
 
   context 'when accepting a paper (for reals) as an (EiC) editor with an archive DOI' do
     before do
+      expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Doing it live! Attempting automated processing of paper acceptance.../)
       post '/dispatch', whedon_accept_for_reals_with_doi, {'CONTENT_TYPE' => 'application/json'}
