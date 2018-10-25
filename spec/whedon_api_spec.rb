@@ -150,6 +150,7 @@ describe WhedonApi do
 
   context 'when accepting a paper as an editor with an archive DOI' do
     before do
+      expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting dry run of processing paper acceptance/)
       expect(github_client).to receive(:label_issue).never
