@@ -5,6 +5,7 @@ journals:
         - arfon
         - labarba
         - danielskatz
+        - kyleniemeyer
       papers: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html
