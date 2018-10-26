@@ -28,6 +28,12 @@
     "REDIS_PROVIDER": {
       "description": "The expected REDIS environment variable name for Sidekiq (don't modify this)",
       "value": "REDISTOGO_URL"
+    },
+    "CROSSREF_USERNAME": {
+      "description": "The username for depositing with Crossref"
+    },
+    "CROSSREF_PASSWORD": {
+      "description": "The password for depositing with Crossref"
     }
   },
   "formation": {

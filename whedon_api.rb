@@ -160,6 +160,12 @@ class WhedonApi < Sinatra::Base
       process_pdf($1)
     when /\A@whedon generate pdf/i
       process_pdf
+    when /\A@whedon accept deposit=true/i
+      check_eic
+      deposit(dry_run=false)
+    when /\A@whedon accept/i
+      check_editor
+      deposit(dry_run=true)
     end
   end
 
@@ -168,6 +174,58 @@ class WhedonApi < Sinatra::Base
     nwo ||= @nwo
     issue_id ||= @issue_id
     github_client.add_comment(nwo, issue_id, comment)
+  end
+
+  def archive_doi?
+    archive = issue.body[/(?<=\*\*Archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
+  def deposit(dry_run)
+    if review_issue?
+      # should check here that the archive DOI is set...
+
+      if !archive_doi?
+        respond "No archive DOI set. Exiting..."
+        return
+      end
+
+      label_issue(@nwo, @issue_id, ['accepted'])
+
+      if dry_run == true
+        respond "```\nAttempting dry run of processing paper acceptance...\n```"
+        DepositWorker.perform_async(@config.papers,
+                                    @config.site_host,
+                                    @config.site_name,
+                                    @nwo,
+                                    @issue_id,
+                                    @config.doi_journal,
+                                    @config.journal_issn,
+                                    @config.journal_launch_date,
+                                    dry_run=true,
+                                    nil, nil, nil)
+      else
+        respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
+        DepositWorker.perform_async(@config.papers,
+                                    @config.site_host,
+                                    @config.site_name,
+                                    @nwo,
+                                    @issue_id,
+                                    @config.doi_journal,
+                                    @config.journal_issn,
+                                    @config.journal_launch_date,
+                                    dry_run=false,
+                                    @config.crossref_username,
+                                    @config.crossref_password,
+                                    @config.site_api_key)
+      end
+    else
+      respond "I can't accept a paper that hasn't been reviewed!"
+    end
   end
 
   # Download and compile the PDF
@@ -233,7 +291,8 @@ class WhedonApi < Sinatra::Base
 
   # TODO: Refactor this mess
   def assign_editor(new_editor)
-    new_editor = new_editor.gsub(/^\@/, "").strip!
+    puts "NEW EDITOR is #{new_editor}"
+    new_editor = new_editor.gsub(/^\@/, "").strip
     new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
     # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
@@ -320,6 +379,14 @@ class WhedonApi < Sinatra::Base
   def check_editor
     unless @config.editors.include?(@sender)
       respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
+      halt 403
+    end
+  end
+
+  # Check that the person sending the command is an editor-in-chief
+  def check_eic
+    unless @config.eics.include?(@sender)
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do."
       halt 403
     end
   end

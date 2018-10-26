@@ -1,6 +1,8 @@
 journals:
   - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
+      eics:
+        - arfon
       papers: openjournals/joss-papers-testing
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html

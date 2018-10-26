@@ -4,6 +4,8 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 
 ### Here are some things that Whedon can do:
 
+Here are some things you can ask me to do:
+
 ```
 # List all of Whedon's capabilities
 @whedon commands
@@ -32,10 +34,16 @@ A small service that provides the basic Whedon API. Used to help editors manage 
 # Open the review issue
 @whedon start review
 
-🚧 🚧 🚧 Experimental Whedon features 🚧 🚧 🚧
-
 # Compile the paper
 @whedon generate pdf
+
+🚧 🚧 🚧 Experimental Whedon features 🚧 🚧 🚧
+
+# Compile the paper from a custom git branch
+@whedon generate pdf from branch custom-branch-name
+
+# Ask Whedon to accept the paper and deposit with Crossref
+@whedon accept
 
 ```
 
