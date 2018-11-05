@@ -104,6 +104,9 @@ module GitHub
       # Review and try the merge again."
       sleep(5)
       github_client.merge_pull_request(papers_repo, gh_response.number, 'Merging by @whedon bot')
+
+      # Next delete the branch that we've just merged
+      github_client.delete_ref(papers_repo, "heads/#{journal_alias}.#{id}")
     end
 
     return gh_response.html_url
