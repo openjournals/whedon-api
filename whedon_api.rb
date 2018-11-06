@@ -194,8 +194,6 @@ class WhedonApi < Sinatra::Base
         return
       end
 
-      label_issue(@nwo, @issue_id, ['accepted'])
-
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
         DepositWorker.perform_async(@config.papers,
@@ -209,6 +207,8 @@ class WhedonApi < Sinatra::Base
                                     dry_run=true,
                                     nil, nil, nil)
       else
+        label_issue(@nwo, @issue_id, ['accepted'])
+
         respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
         DepositWorker.perform_async(@config.papers,
                                     @config.site_host,
