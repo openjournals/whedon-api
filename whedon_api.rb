@@ -237,7 +237,7 @@ class WhedonApi < Sinatra::Base
       respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@config.papers, custom_branch, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
+    PDFWorker.perform_async(@config, custom_branch, @nwo, @issue_id)
   end
 
   # Detect the languages and license of the review repository

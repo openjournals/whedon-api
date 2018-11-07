@@ -66,8 +66,9 @@ class PDFWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(papers_repo, custom_branch, site_host, site_name, nwo, issue_id, journal_alias, journal_launch_date)
-    set_env(papers_repo, site_host, site_name, journal_alias, journal_launch_date, nwo)
+  def perform(config, custom_branch, nwo, issue_id)
+    puts config
+    set_env(config.papers, config.site_host, config.site_name, config.journal_alias, config.journal_launch_date, nwo)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
