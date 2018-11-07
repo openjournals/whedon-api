@@ -65,7 +65,7 @@ module GitHub
 
     puts "FILE PATH IS #{file_path}"
     puts "PDF PATH IS #{pdf_path}"
-    puts `cat #{file_path}`
+    puts "PAPERS REPO IS #{papers_repo}"
     gh_response = github_client.create_contents(papers_repo,
                                                 pdf_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.pdf",
