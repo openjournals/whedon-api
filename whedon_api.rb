@@ -102,7 +102,7 @@ class WhedonApi < Sinatra::Base
                                           :site_name => @config.site_name,
                                           :reviewers => @config.reviewers_signup,
                                           :doi_prefix => @config.doi_prefix,
-                                          :doi_journal => @config.doi_journal,
+                                          :doi_journal => @config.journal_alias,
                                           :issue_id => @issue_id,
                                           :donate_url => @config.donate_url}
       end
