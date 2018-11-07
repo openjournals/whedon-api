@@ -1,4 +1,4 @@
-require 'struct'
+require 'ostruct'
 
 module ConfigHelper
   def set_env(nwo, issue_id, config)
