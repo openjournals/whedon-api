@@ -45,7 +45,6 @@ class RepoWorker
   end
 
   def download(issue_id)
-    puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
@@ -94,10 +93,8 @@ class PDFWorker
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
-    puts "Creating Git branch"
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    puts "Uploading #{pdf_path}"
     pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
     pdf_response = "[ :point_right: Check article proof :page_facing_up: :point_left: ](#{pdf_url})"
@@ -108,14 +105,12 @@ class PDFWorker
 
   # Use the Whedon gem to download the software to a local tmp directory
   def download(issue_id)
-    puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 
   # Use the Whedon gem to compile the paper
   def compile(issue_id, custom_branch=nil)
-    puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
     if custom_branch
       Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
     else
@@ -167,14 +162,11 @@ class DepositWorker
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
-    puts "Creating Git branch"
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    puts "Uploading #{pdf_path}"
     pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
     crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
-    puts "Uploading #{crossref_xml_path}"
     crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
 
     if dry_run == true
@@ -198,19 +190,16 @@ class DepositWorker
 
   # Use the Whedon gem to download the software to a local tmp directory
   def download(issue_id)
-    puts "Downloading #{ENV['REVIEW_REPOSITORY']}"
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 
   # Use the Whedon gem to compile the paper
   def compile(issue_id)
-    puts "Compiling #{ENV['REVIEW_REPOSITORY']}/#{issue_id}"
     Open3.capture3("whedon compile #{issue_id}")
   end
 
   def deposit(issue_id)
-    puts "Depositing #{ENV['REVIEW_REPOSITORY']}/#{issue_id} with Crossref and JOSS"
     Open3.capture3("whedon deposit #{issue_id}")
   end
 end
