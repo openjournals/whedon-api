@@ -196,32 +196,12 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DepositWorker.perform_async(@config.papers,
-                                    @config.site_host,
-                                    @config.site_name,
-                                    @nwo,
-                                    @issue_id,
-                                    @config.doi_journal,
-                                    @config.journal_issn,
-                                    @config.journal_launch_date,
-                                    dry_run=true,
-                                    nil, nil, nil)
+        DepositWorker.perform_async(@nwo, @issue_id, @config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
 
         respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
-        DepositWorker.perform_async(@config.papers,
-                                    @config.site_host,
-                                    @config.site_name,
-                                    @nwo,
-                                    @issue_id,
-                                    @config.doi_journal,
-                                    @config.journal_issn,
-                                    @config.journal_launch_date,
-                                    dry_run=false,
-                                    @config.crossref_username,
-                                    @config.crossref_password,
-                                    @config.site_api_key)
+        DepositWorker.perform_async(@nwo, @issue_id, @config, dry_run=false)
       end
     else
       respond "I can't accept a paper that hasn't been reviewed!"
@@ -237,12 +217,12 @@ class WhedonApi < Sinatra::Base
       respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@config.to_h, custom_branch, @nwo, @issue_id)
+    PDFWorker.perform_async(@nwo, @issue_id, @config, custom_branch)
   end
 
   # Detect the languages and license of the review repository
   def repo_detect
-    RepoWorker.perform_async(@nwo, @issue_id, @config.journal_launch_date)
+    RepoWorker.perform_async(@nwo, @issue_id, @config)
   end
 
   def assign_archive(doi_string)

@@ -8,11 +8,13 @@ class RepoWorker
 
   include Sidekiq::Worker
 
+  # Sets the Whedon environment
+  include ConfigHelper
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, journal_launch_date)
-    set_env(nwo, journal_launch_date)
+  def perform(nwo, issue_id, config)
+    set_env(nwo, issue_id, config)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
@@ -44,13 +46,6 @@ class RepoWorker
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
-
-  # The Whedon gem expects a bunch of environment variables to be available
-  # and this method sets them.
-  def set_env(nwo, journal_launch_date)
-    ENV['REVIEW_REPOSITORY'] = nwo
-    ENV['JOURNAL_LAUNCH_DATE'] = journal_launch_date
-  end
 end
 
 # This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
@@ -59,18 +54,17 @@ end
 class PDFWorker
   require_relative 'github'
   require 'open3'
-  require 'ostruct'
   require 'sidekiq'
 
   include Sidekiq::Worker
 
+  # Sets the Whedon environment
+  include ConfigHelper
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(config, custom_branch, nwo, issue_id)
-    config = OpenStruct.new(config)
-
-    set_env(config.papers, config.site_host, config.site_name, config.journal_alias, config.journal_launch_date, nwo)
+  def perform(nwo, issue_id, config, custom_branch)
+    set_env(nwo, issue_id, config)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
@@ -121,18 +115,6 @@ class PDFWorker
       Open3.capture3("whedon prepare #{issue_id}")
     end
   end
-
-  # The Whedon gem expects a bunch of environment variables to be available
-  # and this method sets them.
-  def set_env(papers, site_host, site_name, journal_alias, journal_launch_date, nwo)
-    ENV['REVIEW_REPOSITORY'] = nwo
-    ENV['DOI_PREFIX'] = "10.21105"
-    ENV['JOURNAL_ALIAS'] = journal_alias
-    ENV['PAPER_REPOSITORY'] = papers
-    ENV['JOURNAL_URL'] = site_host
-    ENV['JOURNAL_NAME'] = site_name
-    ENV['JOURNAL_LAUNCH_DATE'] = journal_launch_date
-  end
 end
 
 # This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
@@ -145,12 +127,13 @@ class DepositWorker
 
   include Sidekiq::Worker
 
+  # Sets the Whedon environment
+  include ConfigHelper
   # Include to communicate from background worker to GitHub
   include GitHub
 
-  def perform(papers_repo, site_host, site_name, nwo, issue_id, journal_alias, journal_issn, journal_launch_date, dry_run, crossref_username, crossref_password, whedon_secret)
-
-    set_env(papers_repo, site_host, site_name, journal_alias, journal_issn, journal_launch_date, nwo, crossref_username, crossref_password, whedon_secret)
+  def perform(nwo, issue_id, config, dry_run)
+    set_env(nwo, issue_id, config)
 
     # Download the paper
     stdout, stderr, status = download(issue_id)
@@ -218,21 +201,5 @@ class DepositWorker
   def deposit(issue_id)
     puts "Depositing #{ENV['REVIEW_REPOSITORY']}/#{issue_id} with Crossref and JOSS"
     Open3.capture3("whedon deposit #{issue_id}")
-  end
-
-  # The Whedon gem expects a bunch of environment variables to be available
-  # and this method sets them.
-  def set_env(papers, site_host, site_name, journal_alias, journal_issn, journal_launch_date, nwo, crossref_username, crossref_password, whedon_secret)
-    ENV['REVIEW_REPOSITORY'] = nwo
-    ENV['DOI_PREFIX'] = "10.21105"
-    ENV['JOURNAL_ALIAS'] = journal_alias
-    ENV['PAPER_REPOSITORY'] = papers
-    ENV['JOURNAL_URL'] = site_host
-    ENV['JOURNAL_NAME'] = site_name
-    ENV['JOURNAL_ISSN'] = journal_issn
-    ENV['JOURNAL_LAUNCH_DATE'] = journal_launch_date
-    ENV['CROSSREF_USERNAME'] = crossref_username
-    ENV['CROSSREF_PASSWORD'] = crossref_password
-    ENV['WHEDON_SECRET'] = whedon_secret
   end
 end
