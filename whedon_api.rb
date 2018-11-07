@@ -59,6 +59,10 @@ class WhedonApi < Sinatra::Base
     ENV['RACK_ENV'] == "test"
   end
 
+  def serialized_config
+    @config.to_h
+  end
+
   def set_configs
     # 'settings.journals' comes from sinatra/config_file
     settings.journals.each do |journal|
@@ -196,12 +200,12 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DepositWorker.perform_async(@nwo, @issue_id, @config, dry_run=true)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
 
         respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
-        DepositWorker.perform_async(@nwo, @issue_id, @config, dry_run=false)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=false)
       end
     else
       respond "I can't accept a paper that hasn't been reviewed!"
@@ -217,12 +221,12 @@ class WhedonApi < Sinatra::Base
       respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@nwo, @issue_id, @config, custom_branch)
+    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   # Detect the languages and license of the review repository
   def repo_detect
-    RepoWorker.perform_async(@nwo, @issue_id, @config)
+    RepoWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   def assign_archive(doi_string)
