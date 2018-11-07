@@ -1,5 +1,6 @@
 class RepoWorker
   require_relative 'github'
+  require_relative 'config_helper'
 
   require 'rugged'
   require 'licensee'
@@ -53,6 +54,8 @@ end
 # errors from any of the executed tasks and report them back to the review issue
 class PDFWorker
   require_relative 'github'
+  require_relative 'config_helper'
+
   require 'open3'
   require 'sidekiq'
 
@@ -122,6 +125,8 @@ end
 # errors from any of the executed tasks and report them back to the review issue
 class DepositWorker
   require_relative 'github'
+  require_relative 'config_helper'
+
   require 'open3'
   require 'sidekiq'
 
