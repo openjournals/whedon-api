@@ -3,7 +3,7 @@ module ConfigHelper
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = config.doi_prefix
     ENV['JOURNAL_ALIAS'] = config.journal_alias
-    ENV['PAPER_REPOSITORY'] = config.papers
+    ENV['PAPER_REPOSITORY'] = config.papers_repo
     ENV['JOURNAL_URL'] = config.site_host
     ENV['JOURNAL_NAME'] = config.site_name
     ENV['JOURNAL_ISSN'] = config.journal_issn
