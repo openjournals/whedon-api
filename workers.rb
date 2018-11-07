@@ -2,6 +2,7 @@ class RepoWorker
   require_relative 'github'
   require_relative 'config_helper'
 
+  require 'ostruct'
   require 'rugged'
   require 'licensee'
   require 'linguist'
@@ -15,6 +16,7 @@ class RepoWorker
   include GitHub
 
   def perform(nwo, issue_id, config)
+    config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download the paper
@@ -57,6 +59,7 @@ class PDFWorker
   require_relative 'config_helper'
 
   require 'open3'
+  require 'ostruct'
   require 'sidekiq'
 
   include Sidekiq::Worker
@@ -67,6 +70,7 @@ class PDFWorker
   include GitHub
 
   def perform(nwo, issue_id, config, custom_branch)
+    config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download the paper
@@ -91,10 +95,10 @@ class PDFWorker
 
     # If we've got this far then push a copy of the PDF to the papers repository
     puts "Creating Git branch"
-    create_or_update_git_branch(issue_id, papers_repo, journal_alias)
+    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
     puts "Uploading #{pdf_path}"
-    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo, journal_alias)
+    pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
     pdf_response = "[ :point_right: Check article proof :page_facing_up: :point_left: ](#{pdf_url})"
 
@@ -128,6 +132,7 @@ class DepositWorker
   require_relative 'config_helper'
 
   require 'open3'
+  require 'ostruct'
   require 'sidekiq'
 
   include Sidekiq::Worker
@@ -138,6 +143,7 @@ class DepositWorker
   include GitHub
 
   def perform(nwo, issue_id, config, dry_run)
+    config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download the paper
@@ -162,29 +168,29 @@ class DepositWorker
 
     # If we've got this far then push a copy of the PDF to the papers repository
     puts "Creating Git branch"
-    create_or_update_git_branch(issue_id, papers_repo, journal_alias)
+    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
     puts "Uploading #{pdf_path}"
-    pdf_url = create_git_pdf(pdf_path, issue_id, papers_repo, journal_alias)
+    pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
     crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
     puts "Uploading #{crossref_xml_path}"
-    crossref_url = create_git_xml(crossref_xml_path, issue_id, papers_repo, journal_alias)
+    crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
 
     if dry_run == true
-      pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
+      pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
       pr_response = "Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true\n```"
     else
-      pr_url = create_deposit_pr(issue_id, papers_repo, journal_alias, dry_run)
+      pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
       # Deposit with journal and Crossref
       deposit(issue_id)
 
       id = "%05d" % issue_id
-      doi = "https://doi.org/#{ENV['DOI_PREFIX']}/#{journal_alias}.#{id}"
+      doi = "https://doi.org/#{config.doi_prefix}/#{config.journal_alias}.#{id}"
 
-      pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? notify your editorial technical team..."
+      pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? notify your editorial technical team..."
     end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)

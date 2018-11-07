@@ -8,7 +8,7 @@ journals:
       reviewers_signup: http://joss.theoj.org/reviewer-signup.html
       site_host: http://joss.theoj.org
       doi_prefix: "10.21105"
-      doi_journal: joss
+      journal_alias: joss
       journal_launch_date: '2016-05-05'
       site_name: Journal of Open Source Software
       donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=

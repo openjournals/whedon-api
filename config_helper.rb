@@ -1,12 +1,8 @@
-require 'ostruct'
-
 module ConfigHelper
   def set_env(nwo, issue_id, config)
-    config = OpenStruct.new(config)
-
     ENV['REVIEW_REPOSITORY'] = nwo
     ENV['DOI_PREFIX'] = config.doi_prefix
-    ENV['JOURNAL_ALIAS'] = config.doi_journal
+    ENV['JOURNAL_ALIAS'] = config.journal_alias
     ENV['PAPER_REPOSITORY'] = config.papers
     ENV['JOURNAL_URL'] = config.site_host
     ENV['JOURNAL_NAME'] = config.site_name
