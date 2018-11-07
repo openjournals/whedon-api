@@ -1,3 +1,6 @@
+# This module defines a whole bunch of environment variables that are required
+# by the Whedon gem when executing tasks.
+
 module ConfigHelper
   def set_env(nwo, issue_id, config)
     ENV['REVIEW_REPOSITORY'] = nwo
