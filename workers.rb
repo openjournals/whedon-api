@@ -59,6 +59,7 @@ end
 class PDFWorker
   require_relative 'github'
   require 'open3'
+  require 'ostruct'
   require 'sidekiq'
 
   include Sidekiq::Worker
@@ -67,7 +68,8 @@ class PDFWorker
   include GitHub
 
   def perform(config, custom_branch, nwo, issue_id)
-    puts config
+    config = OpenStruct.new(config)
+
     set_env(config.papers, config.site_host, config.site_name, config.journal_alias, config.journal_launch_date, nwo)
 
     # Download the paper
