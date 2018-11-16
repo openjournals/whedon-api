@@ -59,6 +59,10 @@ class WhedonApi < Sinatra::Base
     ENV['RACK_ENV'] == "test"
   end
 
+  def serialized_config
+    @config.to_h
+  end
+
   def set_configs
     # 'settings.journals' comes from sinatra/config_file
     settings.journals.each do |journal|
@@ -98,7 +102,7 @@ class WhedonApi < Sinatra::Base
                                           :site_name => @config.site_name,
                                           :reviewers => @config.reviewers_signup,
                                           :doi_prefix => @config.doi_prefix,
-                                          :doi_journal => @config.doi_journal,
+                                          :doi_journal => @config.journal_alias,
                                           :issue_id => @issue_id,
                                           :donate_url => @config.donate_url}
       end
@@ -196,32 +200,12 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DepositWorker.perform_async(@config.papers,
-                                    @config.site_host,
-                                    @config.site_name,
-                                    @nwo,
-                                    @issue_id,
-                                    @config.doi_journal,
-                                    @config.journal_issn,
-                                    @config.journal_launch_date,
-                                    dry_run=true,
-                                    nil, nil, nil)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
 
         respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
-        DepositWorker.perform_async(@config.papers,
-                                    @config.site_host,
-                                    @config.site_name,
-                                    @nwo,
-                                    @issue_id,
-                                    @config.doi_journal,
-                                    @config.journal_issn,
-                                    @config.journal_launch_date,
-                                    dry_run=false,
-                                    @config.crossref_username,
-                                    @config.crossref_password,
-                                    @config.site_api_key)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=false)
       end
     else
       respond "I can't accept a paper that hasn't been reviewed!"
@@ -237,12 +221,12 @@ class WhedonApi < Sinatra::Base
       respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@config.papers, custom_branch, @config.site_host, @config.site_name, @nwo, @issue_id, @config.doi_journal, @config.journal_launch_date)
+    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   # Detect the languages and license of the review repository
   def repo_detect
-    RepoWorker.perform_async(@nwo, @issue_id, @config.journal_launch_date)
+    RepoWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   def assign_archive(doi_string)
@@ -291,7 +275,6 @@ class WhedonApi < Sinatra::Base
 
   # TODO: Refactor this mess
   def assign_editor(new_editor)
-    puts "NEW EDITOR is #{new_editor}"
     new_editor = new_editor.gsub(/^\@/, "").strip
     new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
     # This line updates the GitHub issue with the new editor

@@ -62,9 +62,6 @@ module GitHub
   def create_git_pdf(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
-
-    puts "FILE PATH IS #{file_path}"
-    puts `cat #{file_path}`
     gh_response = github_client.create_contents(papers_repo,
                                                 pdf_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.pdf",
@@ -80,9 +77,7 @@ module GitHub
   def create_git_xml(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     crossref_xml_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"
-
-    puts "FILE PATH IS #{file_path}"
-    puts `cat #{file_path}`
+    
     gh_response = github_client.create_contents(papers_repo,
                                                 crossref_xml_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.crossref.xml",
