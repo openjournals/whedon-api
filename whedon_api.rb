@@ -117,6 +117,7 @@ class WhedonApi < Sinatra::Base
     @assignees ||= github_client.issue(@nwo, @issue_id).assignees.collect { |a| a.login }
   end
 
+
   def robawt_respond
     case @message
     when /\A@whedon commands/i
@@ -157,9 +158,6 @@ class WhedonApi < Sinatra::Base
       respond erb :editors, :locals => { :editors => @config.editors }
     when /\A@whedon list reviewers/i
       respond all_reviewers
-    when /\A@whedon assignments/i
-      reviewers, editors = assignments
-      respond erb :assignments, :locals => { :reviewers => reviewers, :editors => editors, :all_editors => @config.editors }
     when /\A@whedon generate pdf from branch (.*)/
       process_pdf($1)
     when /\A@whedon generate pdf/i
@@ -241,29 +239,6 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  def assignments
-    issues = github_client.list_issues(@nwo, :state => 'open')
-    editors = Hash.new(0)
-    reviewers = Hash.new(0)
-
-    issues.each do |issue|
-      if issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)
-        editor = issue.body.match(/\*\*Editor:\*\*\s*(@\S*|Pending)/i)[1]
-        editors[editor] += 1
-      end
-
-      if issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)
-        reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
-        reviewers[reviewer] += 1
-      end
-    end
-
-    sorted_editors = editors.sort_by {|_, value| value}.to_h
-    sorted_reviewers = reviewers.sort_by {|_, value| value}.to_h
-
-    return sorted_reviewers, sorted_editors
-  end
-
   # Returns a string response with URL to Gist of reviewers
   def all_reviewers
     "Here's the current list of reviewers: #{@config.reviewers}"
@@ -291,15 +266,17 @@ class WhedonApi < Sinatra::Base
     update_assignees([new_editor] | reviewer_logins)
   end
 
-  # Change the reviewer listed at the top of the issue
+  # Change the reviewer listed at the top of the issue (clobber any that exist)
   def assign_reviewer(new_reviewer)
     set_reviewers([new_reviewer])
   end
 
+  # Add a reviewer (don't clobber existing ones)
   def add_reviewer(reviewer)
     set_reviewers(reviewers + [reviewer])
   end
 
+  # Remove a reviewer from the list
   def remove_reviewer(reviewer)
     set_reviewers(reviewers - [reviewer])
   end
@@ -323,12 +300,17 @@ class WhedonApi < Sinatra::Base
     issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
   end
 
+  # Send an HTTP POST to the GitHub API here due to Octokit problems
   def update_assignees(logins)
     data = { "assignees" => logins }
     url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{ENV['GH_TOKEN']}"
     RestClient.post(url, data.to_json)
   end
 
+  # This method is called when an editor says: '@whedon start review'.
+  # At this point, Whedon talks to the JOSS/JOSE application which creates
+  # the actual review issue and responds with the serialized paper which
+  # includes the 'review_issue_id' which is posted back into the PRE-REVIEW
   def start_review
     # Check we have an editor and a reviewer
     if review_issue? # Don't start a review if it has already started
@@ -354,6 +336,7 @@ class WhedonApi < Sinatra::Base
     return paper['review_issue_id']
   end
 
+  # Return an Octokit GitHub Issue
   def issue
     @issue ||= github_client.issue(@nwo, @issue_id)
   end
@@ -374,6 +357,7 @@ class WhedonApi < Sinatra::Base
     end
   end
 
+  # The actual Sinatra URL path methods
   get '/heartbeat' do
     "BOOM boom. BOOM boom. BOOM boom."
   end
