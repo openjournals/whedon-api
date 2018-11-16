@@ -117,7 +117,7 @@ class WhedonApi < Sinatra::Base
     @assignees ||= github_client.issue(@nwo, @issue_id).assignees.collect { |a| a.login }
   end
 
-
+  # One giant case statement to decide how to handle an incoming message...
   def robawt_respond
     case @message
     when /\A@whedon commands/i
@@ -178,6 +178,7 @@ class WhedonApi < Sinatra::Base
     github_client.add_comment(nwo, issue_id, comment)
   end
 
+  # Check if the review issue has an archive DOI set already
   def archive_doi?
     archive = issue.body[/(?<=\*\*Archive:\*\*.<a\shref=)"(.*?)"/]
     if archive
@@ -189,8 +190,6 @@ class WhedonApi < Sinatra::Base
 
   def deposit(dry_run)
     if review_issue?
-      # should check here that the archive DOI is set...
-
       if !archive_doi?
         respond "No archive DOI set. Exiting..."
         return
@@ -227,6 +226,7 @@ class WhedonApi < Sinatra::Base
     RepoWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
+  # Update the archive on the review issue
   def assign_archive(doi_string)
     doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
     if doi
