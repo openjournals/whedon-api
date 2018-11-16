@@ -86,7 +86,7 @@ GEM
       byebug (~> 10.0)
       pry (~> 0.10)
     public_suffix (3.0.2)
-    rack (2.0.5)
+    rack (2.0.6)
     rack-protection (2.0.2)
       rack
     rack-test (1.1.0)
@@ -157,6 +157,7 @@ DEPENDENCIES
   nokogiri
   octokit (~> 4.8)
   pry-byebug
+  rack (>= 2.0.6)
   rack-test
   rest-client (~> 1.8)
   rspec

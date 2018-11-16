@@ -4,6 +4,7 @@ gem 'github-linguist', '~> 5.3'
 gem 'licensee', '~> 9.9'
 gem 'nokogiri'
 gem "octokit", '~> 4.8'
+gem "rack", ">= 2.0.6"
 gem 'rest-client', '~> 1.8'
 gem "sidekiq", "5.0.5"
 gem "sinatra", "2.0.2"
