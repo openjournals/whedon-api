@@ -145,6 +145,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon set (.*) as archive/
       check_editor
       assign_archive($1)
+    when /\A@whedon set (.*) as version/
+      check_editor
+      assign_version($1)
     when /\A@whedon start review/i
       check_editor
       if editor && reviewers.any?
@@ -236,6 +239,17 @@ class WhedonApi < Sinatra::Base
       respond "OK. #{doi_with_url} is the archive."
     else
       respond "#{doi_string} doesn't look like an archive DOI."
+    end
+  end
+
+  # Update the version on the review issue
+  def assign_version(version_string)
+    if version_string
+      new_body = issue.body.gsub(/\*\*Version:\*\*\s*(.*)/i, "**Version:** #{version_string}")
+      github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
+      respond "OK. #{version_string} is the version."
+    else
+      respond "#{version_string} doesn't look like a valid version string."
     end
   end
 
