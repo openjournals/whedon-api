@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: f945b71d0e02acda32f9adb6cfabee996569b6ea
-  ref: f945b71d0e02acda32f9adb6cfabee996569b6ea
+  revision: a8346675b4217ded4be6479369e79634b6d45f60
+  ref: a8346675b4217ded4be6479369e79634b6d45f60
   specs:
     whedon (0.1.0)
       bibtex-ruby
@@ -154,7 +154,7 @@ PLATFORMS
 DEPENDENCIES
   github-linguist (~> 5.3)
   licensee (~> 9.9)
-  nokogiri (>= 1.8.5)
+  nokogiri (= 1.8.5)
   octokit (~> 4.8)
   pry-byebug
   rack (>= 2.0.6)
