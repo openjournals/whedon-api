@@ -1,17 +1,17 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 gem 'github-linguist', '~> 5.3'
 gem 'licensee', '~> 9.9'
-gem 'nokogiri'
-gem "octokit", '~> 4.8'
-gem "rack", ">= 2.0.6"
+gem 'nokogiri', '>= 1.8.5'
+gem 'octokit', '~> 4.8'
+gem 'rack', '>= 2.0.6'
 gem 'rest-client', '~> 1.8'
-gem "sidekiq", "5.0.5"
-gem "sinatra", "2.0.2"
-gem "sinatra-contrib", "2.0.2"
-gem "unicorn", "5.3.1"
-gem "pry-byebug"
-gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '50d5912cf72af0acd3d067041d3c9698e5a227fd'
+gem 'sidekiq', '5.0.5'
+gem 'sinatra', '2.0.2'
+gem 'sinatra-contrib', '2.0.2'
+gem 'unicorn', '5.3.1'
+gem 'pry-byebug'
+gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => 'f945b71d0e02acda32f9adb6cfabee996569b6ea'
 
 group :test do
   gem 'rack-test'
