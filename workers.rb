@@ -94,6 +94,11 @@ class DOIWorker
 
     return bib_paths.first
   end
+
+  def download(issue_id)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    Open3.capture3("whedon download #{issue_id}")
+  end
 end
 
 class RepoWorker
