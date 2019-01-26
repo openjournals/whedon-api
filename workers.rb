@@ -51,7 +51,7 @@ class DOIWorker
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
-            doi_summary.push("#{entry.doi} looks to be an invalid DOI")
+            doi_summary.push("`#{entry.doi}` looks to be an invalid DOI")
           end
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
@@ -61,7 +61,7 @@ class DOIWorker
           if works['message']['items'].any?
             if works['message']['items'].first.has_key?('DOI')
               candidate_doi = works['message']['items'].first['DOI']
-              doi_summary.push("#{entry.title} may be missing DOI: #{candidate_doi}")
+              doi_summary.push("#{entry.title} may be missing DOI: `#{candidate_doi}`")
             end
           end
         end
