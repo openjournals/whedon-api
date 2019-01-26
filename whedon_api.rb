@@ -200,6 +200,7 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])

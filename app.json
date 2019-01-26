@@ -34,6 +34,9 @@
     },
     "CROSSREF_PASSWORD": {
       "description": "The password for depositing with Crossref"
+    },
+    "CROSSREF_EMAIL": {
+      "description": "The email used for the polite pool with Crossref search"
     }
   },
   "formation": {

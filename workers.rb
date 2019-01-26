@@ -1,3 +1,101 @@
+class DOIWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+
+  require 'faraday'
+  require 'ostruct'
+  require 'serrano'
+  require 'sidekiq'
+  require 'whedon'
+
+  include Sidekiq::Worker
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(nwo, issue_id, config)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
+
+    if status.success?
+      bibtex_path = find_bib_path(issue_id)
+
+      if bib_path
+        doi_summary = check_dois(bibtex_path)
+        if doi_summary.any?
+          message = "```\nThe following potential issues were found with your references\n\n"
+          doi_summary.each {|m| message << "#{m}\n"}
+          message << "```\n"
+          bg_respond(nwo, issue_id, message)
+        end
+      else
+        bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission") if license.nil?
+      end
+    else
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+  def check_dois(bibtex_path)
+    doi_summary = []
+    entries = BibTeX.open(bibtex_path, :filter => :latex)
+
+    if entries.any?
+      entries.each do |entry|
+        next if entry.comment?
+        if entry.has_field?('doi') && !entry.doi.empty?
+          if invalid_doi?(entry.doi)
+            doi_summary.push("#{entry.doi} looks to be an invalid DOI")
+          end
+        # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
+        else
+          # Do inject or something fancy here to build comma-separated string
+          query_value = entry.collect {|_, value| value}.join(', ')
+          works = Serrano.works(:query => query_value)
+          if works['message']['items'].any?
+            if works['message']['items'].first.has_key?('DOI')
+              candidate_doi = works['message']['items'].first['DOI']
+              doi_summary.push("#{query_value} may be missing DOI #{candidate_doi}")
+            end
+          end
+        end
+      end
+    end
+
+    return doi_summary
+  end
+
+  # Return true if the DOI doesn't resolve properly
+  def invalid_doi?(doi)
+    begin
+      status_code = Faraday.head(doi).status
+      if [301, 302].include? status_code
+        return false
+      else
+        return true
+      end
+    rescue Faraday::ConnectionFailed
+      return true
+    end
+  end
+
+  def find_bib_path(issue_id)
+    search_path ||= "tmp/#{issue_id}"
+    bib_paths = []
+
+    Find.find(search_path) do |path|
+      bib_paths << path if path =~ /.bib$/
+    end
+
+    return bib_paths.first
+  end
+end
+
 class RepoWorker
   require_relative 'github'
   require_relative 'config_helper'
