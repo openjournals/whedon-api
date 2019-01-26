@@ -171,6 +171,8 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon accept/i
       check_editor
       deposit(dry_run=true)
+    when /\A@whedon check references/i
+      check_references
     end
   end
 
@@ -189,6 +191,11 @@ class WhedonApi < Sinatra::Base
     else
       return false
     end
+  end
+
+  def check_references
+    respond "```\nAttempting to check references for missing DOIs\n```"
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   def deposit(dry_run)
