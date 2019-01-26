@@ -73,9 +73,10 @@ class DOIWorker
   end
 
   # Return true if the DOI doesn't resolve properly
-  def invalid_doi?(doi)
+  def invalid_doi?(doi_string)
+    doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
     begin
-      status_code = Faraday.head(doi).status
+      status_code = Faraday.head("https://doi.org/#{doi}").status
       if [301, 302].include? status_code
         return false
       else
