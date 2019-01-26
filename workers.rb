@@ -62,7 +62,7 @@ class DOIWorker
           if works['message']['items'].any?
             if works['message']['items'].first.has_key?('DOI')
               candidate_doi = works['message']['items'].first['DOI']
-              doi_summary.push("#{query_value} may be missing DOI #{candidate_doi}")
+              doi_summary.push("#{entry.title} may be missing DOI #{candidate_doi}")
             end
           end
         end
