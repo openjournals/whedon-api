@@ -29,7 +29,7 @@ class DOIWorker
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
           message = "```\nThe following potential issues were found with your references\n\n"
-          doi_summary.each {|m| message << "#{m}\n"}
+          doi_summary.each {|m| message << "- #{m}\n\n"}
           message << "```\n"
           bg_respond(nwo, issue_id, message)
         end
@@ -49,7 +49,7 @@ class DOIWorker
       entries.each do |entry|
         next if entry.comment?
         next unless entry.article?
-        
+
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
             doi_summary.push("#{entry.doi} looks to be an invalid DOI")
