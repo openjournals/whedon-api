@@ -28,9 +28,8 @@ class DOIWorker
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
-          message = "```\nThe following potential issues were found with your references\n\n"
+          message = "The following potential issues were found with your references:\n\n"
           doi_summary.each {|m| message << "- #{m}\n\n"}
-          message << "```\n"
           bg_respond(nwo, issue_id, message)
         end
       else
@@ -62,7 +61,7 @@ class DOIWorker
           if works['message']['items'].any?
             if works['message']['items'].first.has_key?('DOI')
               candidate_doi = works['message']['items'].first['DOI']
-              doi_summary.push("#{entry.title} may be missing DOI #{candidate_doi}")
+              doi_summary.push("#{entry.title} may be missing DOI: #{candidate_doi}")
             end
           end
         end
