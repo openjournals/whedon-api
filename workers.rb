@@ -25,7 +25,7 @@ class DOIWorker
     if status.success?
       bibtex_path = find_bib_path(issue_id)
 
-      if bib_path
+      if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
           message = "```\nThe following potential issues were found with your references\n\n"
