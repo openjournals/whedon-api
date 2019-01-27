@@ -28,11 +28,16 @@ class DOIWorker
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
-          message = "Reference check summary:\n"
+          message = "```Reference check summary:\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase}\n\n"
-            messages.each {|m| message << "- #{m}\n"}
+            if messages.emtpy?
+              message << "- None\n\n"
+            else
+              messages.each {|m| message << "- #{m}\n"}
+            end
           end
+          message << "```"
           bg_respond(nwo, issue_id, message)
         else
           bg_respond(nwo, issue_id, "No immediate problems found with references.")
