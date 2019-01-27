@@ -32,7 +32,7 @@ class DOIWorker
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase} DOIs\n\n"
             if messages.empty?
-              message << "- None"
+              message << "- None\n"
             else
               messages.each {|m| message << "- #{m}\n"}
             end
