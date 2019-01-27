@@ -31,7 +31,7 @@ class DOIWorker
           message = "Reference check summary:\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase}\n\n"
-            messages.each {|m| message << "- #{m}\n"}}
+            messages.each {|m| message << "- #{m}\n"}
           end
           bg_respond(nwo, issue_id, message)
         else
