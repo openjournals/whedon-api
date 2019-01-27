@@ -194,7 +194,7 @@ class WhedonApi < Sinatra::Base
   end
 
   def check_references
-    respond "```\nAttempting to check references for missing DOIs\n```"
+    respond "```\nAttempting to check references...\n```"
     DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
