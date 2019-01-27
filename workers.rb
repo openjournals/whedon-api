@@ -7,6 +7,7 @@ class DOIWorker
   require 'serrano'
   require 'sidekiq'
   require 'whedon'
+  require 'yaml'
 
   include Sidekiq::Worker
 
@@ -23,7 +24,9 @@ class DOIWorker
     stdout, stderr, status = download(issue_id)
 
     if status.success?
-      bibtex_path = find_bib_path(issue_id)
+      paper_path = find_paper(issue_id)
+      bibtex_filename = YAML.load_file(paper_path)['bibliography']
+      bibtex_path = "#{File.dirname(paper_path)}/#{bibtex_filename}"
 
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
@@ -98,15 +101,15 @@ class DOIWorker
     end
   end
 
-  def find_bib_path(issue_id)
+  def find_paper(issue_id)
     search_path ||= "tmp/#{issue_id}"
-    bib_paths = []
+    paper_paths = []
 
     Find.find(search_path) do |path|
-      bib_paths << path if path =~ /.bib$/
+      paper_paths << path if path =~ /paper\.md$/
     end
 
-    return bib_paths.first
+    return paper_paths.first
   end
 
   def download(issue_id)
