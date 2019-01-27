@@ -31,7 +31,7 @@ class DOIWorker
           message = "```Reference check summary:\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase}\n\n"
-            if messages.emtpy?
+            if messages.empty?
               message << "- None\n\n"
             else
               messages.each {|m| message << "- #{m}\n"}
