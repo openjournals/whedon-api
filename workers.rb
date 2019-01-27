@@ -30,9 +30,9 @@ class DOIWorker
         if doi_summary.any?
           message = "```Reference check summary:\n"
           doi_summary.each do |type, messages|
-            message << "\n#{type.to_s.upcase}\n\n"
+            message << "\n#{type.to_s.upcase} DOIs\n\n"
             if messages.empty?
-              message << "- None\n\n"
+              message << "- None"
             else
               messages.each {|m| message << "- #{m}\n"}
             end
@@ -61,9 +61,9 @@ class DOIWorker
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
-            doi_summary[:invalid].push("`http://doi.org/#{entry.doi}` looks to be an invalid DOI")
+            doi_summary[:invalid].push("http://doi.org/#{entry.doi} is INVALID")
           else
-            doi_summary[:ok].push("`http://doi.org/#{entry.doi}` looks to be a valid DOI")
+            doi_summary[:ok].push("http://doi.org/#{entry.doi} is OK")
           end
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
@@ -73,7 +73,7 @@ class DOIWorker
           if works['message']['items'].any?
             if works['message']['items'].first.has_key?('DOI')
               candidate_doi = works['message']['items'].first['DOI']
-              doi_summary[:missing].push("`https://doi.org/#{candidate_doi}` may be missing for title: #{entry.title}")
+              doi_summary[:missing].push("https://doi.org/#{candidate_doi} may be missing for title: #{entry.title}")
             end
           end
         end
