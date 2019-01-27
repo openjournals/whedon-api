@@ -31,9 +31,11 @@ class DOIWorker
           message = "The following potential issues were found with your references:\n\n"
           doi_summary.each {|m| message << "- #{m}\n\n"}
           bg_respond(nwo, issue_id, message)
+        else
+          bg_respond(nwo, issue_id, "No immediate problems found with references.")
         end
       else
-        bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission") if license.nil?
+        bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission")
       end
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
