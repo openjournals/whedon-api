@@ -28,8 +28,11 @@ class DOIWorker
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
-          message = "The following potential issues were found with your references:\n\n"
-          doi_summary.each {|m| message << "- #{m}\n\n"}
+          message = "Reference check summary:\n"
+          doi_summary.each do |type, messages|
+            message << "\n#{type.to_s.upcase}\n\n"
+            messages.each {|m| message << "- #{m}\n"}}
+          end
           bg_respond(nwo, issue_id, message)
         else
           bg_respond(nwo, issue_id, "No immediate problems found with references.")
@@ -43,7 +46,7 @@ class DOIWorker
   end
 
   def check_dois(bibtex_path)
-    doi_summary = []
+    doi_summary = {:ok => [], :missing => [], :invalid => []}
     entries = BibTeX.open(bibtex_path, :filter => :latex)
 
     if entries.any?
@@ -53,7 +56,9 @@ class DOIWorker
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
-            doi_summary.push("`http://doi.org/#{entry.doi}` looks to be an invalid DOI")
+            doi_summary[:invalid].push("`http://doi.org/#{entry.doi}` looks to be an invalid DOI")
+          else
+            doi_summary[:ok].push("`http://doi.org/#{entry.doi}` looks to be a valid DOI")
           end
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
@@ -63,7 +68,7 @@ class DOIWorker
           if works['message']['items'].any?
             if works['message']['items'].first.has_key?('DOI')
               candidate_doi = works['message']['items'].first['DOI']
-              doi_summary.push("#{entry.title} may be missing DOI: `https://doi.org/#{candidate_doi}`")
+              doi_summary[:missing].push("`https://doi.org/#{candidate_doi}` may be missing for title: #{entry.title}")
             end
           end
         end
