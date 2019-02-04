@@ -1,3 +1,123 @@
+class DOIWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+
+  require 'faraday'
+  require 'ostruct'
+  require 'serrano'
+  require 'sidekiq'
+  require 'whedon'
+  require 'yaml'
+
+  include Sidekiq::Worker
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(nwo, issue_id, config)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
+
+    if status.success?
+      paper_path = find_paper(issue_id)
+      bibtex_filename = YAML.load_file(paper_path)['bibliography']
+      bibtex_path = "#{File.dirname(paper_path)}/#{bibtex_filename}"
+
+      if bibtex_path
+        doi_summary = check_dois(bibtex_path)
+        if doi_summary.any?
+          message = "```Reference check summary:\n"
+          doi_summary.each do |type, messages|
+            message << "\n#{type.to_s.upcase} DOIs\n\n"
+            if messages.empty?
+              message << "- None\n"
+            else
+              messages.each {|m| message << "- #{m}\n"}
+            end
+          end
+          message << "```"
+          bg_respond(nwo, issue_id, message)
+        else
+          bg_respond(nwo, issue_id, "No immediate problems found with references.")
+        end
+      else
+        bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission")
+      end
+    else
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+  def check_dois(bibtex_path)
+    doi_summary = {:ok => [], :missing => [], :invalid => []}
+    entries = BibTeX.open(bibtex_path, :filter => :latex)
+
+    if entries.any?
+      entries.each do |entry|
+        next if entry.comment?
+        next unless entry.article?
+
+        if entry.has_field?('doi') && !entry.doi.empty?
+          if invalid_doi?(entry.doi)
+            doi_summary[:invalid].push("http://doi.org/#{entry.doi} is INVALID")
+          else
+            doi_summary[:ok].push("http://doi.org/#{entry.doi} is OK")
+          end
+        # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
+        else
+          # Do inject or something fancy here to build comma-separated string
+          query_value = entry.collect {|_, value| value}.join(', ')
+          works = Serrano.works(:query => query_value)
+          if works['message']['items'].any?
+            if works['message']['items'].first.has_key?('DOI')
+              candidate_doi = works['message']['items'].first['DOI']
+              doi_summary[:missing].push("https://doi.org/#{candidate_doi} may be missing for title: #{entry.title}")
+            end
+          end
+        end
+      end
+    end
+
+    return doi_summary
+  end
+
+  # Return true if the DOI doesn't resolve properly
+  def invalid_doi?(doi_string)
+    doi = doi_string.to_s[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
+    begin
+      status_code = Faraday.head("https://doi.org/#{doi}").status
+      if [301, 302].include? status_code
+        return false
+      else
+        return true
+      end
+    rescue Faraday::ConnectionFailed
+      return true
+    end
+  end
+
+  def find_paper(issue_id)
+    search_path ||= "tmp/#{issue_id}"
+    paper_paths = []
+
+    Find.find(search_path) do |path|
+      paper_paths << path if path =~ /paper\.md$/
+    end
+
+    return paper_paths.first
+  end
+
+  def download(issue_id)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    Open3.capture3("whedon download #{issue_id}")
+  end
+end
+
 class RepoWorker
   require_relative 'github'
   require_relative 'config_helper'

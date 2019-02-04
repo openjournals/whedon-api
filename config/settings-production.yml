@@ -44,7 +44,8 @@ journals:
       eics:
         - arfon
       papers_repo: openjournals/joss-papers-testing
-      reviewers: "http://staging.joss.theoj.org/reviewer-signup.html"
+      reviewers: https://bit.ly/joss-reviewers
+      reviewers_signup: http://staging.joss.theoj.org/reviewer-signup.html
       site_host: http://joss.theoj.org
       doi_prefix: "10.21105"
       journal_alias: joss
@@ -52,6 +53,6 @@ journals:
       journal_issn: '0000-0000'
       site_name: Journal of Open Source Software Testing
       donate_url: http://example.com
-      site_api_key: <%= ENV['JOSS_API_KEY_TESTING'] %>
-      crossref_username: foo
-      crossref_password: bar
+      site_api_key: <%= ENV['JOSS_API_KEY'] %>
+      crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
+      crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>

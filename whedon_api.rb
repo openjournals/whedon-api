@@ -79,7 +79,7 @@ class WhedonApi < Sinatra::Base
   def say_hello
     if issue.title.match(/^\[REVIEW\]:/)
       reviewer = issue.body.match(/\*\*Reviewer:\*\*\s*(@\S*|Pending)/i)[1]
-      respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo }
+      respond erb :reviewer_welcome, :locals => { :reviewer => reviewer, :nwo => @nwo, :reviewers => @config.reviewers }
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
       repo_detect
@@ -171,6 +171,8 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon accept/i
       check_editor
       deposit(dry_run=true)
+    when /\A@whedon check references/i
+      check_references
     end
   end
 
@@ -191,6 +193,11 @@ class WhedonApi < Sinatra::Base
     end
   end
 
+  def check_references
+    respond "```\nAttempting to check references...\n```"
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
+  end
+
   def deposit(dry_run)
     if review_issue?
       if !archive_doi?
@@ -200,6 +207,7 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
