@@ -6,6 +6,7 @@ class DOIWorker
   require 'ostruct'
   require 'serrano'
   require 'sidekiq'
+  require 'uri'
   require 'whedon'
   require 'yaml'
 
@@ -89,9 +90,12 @@ class DOIWorker
   # Return true if the DOI doesn't resolve properly
   def invalid_doi?(doi_string)
     doi = doi_string.to_s[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'])\S)+)\b/]
+
+    url = "https://doi.org/#{doi}"
+    escaped_url = URI.escape(url)
     
     begin
-      status_code = Faraday.head("https://doi.org/#{doi}").status
+      status_code = Faraday.head(escaped_url).status
       if [301, 302].include? status_code
         return false
       else
