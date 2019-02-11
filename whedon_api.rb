@@ -1,5 +1,6 @@
 require_relative 'github'
 require_relative 'workers'
+require 'date'
 require 'sinatra/base'
 require 'fileutils'
 require 'json'
@@ -173,7 +174,44 @@ class WhedonApi < Sinatra::Base
       deposit(dry_run=true)
     when /\A@whedon check references/i
       check_references
+    # Detect strings like '@whedon remind @arfon in 2 weeks'
+    when /\A@whedon remind (.*) in (.*) (.*)/i
+      schedule_reminder($1, $2, $3)
     end
+  end
+
+  def schedule_reminder(human, size, unit)
+    if valid_time?(size, unit)
+      # Schedule reminder
+      schedule_at = target_time(size, unit)
+      ReviewReminder.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
+    end
+  end
+
+  def target_time(size, unit)
+    if unit == 'day' || unit == 'days'
+      return Date.today + size.to_i
+    elsif unit == 'week' || unit == 'weeks'
+      return Date.today + (size.to_i * 7)
+    end
+  end
+
+  def valid_time?(size, unit)
+    if is_numerical?(size)
+      if ['day', 'days', 'week', 'weeks'].include?(unit.downcase.strip)
+        return true
+      else
+        puts "I don't recognize this unit of time '#{unit}'. Please specify 'days' or 'weeks'."
+        return false
+      end
+    else
+      puts "I don't know what to do with '#{size} #{unit}'. Please specific a number unit."
+      return false
+    end
+  end
+
+  def is_numerical?(number)
+    true if Float(number) rescue false
   end
 
   # How Whedon talks

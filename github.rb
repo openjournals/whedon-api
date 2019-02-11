@@ -13,6 +13,19 @@ module GitHub
     github_client.add_comment(nwo, issue_id, comment)
   end
 
+  def review_outstanding?(nwo, issue_id, human)
+    review_issue = github_client.issue(now, issue_id)
+    return false if review_issue.state == 'closed'
+
+    # Check if there are any unchecked review boxes
+    # TODO: work out how to do this for each reviewer separately
+    if issue.body.match(/- \[ \]/)
+      return true
+    else
+      return false
+    end
+  end
+
   def label_issue(nwo, issue_id, languages)
     github_client.add_labels_to_an_issue(nwo, issue_id, languages)
   end
@@ -77,7 +90,7 @@ module GitHub
   def create_git_xml(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     crossref_xml_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"
-    
+
     gh_response = github_client.create_contents(papers_repo,
                                                 crossref_xml_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.crossref.xml",

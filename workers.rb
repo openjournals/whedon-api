@@ -1,3 +1,22 @@
+class ReviewReminder
+  require_relative 'github'
+  require_relative 'config_helper'
+  require 'sidekiq'
+
+  include Sidekiq::Worker
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(human, nwo, issue_id, config)
+    if review_outstanding?(nwo, issue_id, human)
+      bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going.")
+    end
+  end
+end
+
 class DOIWorker
   require_relative 'github'
   require_relative 'config_helper'
