@@ -10,9 +10,26 @@ class ReviewReminder
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
+  # Need to respond with different message if author (not a reviewer)
   def perform(human, nwo, issue_id, config)
-    if review_outstanding?(nwo, issue_id, human)
-      bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going.")
+    # Make sure we're working with GitHub handles with '@' at the start
+    unless human.start_with?('@')
+      human = "@#{human}"
+    end
+
+    issue = github_client.issue(nwo, issue_id)
+    return false if issue.state == 'closed'
+    author = issue.body.match(/\*\*Submitting author:\*\*\s*.(@\S*)/)[1]
+
+    # If the reminder is for the author then send the reminder, regardless
+    # of the state of the reviewer checklists. Otherwise, check if they
+    # need a reminder.
+    if human.strip == author
+      bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how things are progressing here.")
+    else
+      if needs_reminder?(issue_body, human)
+        bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going.")
+      end
     end
   end
 end

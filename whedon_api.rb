@@ -176,11 +176,25 @@ class WhedonApi < Sinatra::Base
       check_references
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
+      check_editor
       schedule_reminder($1, $2, $3)
     end
   end
 
   def schedule_reminder(human, size, unit)
+    # Check that the person we're expecting to remind is actually
+    # mentioned in the issue body (i.e. is a reviewer or author)
+    issue = github_client.issue(@nwo, @issue_id)
+    unless issue.body.match(/#{human}/m)
+      respond "#{human} doesn't seem to be a reviewer or author for this submission."
+      halt
+    end
+
+    unless issue.title.match(/^\[REVIEW\]:/)
+      respond "Sorry, I can't set reminders on PRE-REVIEW issues."
+      halt
+    end
+
     if valid_time?(size, unit)
       # Schedule reminder
       schedule_at = target_time(size, unit)
@@ -188,6 +202,7 @@ class WhedonApi < Sinatra::Base
     end
   end
 
+  # Return Date object + some number of days specified
   def target_time(size, unit)
     if unit == 'day' || unit == 'days'
       return Date.today + size.to_i
@@ -201,11 +216,11 @@ class WhedonApi < Sinatra::Base
       if ['day', 'days', 'week', 'weeks'].include?(unit.downcase.strip)
         return true
       else
-        puts "I don't recognize this unit of time '#{unit}'. Please specify 'days' or 'weeks'."
+        respond "I don't recognize this unit of time '#{unit}'. Please specify 'days' or 'weeks'."
         return false
       end
     else
-      puts "I don't know what to do with '#{size} #{unit}'. Please specific a number unit."
+      respond "I don't know what to do with '#{size} #{unit}'. Please specific a number unit."
       return false
     end
   end
