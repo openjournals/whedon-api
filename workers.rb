@@ -1,4 +1,4 @@
-class ReviewReminder
+class ReviewReminderWorker
   require_relative 'github'
   require_relative 'config_helper'
   require 'sidekiq'

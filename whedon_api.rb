@@ -198,7 +198,7 @@ class WhedonApi < Sinatra::Base
     if valid_time?(size, unit)
       # Schedule reminder
       schedule_at = target_time(size, unit)
-      ReviewReminder.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
+      ReviewReminderWorker.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
     end
   end
 
