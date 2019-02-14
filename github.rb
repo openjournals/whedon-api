@@ -17,24 +17,25 @@ module GitHub
     review_issue = github_client.issue(nwo, issue_id)
     issue_body = review_issue.body
 
+    # require 'pry'
+    # binding.pry
+    reviewers = issue_body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+
+    # Return false if the human isn't one of the reviewers
+    return false unless reviewers.include?(human)
+
     # Check if there are any unchecked review boxes
     # TODO: work out how to do this for each reviewer separately
-    if outstanding_review_for?(issue_body, human)
-      return false
-    else
-      return true
-    end
+    return outstanding_review_for?(issue_body, reviewers, human)
   end
 
   # TODO figure out how to fix this mess.
   # Takes an issue body and a GitHub handle and determines if
   # the author has any checkboxes unchecked.
-  def outstanding_review_for?(issue_body, human)
-    reviewer_count = issue_body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
-
+  def outstanding_review_for?(issue_body, reviewers, human)
     # If there's only one reviewer then we just need to check if there
     # are any unchecked checkboxes, returning false if there are.
-    if reviewer_count == 1
+    if reviewers.count == 1
       if outstanding_checkboxes?(issue_body)
         return true
       else
@@ -49,6 +50,7 @@ module GitHub
       # issue which means we can just match everything to the end.
       if issue_body[/(?<=Review checklist for #{human}).*(Review checklist for)/m].nil?
         checklist = issue_body[/(?<=Review checklist for #{human}).*/m]
+
         if outstanding_checkboxes?(checklist)
           return true
         else
