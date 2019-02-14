@@ -127,6 +127,8 @@ class DOIWorker
   def invalid_doi?(doi_string)
     doi = doi_string.to_s[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'])\S)+)\b/]
 
+    return true if doi.nil?
+
     url = "https://doi.org/#{doi.strip}"
     escaped_url = URI.escape(url)
 
