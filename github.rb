@@ -13,10 +13,7 @@ module GitHub
     github_client.add_comment(nwo, issue_id, comment)
   end
 
-  def needs_reminder?(nwo, issue_id, human)
-    review_issue = github_client.issue(nwo, issue_id)
-    issue_body = review_issue.body
-
+  def needs_reminder?(nwo, issue_body, human)
     reviewers = issue_body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
 
     # Return false if the human isn't one of the reviewers
