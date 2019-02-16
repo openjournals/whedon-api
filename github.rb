@@ -17,8 +17,6 @@ module GitHub
     review_issue = github_client.issue(nwo, issue_id)
     issue_body = review_issue.body
 
-    # require 'pry'
-    # binding.pry
     reviewers = issue_body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
 
     # Return false if the human isn't one of the reviewers
