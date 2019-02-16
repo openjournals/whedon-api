@@ -205,6 +205,8 @@ class WhedonApi < Sinatra::Base
 
   # Return Date object + some number of days specified
   def target_time(size, unit)
+    # TODO remove this.
+    return Time.now + 60
     if unit == 'day' || unit == 'days'
       return Time.now + (size.to_i * 86400)
     elsif unit == 'week' || unit == 'weeks'
