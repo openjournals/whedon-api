@@ -199,15 +199,16 @@ class WhedonApi < Sinatra::Base
       # Schedule reminder
       schedule_at = target_time(size, unit)
       ReviewReminderWorker.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
+      respond "Reminder set for #{human} in #{size} #{unit}"
     end
   end
 
   # Return Date object + some number of days specified
   def target_time(size, unit)
     if unit == 'day' || unit == 'days'
-      return Date.today + size.to_i
+      return Time.now + (size.to_i * 86400)
     elsif unit == 'week' || unit == 'weeks'
-      return Date.today + (size.to_i * 7)
+      return Time.now + (size.to_i * 7 * 86400)
     end
   end
 
@@ -220,7 +221,7 @@ class WhedonApi < Sinatra::Base
         return false
       end
     else
-      respond "I don't know what to do with '#{size} #{unit}'. Please specific a number unit."
+      respond "I don't know what to do with '#{size} #{unit}'. Please specific a numerical unit."
       return false
     end
   end
