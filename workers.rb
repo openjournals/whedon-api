@@ -27,7 +27,7 @@ class ReviewReminderWorker
     if human.strip == author
       bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how things are progressing here.")
     else
-      if needs_reminder?(issue.body, human)
+      if needs_reminder?(nwo, issue.body, human)
         bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going.")
       end
     end
