@@ -31,16 +31,22 @@ Here are some things you can ask me to do:
 # Set the software archive DOI at the top of the issue e.g.
 @whedon set 10.0000/zenodo.00000 as archive
 
-# Open the review issue
-@whedon start review
+GENERAL EDITORIAL TASKS
 
 # Compile the paper
 @whedon generate pdf
 
-🚧 🚧 🚧 Experimental Whedon features 🚧 🚧 🚧
-
-# Compile the paper from a custom git branch
+# Compile the paper from alternative branch
 @whedon generate pdf from branch custom-branch-name
+
+# Ask Whedon to check the references for missing DOIs
+@whedon check references
+
+EDITOR-ONLY TASKS
+
+# Remind an author or reviewer to return to a review after a
+# certain period of time (supported units days and weeks)
+@whedon remind @reviewer in 2 weeks
 
 # Ask Whedon to accept the paper and deposit with Crossref
 @whedon accept
