@@ -13,6 +13,70 @@ module GitHub
     github_client.add_comment(nwo, issue_id, comment)
   end
 
+  def needs_reminder?(nwo, issue_body, human)
+    reviewers = issue_body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+
+    # Return false if the human isn't one of the reviewers
+    return false unless reviewers.include?(human)
+
+    # Check if there are any unchecked review boxes
+    # TODO: work out how to do this for each reviewer separately
+    return outstanding_review_for?(issue_body, reviewers, human)
+  end
+
+  # TODO figure out how to fix this mess.
+  # Takes an issue body and a GitHub handle and determines if
+  # the author has any checkboxes unchecked.
+  def outstanding_review_for?(issue_body, reviewers, human)
+    # If there's only one reviewer then we just need to check if there
+    # are any unchecked checkboxes, returning false if there are.
+    if reviewers.count == 1
+      if outstanding_checkboxes?(issue_body)
+        return true
+      else
+        return false
+      end
+
+    # If there's more than one reviewer then we need to try and grab
+    # the checklist for their section of the issue body. It's easiest
+    # to check if they're the last first and work back from there.
+    else
+      # if this is true then they are the last checklist in the review
+      # issue which means we can just match everything to the end.
+      if issue_body[/(?<=Review checklist for #{human}).*(Review checklist for)/m].nil?
+        checklist = issue_body[/(?<=Review checklist for #{human}).*/m]
+
+        if outstanding_checkboxes?(checklist)
+          return true
+        else
+          return false
+        end
+      # Finally, in this case, we have a reviewer checklist that is
+      # in the middle of the review issue body so we scan for their
+      # checklist and stop when we detect the start of the next one
+      else
+        checklist = issue_body[/(?<=Review checklist for #{human}).*(Review checklist for)/m]
+        if outstanding_checkboxes?(checklist)
+          return true
+        else
+          return false
+        end
+      end
+    end
+  end
+
+  # Take a section of a review issue (presumably with a checklist) and see
+  # if there are unchecked checkboxes.
+  def outstanding_checkboxes?(checklist)
+    checkbox_count = checklist.scan(/(- \[ \]|- \[x\])/m).count
+    checked_checkbox_count = checklist.scan(/(- \[x\])/m).count
+    if checkbox_count > checked_checkbox_count
+      return true
+    else
+      return false
+    end
+  end
+
   def label_issue(nwo, issue_id, languages)
     github_client.add_labels_to_an_issue(nwo, issue_id, languages)
   end
@@ -77,7 +141,7 @@ module GitHub
   def create_git_xml(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     crossref_xml_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"
-    
+
     gh_response = github_client.create_contents(papers_repo,
                                                 crossref_xml_path,
                                                 "Creating 10.21105.#{journal_alias}.#{id}.crossref.xml",

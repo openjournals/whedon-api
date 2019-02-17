@@ -1,5 +1,6 @@
 require_relative 'github'
 require_relative 'workers'
+require 'date'
 require 'sinatra/base'
 require 'fileutils'
 require 'json'
@@ -173,7 +174,60 @@ class WhedonApi < Sinatra::Base
       deposit(dry_run=true)
     when /\A@whedon check references/i
       check_references
+    # Detect strings like '@whedon remind @arfon in 2 weeks'
+    when /\A@whedon remind (.*) in (.*) (.*)/i
+      check_editor
+      schedule_reminder($1, $2, $3)
     end
+  end
+
+  def schedule_reminder(human, size, unit)
+    # Check that the person we're expecting to remind is actually
+    # mentioned in the issue body (i.e. is a reviewer or author)
+    issue = github_client.issue(@nwo, @issue_id)
+    unless issue.body.match(/#{human}/m)
+      respond "#{human} doesn't seem to be a reviewer or author for this submission."
+      halt
+    end
+
+    unless issue.title.match(/^\[REVIEW\]:/)
+      respond "Sorry, I can't set reminders on PRE-REVIEW issues."
+      halt
+    end
+
+    if valid_time?(size, unit)
+      # Schedule reminder
+      schedule_at = target_time(size, unit)
+      ReviewReminderWorker.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
+      respond "Reminder set for #{human} in #{size} #{unit}"
+    end
+  end
+
+  # Return Date object + some number of days specified
+  def target_time(size, unit)
+    if unit == 'day' || unit == 'days'
+      return Time.now + (size.to_i * 86400)
+    elsif unit == 'week' || unit == 'weeks'
+      return Time.now + (size.to_i * 7 * 86400)
+    end
+  end
+
+  def valid_time?(size, unit)
+    if is_numerical?(size)
+      if ['day', 'days', 'week', 'weeks'].include?(unit.downcase.strip)
+        return true
+      else
+        respond "I don't recognize this unit of time '#{unit}'. Please specify 'days' or 'weeks'."
+        return false
+      end
+    else
+      respond "I don't know what to do with '#{size} #{unit}'. Please specific a numerical unit."
+      return false
+    end
+  end
+
+  def is_numerical?(number)
+    true if Float(number) rescue false
   end
 
   # How Whedon talks
