@@ -115,8 +115,12 @@ module GitHub
 
       # Then create it again
       github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
-    rescue Octokit::NotFound # If the branch doesn't exist, create it!
-      github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
+    rescue Octokit::NotFound # If the branch doesn't exist, or there aren't any commits in the branch then create it!
+      begin
+        github_client.create_ref(papers_repo, "heads/#{journal_alias}.#{id}", get_master_ref(papers_repo))
+      rescue Octokit::UnprocessableEntity
+        # If the branch already exists move on...
+      end
     end
   end
 
