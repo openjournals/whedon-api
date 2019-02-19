@@ -18,8 +18,9 @@ describe WhedonApi do
 ) { json_fixture('whedon-accept-non-eic-for-reals-with-doi-on-review-issue-938.json')}
   let(:whedon_set_reminder_for_non_reviewer_on_pre_review) { json_fixture('whedon-seting-reminder-for-non-reviewer-on-pre-review.json')}
   let(:whedon_set_reminder_for_author_on_pre_review) { json_fixture('whedon-seting-reminder-for-author-on-pre-review.json')}
-  let(:whedon_set_reminder_for_author_on_review_bad_units) { json_fixture('whedon-seting-reminder-for-author-on-review-bad-units.json')}
+  let(:whedon_set_reminder_for_author_on_review_string_units) { json_fixture('whedon-seting-reminder-for-author-on-review-string-units.json')}
   let(:whedon_set_reminder_for_author_on_review_good_units) { json_fixture('whedon-seting-reminder-for-author-on-review-good-units.json')}
+  let(:whedon_set_reminder_for_author_on_review_bonkers_units) { json_fixture('whedon-seting-reminder-for-author-on-review-bonkers-units.json')}
 
   subject do
     app = described_class.new!
@@ -237,24 +238,24 @@ describe WhedonApi do
     end
   end
 
-  context "[REVIEW] when setting a reminder for an author with units we can't handle" do
+  context "[REVIEW] when setting a reminder for an author with string units" do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "I don't know what to do with 'two weeks'. Please specific a numerical unit.")
+      expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "Reminder set for @mpascariu in two weeks")
 
-      post '/dispatch', whedon_set_reminder_for_author_on_review_bad_units, {'CONTENT_TYPE' => 'application/json'}
+      post '/dispatch', whedon_set_reminder_for_author_on_review_string_units, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should initialize properly" do
       expect(last_response).to be_ok
     end
-
-    it "should not schedule a reminder" do
-      expect(ReviewReminderWorker).to receive(:perform_async).never
-    end
+    #
+    # it "should not schedule a reminder" do
+    #   expect(ReviewReminderWorker).to receive(:perform_async).never
+    # end
   end
 
-  context "[REVIEW] when setting a reminder for an author with units we can handle" do
+  context "[REVIEW] when setting a reminder for an author with integer units" do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "Reminder set for @mpascariu in 2 weeks")
@@ -285,25 +286,32 @@ describe WhedonApi do
       end
     end
 
-    context "validating times" do
+    context "[REVIEW] when setting a reminder for an author with a bonkers time" do
       before do
         allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+        expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "I don't recognize this description of time 'pink' 'flamingo'.")
+
+        post '/dispatch', whedon_set_reminder_for_author_on_review_bonkers_units, {'CONTENT_TYPE' => 'application/json'}
       end
 
-      it "should know dayz is not a valid unit" do
-        expect(github_client).to receive(:add_comment).once.with(anything, anything, "I don't recognize this unit of time 'dayz'. Please specify 'days' or 'weeks'.")
-        expect(subject.valid_time?(3, 'dayz')).to be_falsey
+      it "should initialize properly" do
+        expect(last_response).to be_ok
       end
-
-      it "should know hours is not a valid unit" do
-        expect(github_client).to receive(:add_comment).once.with(anything, anything, "I don't recognize this unit of time 'hours'. Please specify 'days' or 'weeks'.")
-        expect(subject.valid_time?(3, 'hours')).to be_falsey
-      end
-
-      it "should know what to do with non-numerical units" do
-        expect(github_client).to receive(:add_comment).once.with(anything, anything, "I don't know what to do with 'three days'. Please specific a numerical unit.")
-        expect(subject.valid_time?('three', 'days')).to be_falsey
-      end
+      #
+      # it "should not schedule a reminder" do
+      #   expect(ReviewReminderWorker).to receive(:perform_async).never
+      # end
     end
+
+
+    # context "validating times" do
+    #   before do
+    #     allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+    #   end
+    #
+    #   it "should know what to do with non-numerical units" do
+    #     expect(github_client).to receive(:add_comment).once.with(anything, anything, "I don't know what to do with 'three days'. Please specific a numerical unit.")
+    #   end
+    # end
   end
 end

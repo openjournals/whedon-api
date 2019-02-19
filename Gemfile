@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'chronic', '~> 0.10.2'
 gem 'github-linguist', '~> 5.3'
 gem 'licensee', '~> 9.9'
 gem 'nokogiri', '= 1.8.5'

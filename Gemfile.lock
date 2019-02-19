@@ -30,6 +30,7 @@ GEM
       latex-decode (~> 0.0)
     byebug (10.0.2)
     charlock_holmes (0.7.6)
+    chronic (0.10.2)
     coderay (1.1.2)
     concurrent-ruby (1.1.4)
     connection_pool (2.2.2)
@@ -159,6 +160,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  chronic (~> 0.10.2)
   github-linguist (~> 5.3)
   licensee (~> 9.9)
   nokogiri (= 1.8.5)

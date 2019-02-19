@@ -1,5 +1,6 @@
 require_relative 'github'
 require_relative 'workers'
+require 'chronic'
 require 'date'
 require 'sinatra/base'
 require 'fileutils'
@@ -195,39 +196,20 @@ class WhedonApi < Sinatra::Base
       halt
     end
 
-    if valid_time?(size, unit)
+    schedule_at = target_time(size, unit)
+
+    if schedule_at
       # Schedule reminder
-      schedule_at = target_time(size, unit)
       ReviewReminderWorker.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
       respond "Reminder set for #{human} in #{size} #{unit}"
+    else
+      respond "I don't recognize this description of time '#{size}' '#{unit}'."
     end
   end
 
   # Return Date object + some number of days specified
   def target_time(size, unit)
-    if unit == 'day' || unit == 'days'
-      return Time.now + (size.to_i * 86400)
-    elsif unit == 'week' || unit == 'weeks'
-      return Time.now + (size.to_i * 7 * 86400)
-    end
-  end
-
-  def valid_time?(size, unit)
-    if is_numerical?(size)
-      if ['day', 'days', 'week', 'weeks'].include?(unit.downcase.strip)
-        return true
-      else
-        respond "I don't recognize this unit of time '#{unit}'. Please specify 'days' or 'weeks'."
-        return false
-      end
-    else
-      respond "I don't know what to do with '#{size} #{unit}'. Please specific a numerical unit."
-      return false
-    end
-  end
-
-  def is_numerical?(number)
-    true if Float(number) rescue false
+    Chronic.parse("in #{size} #{unit}")
   end
 
   # How Whedon talks
