@@ -249,10 +249,6 @@ describe WhedonApi do
     it "should initialize properly" do
       expect(last_response).to be_ok
     end
-    #
-    # it "should not schedule a reminder" do
-    #   expect(ReviewReminderWorker).to receive(:perform_async).never
-    # end
   end
 
   context "[REVIEW] when setting a reminder for an author with integer units" do
