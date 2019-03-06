@@ -101,9 +101,9 @@ class DOIWorker
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
-            doi_summary[:invalid].push("http://doi.org/#{entry.doi} is INVALID")
+            doi_summary[:invalid].push("#{entry.doi} is INVALID")
           else
-            doi_summary[:ok].push("http://doi.org/#{entry.doi} is OK")
+            doi_summary[:ok].push("#{entry.doi} is OK")
           end
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
