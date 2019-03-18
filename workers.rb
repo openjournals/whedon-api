@@ -90,6 +90,53 @@ class DOIWorker
     end
   end
 
+  # How different are two strings?
+  # https://en.wikipedia.org/wiki/Levenshtein_distance
+  def levenshtein_distance(s, t)
+    m = s.length
+    n = t.length
+
+    return m if n == 0
+    return n if m == 0
+    d = Array.new(m+1) {Array.new(n+1)}
+
+    (0..m).each {|i| d[i][0] = i}
+    (0..n).each {|j| d[0][j] = j}
+    (1..n).each do |j|
+      (1..m).each do |i|
+        d[i][j] = if s[i-1] == t[j-1]  # adjust index into string
+                    d[i-1][j-1]       # no operation required
+                  else
+                    [ d[i-1][j]+1,    # deletion
+                      d[i][j-1]+1,    # insertion
+                      d[i-1][j-1]+1,  # substitution
+                    ].min
+                  end
+      end
+    end
+
+    d[m][n]
+  end
+
+  def crossref_lookup(query_value)
+    works = Serrano.works(:query => query_value)
+    if works['message']['items'].any?
+      if works['message']['items'].first.has_key?('DOI')
+        candidate = works['message']['items'].first
+        candidate_title = candidate['title'].first.downcase
+        candidate_doi = candidate['DOI']
+        distance = levenshtein_distance(candidate_title, query_value.downcase)
+
+        if distance < 3
+          return candidate_doi
+        else
+          return nil
+        end
+      end
+    end
+  end
+
+  # TODO: refactor this monster. Soon...
   def check_dois(bibtex_path)
     doi_summary = {:ok => [], :missing => [], :invalid => []}
     entries = BibTeX.open(bibtex_path, :filter => :latex)
@@ -106,12 +153,8 @@ class DOIWorker
           end
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
-          # Do inject or something fancy here to build comma-separated string
-          query_value = entry.collect {|_, value| value}.join(', ')
-          works = Serrano.works(:query => query_value)
-          if works['message']['items'].any?
-            if works['message']['items'].first.has_key?('DOI')
-              candidate_doi = works['message']['items'].first['DOI']
+          if entry.has_field?('title')
+            if candidate_doi = crossref_lookup(entry.title.value)
               doi_summary[:missing].push("https://doi.org/#{candidate_doi} may be missing for title: #{entry.title}")
             end
           end
