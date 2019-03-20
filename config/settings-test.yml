@@ -11,5 +11,5 @@ journals:
       journal_alias: joss
       journal_launch_date: '2016-05-05'
       site_name: Journal of Open Source Software
-      donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=
+      donate_url: https://numfocus.salsalabs.org/donate-to-joss/index.html
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
