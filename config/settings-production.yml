@@ -39,6 +39,25 @@ journals:
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
 
+  - JuliaCon/proceedings-review:
+      editor_team_id: 3213896
+      eics:
+        - vchuravy
+      papers_repo: JuliaCon/proceedings-papers
+      # TODO: Create this spreadsheet or equivalent
+      reviewers: https://bit.ly/jcon-reviewers
+      reviewers_signup: http://pjc-proceedings.herokuapp.com/reviewer-signup.html
+      site_host: https://pjc-proceedings.herokuapp.com
+      doi_prefix: "10.21105"
+      journal_alias: jcon
+      journal_launch_date: '2019-04-22'
+      journal_issn: '2642-4029'
+      site_name: JuliaCon Proceedings
+      donate_url: https://numfocus.salsalabs.org/donate-to-jcon
+      site_api_key: <%= ENV['JCON_API_KEY'] %>
+      crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
+      crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
+
   - openjournals/joss-reviews-testing:
       editor_team_id: 2009411
       eics:
