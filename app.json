@@ -19,6 +19,9 @@
     "JOSE_API_KEY": {
       "description": "The API key for the JOSE site API"
     },
+    "JCON_API_KEY": {
+      "description": "The API key for the JCON site API"
+    },
     "JOSS_API_KEY_TESTING": {
       "description": "Test API key"
     },
