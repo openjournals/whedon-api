@@ -125,6 +125,7 @@ class DOIWorker
   end
 
   def crossref_lookup(query_value)
+    puts "Crossref query value is #{query_value}"
     works = Serrano.works(:query => query_value)
     if works['message']['items'].any?
       if works['message']['items'].first.has_key?('DOI')
