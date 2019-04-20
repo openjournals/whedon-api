@@ -62,7 +62,7 @@ class DOIWorker
 
     if status.success?
       paper_path = find_paper(issue_id)
-      if paper_path.ends_with?('.tex')
+      if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
         bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
       else
