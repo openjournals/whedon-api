@@ -130,6 +130,7 @@ class DOIWorker
     if works['message'].any? && works['message']['items'].any?
       if works['message']['items'].first.has_key?('DOI')
         candidate = works['message']['items'].first
+        return nil unless candidate['title']
         candidate_title = candidate['title'].first.downcase
         candidate_doi = candidate['DOI']
         distance = levenshtein_distance(candidate_title, query_value.downcase)
