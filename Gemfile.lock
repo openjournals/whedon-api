@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 0a2cd51df451f52945d50d27608b7daa5eeae886
-  ref: 0a2cd51df451f52945d50d27608b7daa5eeae886
+  revision: 033eedaceb8080759917955949bbd7db36fcfda6
+  ref: 033eedaceb8080759917955949bbd7db36fcfda6
   specs:
     whedon (0.1.0)
       bibtex-ruby
@@ -11,7 +11,7 @@ GIT
       nameable (~> 1.1)
       octokit (~> 4.0)
       redcarpet (~> 3.3)
-      rest-client (~> 1.8)
+      rest-client (>= 1.8)
       thor (~> 0.19)
       tilt
       unicode (~> 0.4.4)
@@ -98,10 +98,10 @@ GEM
     rake (10.5.0)
     redcarpet (3.4.0)
     redis (4.1.0)
-    rest-client (1.8.0)
+    rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
-      mime-types (>= 1.16, < 3.0)
-      netrc (~> 0.7)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -146,7 +146,7 @@ GEM
     tilt (2.0.9)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.5)
+    unf_ext (0.0.7.6)
     unicode (0.4.4.4)
     unicorn (5.3.1)
       kgio (~> 2.6)
@@ -168,7 +168,7 @@ DEPENDENCIES
   pry-byebug
   rack (>= 2.0.6)
   rack-test
-  rest-client (~> 1.8)
+  rest-client (~> 2.0)
   rspec
   serrano
   sidekiq (= 5.0.5)
