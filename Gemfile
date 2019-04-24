@@ -13,7 +13,7 @@ gem 'sinatra', '2.0.2'
 gem 'sinatra-contrib', '2.0.2'
 gem 'unicorn', '5.3.1'
 gem 'pry-byebug'
-gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '033eedaceb8080759917955949bbd7db36fcfda6'
+gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '4515b90e459c8cfa96ab3682180740d4aa795c14'
 
 group :test do
   gem 'rack-test'
