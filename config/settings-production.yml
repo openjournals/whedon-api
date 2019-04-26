@@ -46,7 +46,7 @@ journals:
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jcon-reviewers
-      reviewers_signup: https://submissions.juliacon.org/reviewer-signup.html
+      reviewers_signup: https://bit.ly/jcon-reviewers
       site_host: https://submissions.juliacon.org
       doi_prefix: "10.21105"
       journal_alias: jcon
