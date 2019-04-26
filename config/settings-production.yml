@@ -46,8 +46,8 @@ journals:
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jcon-reviewers
-      reviewers_signup: http://pjc-proceedings.herokuapp.com/reviewer-signup.html
-      site_host: https://pjc-proceedings.herokuapp.com
+      reviewers_signup: https://submissions.juliacon.org/reviewer-signup.html
+      site_host: https://submissions.juliacon.org
       doi_prefix: "10.21105"
       journal_alias: jcon
       journal_launch_date: '2019-04-22'
