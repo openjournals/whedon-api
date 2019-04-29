@@ -45,8 +45,8 @@ journals:
         - vchuravy
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
-      reviewers: https://bit.ly/jcon-reviewers
-      reviewers_signup: https://bit.ly/jcon-reviewers
+      reviewers: http://bit.ly/2V9GSFq
+      reviewers_signup: https://forms.gle/yANMe4c9YmuW9MWcA
       site_host: https://submissions.juliacon.org
       doi_prefix: "10.21105"
       journal_alias: jcon
