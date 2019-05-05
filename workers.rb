@@ -416,3 +416,69 @@ class DepositWorker
     Open3.capture3("whedon deposit #{issue_id}")
   end
 end
+
+class SpellingWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+
+  require 'faraday'
+  require 'ostruct'
+  require 'serrano'
+  require 'sidekiq'
+  require 'uri'
+  require 'whedon'
+
+  include Sidekiq::Worker
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Including this means we can talk to GitHub from the background worker.
+  include GitHub
+
+  def perform(nwo, issue_id, config)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+
+    # Download the paper
+    stdout, stderr, status = download(issue_id)
+
+    if status.success?
+      paper_path = find_paper(issue_id)
+      if paper_path.end_with?('.tex')
+        bg_respond(nwo, issue_id, "I can't spell check LaTeX submissions sorry.") and return
+      end
+
+      results, stderr, status = check_spelling(paper_path)
+
+      if status.success?
+        bg_respond(nwo, issue_id, ```\nPossible spelling issues:\n\n #{results}\n```
+      else
+        bg_respond(nwo, issue_id, "Couldn't check the spelling sorry.")
+      end
+    else
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+
+  # TODO: refactor this monster. Soon...
+  def check_spelling(paper_path)
+    Open3.capture3("mdspell #{paper_path} -c .mdspell-ignored")
+  end
+
+  def find_paper(issue_id)
+    search_path ||= "tmp/#{issue_id}"
+    paper_paths = []
+
+    Find.find(search_path) do |path|
+      paper_paths << path if path =~ /paper\.tex$|paper\.md$/
+    end
+
+    return paper_paths.first
+  end
+
+  def download(issue_id)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    Open3.capture3("whedon download #{issue_id}")
+  end
+end

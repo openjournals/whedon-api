@@ -1,0 +1,4 @@
+ignored [
+  '[A-Z]{3,}',
+  'orcid'
+]

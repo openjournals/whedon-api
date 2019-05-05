@@ -175,6 +175,8 @@ class WhedonApi < Sinatra::Base
       deposit(dry_run=true)
     when /\A@whedon check references/i
       check_references
+    when /\A@whedon check spelling/i
+      check_spelling
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
@@ -232,6 +234,11 @@ class WhedonApi < Sinatra::Base
   def check_references
     respond "```\nAttempting to check references...\n```"
     DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
+  end
+
+  def check_spelling
+    respond "```\nAttempting to check spelling...\n```"
+    SpellingWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   def deposit(dry_run)

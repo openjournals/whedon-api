@@ -13,6 +13,7 @@ gem 'sinatra', '2.0.2'
 gem 'sinatra-contrib', '2.0.2'
 gem 'unicorn', '5.3.1'
 gem 'pry-byebug'
+gem 'mdspell', git: 'https://github.com/arfon/mdspell'
 gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '77e1ffbd3fc0c0fc82563d784c272bc3d1955119'
 
 group :test do
