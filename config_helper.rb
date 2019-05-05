@@ -9,6 +9,8 @@ module ConfigHelper
     ENV['PAPER_REPOSITORY'] = config.papers_repo
     ENV['JOURNAL_URL'] = config.site_host
     ENV['JOURNAL_NAME'] = config.site_name
+    ENV['CURRENT_ISSUE'] = config.current_issue
+    ENV['JOURNAL_VOLUME'] = config.current_volume
     ENV['JOURNAL_ISSN'] = config.journal_issn
     ENV['JOURNAL_LAUNCH_DATE'] = config.journal_launch_date
     ENV['CROSSREF_USERNAME'] = config.crossref_username

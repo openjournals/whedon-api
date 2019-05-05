@@ -52,6 +52,8 @@ journals:
       journal_alias: jcon
       journal_launch_date: '2019-04-22'
       journal_issn: '2642-4029'
+      current_issue: 1
+      current_volume: 1
       site_name: JuliaCon Proceedings
       donate_url: https://numfocus.salsalabs.org/donate-to-jcon
       site_api_key: <%= ENV['JCON_API_KEY'] %>
