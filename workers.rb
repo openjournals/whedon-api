@@ -451,7 +451,7 @@ class SpellingWorker
       results, stderr, status = check_spelling(paper_path)
 
       if status.success?
-        bg_respond(nwo, issue_id, ```\nPossible spelling issues:\n\n #{results}\n```
+        bg_respond(nwo, issue_id, "```\nPossible spelling issues:\n\n #{results}\n```")
       else
         bg_respond(nwo, issue_id, "Couldn't check the spelling sorry.")
       end
