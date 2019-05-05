@@ -65,6 +65,9 @@
     },
     {
       "url": "https://github.com/openjournals/pandoc-buildpack"
+    },
+    {
+      "url": "https://github.com/mtuchowski/mdspell"
     }
   ],
   "environments": {
