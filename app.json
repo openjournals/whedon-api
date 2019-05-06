@@ -13,6 +13,15 @@
   "scripts": {
   },
   "env": {
+    "HEROKU_APP_NAME": {
+      "description": "The name of this application on Heroku"
+    },
+    "HEROKU_CLI_USER": {
+      "description": "The username of the account used to run restart.sh"
+    },
+    "HEROKU_CLI_TOKEN": {
+      "description": "The API token of the account used to run restart.sh"
+    },
     "JOSS_API_KEY": {
       "description": "The API key for the JOSS site API"
     },
