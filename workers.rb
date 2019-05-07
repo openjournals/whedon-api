@@ -343,21 +343,8 @@ class DepositWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Download the paper
-    stdout, stderr, status = download(issue_id)
-
-    # Whedon often can't find a paper in the repository he's downloaded even
-    # though it's definitely there (e.g. https://github.com/openjournals/joss-reviews/issues/776#issuecomment-397714563)
-    # Not sure if this is because the repository hasn't downloaded yet.
-    # Adding in a sleep statement to see if this helps.
-    sleep(5)
-
-    if !status.success?
-      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
-    end
-
-    # Compile the paper
-    pdf_path, stderr, status = compile(issue_id)
+    # Download and compile the paper
+    pdf_path, stderr, status = download_and_compile(issue_id)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -390,14 +377,16 @@ class DepositWorker
     bg_respond(nwo, issue_id, pr_response)
   end
 
-  # Use the Whedon gem to download the software to a local tmp directory
-  def download(issue_id)
+  # Use the Whedon gem to download the software to a local tmp directory and compile it
+  def download_and_compile(issue_id)
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
-    Open3.capture3("whedon download #{issue_id}")
-  end
 
-  # Use the Whedon gem to compile the paper
-  def compile(issue_id)
+    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+
+    if !status.success?
+      return result, stderr, status
+    end
+
     Open3.capture3("whedon compile #{issue_id}")
   end
 
