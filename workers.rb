@@ -57,6 +57,8 @@ class DOIWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
+    # Trying to debug a race condition on Heroku
+    sleep(10)
     # Download the paper
     stdout, stderr, status = download(issue_id)
 
