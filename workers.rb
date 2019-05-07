@@ -285,21 +285,8 @@ class PDFWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Download the paper
-    stdout, stderr, status = download(issue_id)
-
-    # Whedon often can't find a paper in the repository he's downloaded even
-    # though it's definitely there (e.g. https://github.com/openjournals/joss-reviews/issues/776#issuecomment-397714563)
-    # Not sure if this is because the repository hasn't downloaded yet.
-    # Adding in a sleep statement to see if this helps.
-    sleep(5)
-
-    if !status.success?
-      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
-    end
-
     # Compile the paper
-    pdf_path, stderr, status = compile(issue_id, custom_branch)
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -317,13 +304,15 @@ class PDFWorker
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download(issue_id)
+  def download_and_compile(issue_id, custom_branch=nil)
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
-    Open3.capture3("whedon download #{issue_id}")
-  end
 
-  # Use the Whedon gem to compile the paper
-  def compile(issue_id, custom_branch=nil)
+    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+
+    if !status.success?
+      return result, stderr, status
+    end
+
     if custom_branch
       Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
     else
