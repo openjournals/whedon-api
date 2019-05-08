@@ -208,7 +208,7 @@ class DOIWorker
   end
 
   def download(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    # FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 end
@@ -381,7 +381,7 @@ class DepositWorker
 
   # Use the Whedon gem to download the software to a local tmp directory and compile it
   def download_and_compile(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    # FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
 
     result, stderr, status = Open3.capture3("whedon download #{issue_id}")
 
