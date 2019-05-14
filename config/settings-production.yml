@@ -19,7 +19,11 @@ journals:
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
-
+      twitter_consumer_key: <%= ENV['JOSS_TWITTER_CONSUMER_KEY'] %>
+      twitter_consumer_secret: <%= ENV['JOSS_TWITTER_CONSUMER_SECRET'] %>
+      twitter_access_token: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN'] %>
+      twitter_access_token_secret: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN_SECRET'] %>
+      
   - openjournals/jose-reviews:
       editor_team_id: 2414911
       eics:

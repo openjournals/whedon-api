@@ -374,9 +374,36 @@ class DepositWorker
       doi = "https://doi.org/#{config.doi_prefix}/#{config.journal_alias}.#{id}"
 
       pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? notify your editorial technical team..."
+
+      # Only Tweet if configured with keys
+      if config.twitter_consumer_key
+        whedon_tweet(crossref_xml_path, nwo, issue_id, config)
+      end
     end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
+  end
+
+  def whedon_tweet(crossref_xml_path, nwo, issue_id, config)
+    # Read the XML
+    doc = Nokogiri(File.open(crossref_xml_path))
+    # Extract the DOI
+    doi = doc.css('publisher_item identifier').first.content
+    # And the paper title
+    title = doc.css('journal_article titles title').first.content
+
+    tweet = %Q(Just published in ##{config.journal_alias.upcase}_theOJ: '#{title}', #{config.site_host}/papers/#{doi})
+
+    client = Twitter::REST::Client.new do |c|
+      c.consumer_key        = config.twitter_consumer_key
+      c.consumer_secret     = config.twitter_consumer_secret
+      c.access_token        = config.twitter_access_token
+      c.access_token_secret = config.twitter_access_token_secret
+    end
+
+    t = client.update(tweet)
+    response = "Posted to the Twitters: #{t.uri.to_s}"
+    bg_respond(nwo, issue_id, response)
   end
 
   # Use the Whedon gem to download the software to a local tmp directory and compile it
