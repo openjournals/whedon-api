@@ -85,10 +85,10 @@ class WhedonApi < Sinatra::Base
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
       repo_detect
-      respond erb :welcome, :locals => { :editor => assignees.first }
+      respond erb :welcome, :locals => { :editor => assignees.first, :reviewers => @config.reviewers }
     else
       repo_detect
-      respond erb :welcome, :locals => { :editor => nil }
+      respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
     process_pdf
   end
