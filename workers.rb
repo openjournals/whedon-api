@@ -386,7 +386,7 @@ class DepositWorker
 
   def whedon_tweet(crossref_xml_path, nwo, issue_id, config)
     # Read the XML
-    doc = Nokogiri(File.open(crossref_xml_path))
+    doc = Nokogiri(File.open(crossref_xml_path.strip))
     # Extract the DOI
     doi = doc.css('publisher_item identifier').first.content
     # And the paper title
