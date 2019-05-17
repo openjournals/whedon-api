@@ -333,6 +333,7 @@ class DepositWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
+  require 'twitter'
 
   include Sidekiq::Worker
 
