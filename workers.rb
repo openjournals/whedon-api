@@ -57,12 +57,20 @@ class DOIWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
+    # Trying to debug a race condition on Heroku
+    sleep(10)
     # Download the paper
     stdout, stderr, status = download(issue_id)
 
     if status.success?
       paper_path = find_paper(issue_id)
-      bibtex_filename = YAML.load_file(paper_path)['bibliography']
+      if paper_path.end_with?('.tex')
+        meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
+        bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
+      else
+        bibtex_filename = YAML.load_file(paper_path)['bibliography']
+      end
+
       bibtex_path = "#{File.dirname(paper_path)}/#{bibtex_filename}"
 
       if bibtex_path
@@ -119,10 +127,12 @@ class DOIWorker
   end
 
   def crossref_lookup(query_value)
+    puts "Crossref query value is #{query_value}"
     works = Serrano.works(:query => query_value)
-    if works['message']['items'].any?
+    if works['message'].any? && works['message']['items'].any?
       if works['message']['items'].first.has_key?('DOI')
         candidate = works['message']['items'].first
+        return nil unless candidate['title']
         candidate_title = candidate['title'].first.downcase
         candidate_doi = candidate['DOI']
         distance = levenshtein_distance(candidate_title, query_value.downcase)
@@ -191,14 +201,14 @@ class DOIWorker
     paper_paths = []
 
     Find.find(search_path) do |path|
-      paper_paths << path if path =~ /paper\.md$/
+      paper_paths << path if path =~ /paper\.tex$|paper\.md$/
     end
 
     return paper_paths.first
   end
 
   def download(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+    # FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
 end
@@ -277,21 +287,8 @@ class PDFWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Download the paper
-    stdout, stderr, status = download(issue_id)
-
-    # Whedon often can't find a paper in the repository he's downloaded even
-    # though it's definitely there (e.g. https://github.com/openjournals/joss-reviews/issues/776#issuecomment-397714563)
-    # Not sure if this is because the repository hasn't downloaded yet.
-    # Adding in a sleep statement to see if this helps.
-    sleep(5)
-
-    if !status.success?
-      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
-    end
-
     # Compile the paper
-    pdf_path, stderr, status = compile(issue_id, custom_branch)
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -309,13 +306,15 @@ class PDFWorker
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download(issue_id)
+  def download_and_compile(issue_id, custom_branch=nil)
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
-    Open3.capture3("whedon download #{issue_id}")
-  end
 
-  # Use the Whedon gem to compile the paper
-  def compile(issue_id, custom_branch=nil)
+    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+
+    if !status.success?
+      return result, stderr, status
+    end
+
     if custom_branch
       Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
     else
@@ -334,6 +333,7 @@ class DepositWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
+  require 'twitter'
 
   include Sidekiq::Worker
 
@@ -346,21 +346,8 @@ class DepositWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Download the paper
-    stdout, stderr, status = download(issue_id)
-
-    # Whedon often can't find a paper in the repository he's downloaded even
-    # though it's definitely there (e.g. https://github.com/openjournals/joss-reviews/issues/776#issuecomment-397714563)
-    # Not sure if this is because the repository hasn't downloaded yet.
-    # Adding in a sleep statement to see if this helps.
-    sleep(5)
-
-    if !status.success?
-      bg_respond(nwo, issue_id, "Downloading of the repository for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
-    end
-
-    # Compile the paper
-    pdf_path, stderr, status = compile(issue_id)
+    # Download and compile the paper
+    pdf_path, stderr, status = download_and_compile(issue_id)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -388,19 +375,48 @@ class DepositWorker
       doi = "https://doi.org/#{config.doi_prefix}/#{config.journal_alias}.#{id}"
 
       pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? notify your editorial technical team..."
+
+      # Only Tweet if configured with keys
+      if config.twitter_consumer_key
+        whedon_tweet(crossref_xml_path, nwo, issue_id, config)
+      end
     end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
   end
 
-  # Use the Whedon gem to download the software to a local tmp directory
-  def download(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
-    Open3.capture3("whedon download #{issue_id}")
+  def whedon_tweet(crossref_xml_path, nwo, issue_id, config)
+    # Read the XML
+    doc = Nokogiri(File.open(crossref_xml_path.strip))
+    # Extract the DOI
+    doi = doc.css('publisher_item identifier').first.content
+    # And the paper title
+    title = doc.css('journal_article titles title').first.content
+
+    tweet = %Q(Just published in ##{config.journal_alias.upcase}_theOJ: '#{title}', #{config.site_host}/papers/#{doi})
+
+    client = Twitter::REST::Client.new do |c|
+      c.consumer_key        = config.twitter_consumer_key
+      c.consumer_secret     = config.twitter_consumer_secret
+      c.access_token        = config.twitter_access_token
+      c.access_token_secret = config.twitter_access_token_secret
+    end
+
+    t = client.update(tweet)
+    response = "Posted to the Twitters: #{t.uri.to_s}"
+    bg_respond(nwo, issue_id, response)
   end
 
-  # Use the Whedon gem to compile the paper
-  def compile(issue_id)
+  # Use the Whedon gem to download the software to a local tmp directory and compile it
+  def download_and_compile(issue_id)
+    # FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+
+    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+
+    if !status.success?
+      return result, stderr, status
+    end
+
     Open3.capture3("whedon compile #{issue_id}")
   end
 

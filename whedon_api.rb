@@ -85,10 +85,10 @@ class WhedonApi < Sinatra::Base
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
       repo_detect
-      respond erb :welcome, :locals => { :editor => assignees.first }
+      respond erb :welcome, :locals => { :editor => assignees.first, :reviewers => @config.reviewers }
     else
       repo_detect
-      respond erb :welcome, :locals => { :editor => nil }
+      respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
     process_pdf
   end
@@ -313,9 +313,9 @@ class WhedonApi < Sinatra::Base
     # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
 
-    if @config.site_host == "http://joss.theoj.org"
-      # Next update JOSS application to notify the editor has been changed
-      # Currently we're only doing this for JOSS
+    unless @config.site_host == "https://jose.theoj.org"
+      # Next update JOSS/JCON application to notify the editor has been changed
+      # Currently we're only doing this for JOSS/JCON
       url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
       response = RestClient.post(url, "")
     end

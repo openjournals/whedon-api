@@ -19,7 +19,11 @@ journals:
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
-
+      twitter_consumer_key: <%= ENV['JOSS_TWITTER_CONSUMER_KEY'] %>
+      twitter_consumer_secret: <%= ENV['JOSS_TWITTER_CONSUMER_SECRET'] %>
+      twitter_access_token: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN'] %>
+      twitter_access_token_secret: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN_SECRET'] %>
+      
   - openjournals/jose-reviews:
       editor_team_id: 2414911
       eics:
@@ -45,13 +49,15 @@ journals:
         - vchuravy
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
-      reviewers: https://bit.ly/jcon-reviewers
-      reviewers_signup: http://pjc-proceedings.herokuapp.com/reviewer-signup.html
-      site_host: https://pjc-proceedings.herokuapp.com
+      reviewers: http://bit.ly/2V9GSFq
+      reviewers_signup: https://forms.gle/yANMe4c9YmuW9MWcA
+      site_host: https://submissions.juliacon.org
       doi_prefix: "10.21105"
       journal_alias: jcon
       journal_launch_date: '2019-04-22'
       journal_issn: '2642-4029'
+      current_issue: "1"
+      current_volume: "1"
       site_name: JuliaCon Proceedings
       donate_url: https://numfocus.salsalabs.org/donate-to-jcon
       site_api_key: <%= ENV['JCON_API_KEY'] %>
@@ -70,6 +76,8 @@ journals:
       journal_alias: joss
       journal_launch_date: '2016-05-05'
       journal_issn: '0000-0000'
+      current_issue: "100"
+      current_volume: "10"
       site_name: Journal of Open Source Software Testing
       donate_url: http://example.com
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
