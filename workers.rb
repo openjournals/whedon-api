@@ -403,7 +403,7 @@ class DepositWorker
     end
 
     t = client.update(tweet)
-    response = "Posted to the Twitters: #{t.uri.to_s}"
+    response = "🐦🐦🐦 [Tweet for this paper](#{t.uri.to_s}) 🐦🐦🐦"
     bg_respond(nwo, issue_id, response)
   end
 
