@@ -393,7 +393,7 @@ class DepositWorker
     # And the paper title
     title = doc.css('journal_article titles title').first.content
 
-    tweet = %Q(Just published in ##{config.journal_alias.upcase}_theOJ: '#{title}', #{config.site_host}/papers/#{doi})
+    tweet = %Q(Just published in ##{config.journal_alias.upcase}_theOJ: '#{title}': #{config.site_host}/papers/#{doi})
 
     client = Twitter::REST::Client.new do |c|
       c.consumer_key        = config.twitter_consumer_key
