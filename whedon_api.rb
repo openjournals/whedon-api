@@ -172,10 +172,10 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon accept/i
       check_editor
       deposit(dry_run=true)
-    when /\A@whedon check references/i
-      check_references
     when /\A@whedon check references from branch (.*)/
       check_references($1)
+    when /\A@whedon check references/i
+      check_references
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
