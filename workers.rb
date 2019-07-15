@@ -63,6 +63,7 @@ class DOIWorker
     stdout, stderr, status = download(issue_id)
 
     if status.success?
+      puts "CUSTOM BRANCH IS #{custom_branch}"
       # Need to checkout the new branch before looking for the paper.
       `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
@@ -203,6 +204,8 @@ class DOIWorker
     search_path ||= "tmp/#{issue_id}"
     paper_paths = []
 
+    puts "SEARCHING IN #{search_path}"
+    
     Find.find(search_path) do |path|
       paper_paths << path if path =~ /paper\.tex$|paper\.md$/
     end
