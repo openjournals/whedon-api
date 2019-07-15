@@ -53,7 +53,7 @@ class DOIWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config)
+  def perform(nwo, issue_id, config, custom_branch)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
@@ -63,6 +63,9 @@ class DOIWorker
     stdout, stderr, status = download(issue_id)
 
     if status.success?
+      # Need to checkout the new branch before looking for the paper.
+      `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet` if custom_branch
+
       paper_path = find_paper(issue_id)
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"

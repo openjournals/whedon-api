@@ -174,6 +174,8 @@ class WhedonApi < Sinatra::Base
       deposit(dry_run=true)
     when /\A@whedon check references/i
       check_references
+    when /\A@whedon check references from branch (.*)/
+      check_references($1)
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
@@ -228,9 +230,14 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  def check_references
-    respond "```\nAttempting to check references...\n```"
-    DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
+  def check_references(custom_branch=nil)
+    if custom_branch
+      respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
+    else
+      respond "```\nAttempting to check references...\n```"
+    end
+
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   def deposit(dry_run)
