@@ -8,8 +8,8 @@ journals:
         - kyleniemeyer
       papers_repo: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
-      reviewers_signup: http://joss.theoj.org/reviewer-signup.html
-      site_host: http://joss.theoj.org
+      reviewers_signup: https://joss.theoj.org/reviewer-signup.html
+      site_host: https://joss.theoj.org
       doi_prefix: "10.21105"
       journal_alias: joss
       journal_launch_date: '2016-05-05'
@@ -23,7 +23,7 @@ journals:
       twitter_consumer_secret: <%= ENV['JOSS_TWITTER_CONSUMER_SECRET'] %>
       twitter_access_token: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN'] %>
       twitter_access_token_secret: <%= ENV['JOSS_TWITTER_ACCESS_TOKEN_SECRET'] %>
-      
+
   - openjournals/jose-reviews:
       editor_team_id: 2414911
       eics:
