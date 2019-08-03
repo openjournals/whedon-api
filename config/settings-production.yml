@@ -70,16 +70,18 @@ journals:
         - arfon
       papers_repo: openjournals/joss-papers-testing
       reviewers: https://bit.ly/joss-reviewers
-      reviewers_signup: http://staging.joss.theoj.org/reviewer-signup.html
-      site_host: http://joss.theoj.org
+      reviewers_signup: https://joss.theoj.org/reviewer-signup.html
+      site_host: https://joss.theoj.org
       doi_prefix: "10.21105"
       journal_alias: joss
       journal_launch_date: '2016-05-05'
-      journal_issn: '0000-0000'
-      current_issue: "100"
-      current_volume: "10"
-      site_name: Journal of Open Source Software Testing
-      donate_url: http://example.com
-      site_api_key: <%= ENV['JOSS_API_KEY'] %>
-      crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
-      crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
+      journal_issn: '2475-9066'
+      site_name: Journal of Open Source Software
+      donate_url: https://numfocus.salsalabs.org/donate-to-joss
+      site_api_key: 
+      crossref_username:
+      crossref_password:
+      twitter_consumer_key:
+      twitter_consumer_secret:
+      twitter_access_token:
+      twitter_access_token_secret:
