@@ -1,11 +1,12 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 07bb23bf8f0b08b639f848e1345cd0974856c544
-  ref: 07bb23bf8f0b08b639f848e1345cd0974856c544
+  revision: 5bea553e90c85f66cf6c096b276d83e7295e67a7
+  ref: 5bea553e90c85f66cf6c096b276d83e7295e67a7
   specs:
     whedon (0.1.0)
       bibtex-ruby
       dotenv
+      github-linguist (~> 5.3)
       latex-decode
       metamatter (~> 0.2.0)
       octokit (~> 4.0)
