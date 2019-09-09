@@ -97,7 +97,7 @@ class DOIWorker
         bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission")
       end
     else
-      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n```\n#{stderr}\n```") and return
     end
   end
 
@@ -246,7 +246,7 @@ class RepoWorker
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
-      bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n```\n #{stderr}\n```") and return
     end
   end
 
@@ -294,7 +294,7 @@ class PDFWorker
     pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
-      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n```\n #{stderr}\n```") and return
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
@@ -353,7 +353,7 @@ class DepositWorker
     pdf_path, stderr, status = download_and_compile(issue_id)
 
     if !status.success?
-      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n```\n #{stderr}\n```") and return
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
