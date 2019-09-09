@@ -154,7 +154,7 @@ class DOIWorker
       `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
       paper_path = find_paper(issue_id, jid)
-      
+
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
         bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
@@ -192,7 +192,7 @@ class DOIWorker
         bg_respond(nwo, issue_id, "Can't find a bibtex file for this submission")
       end
     else
-      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n```\n#{stderr}\n```") and return
     end
 
     # Clean-up
@@ -360,7 +360,7 @@ class RepoWorker
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
-      bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n```\n #{stderr}\n```") and return
     end
 
     # Clean-up
@@ -456,7 +456,7 @@ class PDFWorker
     if !status.success?
       # Clean-up
       FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
-      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n```\n #{stderr}\n```") and return
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
@@ -468,7 +468,7 @@ class PDFWorker
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pdf_response)
-    
+
     # Clean-up
     FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
@@ -516,7 +516,7 @@ class DepositWorker
     if !status.success?
       # Clean-up
       FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
-      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n```\n #{stderr}\n```") and return
     end
 
     # If we've got this far then push a copy of the PDF to the papers repository
