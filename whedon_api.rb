@@ -319,13 +319,9 @@ class WhedonApi < Sinatra::Base
     # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
 
-    unless @config.site_host == "https://jose.theoj.org"
-      # Next update JOSS/JCON application to notify the editor has been changed
-      # Currently we're only doing this for JOSS/JCON
-      url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
-      response = RestClient.post(url, "")
-    end
-
+    url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
+    response = RestClient.post(url, "")
+    
     reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
   end
