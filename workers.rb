@@ -180,11 +180,9 @@ class DOIWorker
 
   # Return true if the DOI doesn't resolve properly
   def invalid_doi?(doi_string)
-    doi = doi_string.to_s[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'])\S)+)\b/]
+    return true if doi_string.nil?
 
-    return true if doi.nil?
-
-    url = "https://doi.org/#{doi.strip}"
+    url = "https://doi.org/#{doi_string}"
     escaped_url = URI.escape(url)
 
     begin
@@ -202,7 +200,7 @@ class DOIWorker
   def find_paper(issue_id)
     search_path ||= "tmp/#{issue_id}"
     paper_paths = []
-    
+
     Find.find(search_path) do |path|
       paper_paths << path if path =~ /paper\.tex$|paper\.md$/
     end
