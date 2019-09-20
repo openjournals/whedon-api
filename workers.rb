@@ -160,7 +160,11 @@ class DOIWorker
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
-            doi_summary[:invalid].push("#{entry.doi} is INVALID")
+            if entry.doi.to_s.include?('http')
+              doi_summary[:invalid].push("#{entry.doi} is INVALID because of https://doi.org/ prefix")
+            else
+              doi_summary[:invalid].push("#{entry.doi} is INVALID")
+            end
           else
             doi_summary[:ok].push("#{entry.doi} is OK")
           end
