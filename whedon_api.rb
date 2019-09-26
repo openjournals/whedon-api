@@ -249,7 +249,7 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DOIWorker.perform_async(@nwo, @issue_id, serialized_config)
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch=nil)
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
@@ -321,7 +321,7 @@ class WhedonApi < Sinatra::Base
 
     url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
     response = RestClient.post(url, "")
-    
+
     reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
   end
