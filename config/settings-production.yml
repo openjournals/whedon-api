@@ -17,7 +17,7 @@ journals:
       journal_launch_date: '2016-05-05'
       journal_issn: '2475-9066'
       site_name: Journal of Open Source Software
-      donate_url: https://numfocus.salsalabs.org/donate-to-joss
+      donate_url: https://numfocus.org/donate-to-joss
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
@@ -40,7 +40,7 @@ journals:
       journal_launch_date: '2018-03-07'
       journal_issn: '2577-3569'
       site_name: Journal of Open Source Education
-      donate_url: https://numfocus.salsalabs.org/donate-to-jose
+      donate_url: https://numfocus.org/donate-to-jose
       site_api_key: <%= ENV['JOSE_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
