@@ -1,4 +1,5 @@
 class PaperPreviewWorker
+  require 'cloudinary'
   require 'sidekiq'
   require 'sidekiq_status'
   require 'whedon'
@@ -70,8 +71,8 @@ class PaperPreviewWorker
       --template #{latex_template_path}`
 
       if File.exists?("#{directory}/#{sha}.pdf")
-        puts "#{directory}/#{sha}.pdf"
-        self.payload = "#{directory}/#{sha}.pdf"
+        response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
+        self.payload = response['url']
       else
         self.payload = "Looks like we failed to compile the PDF."
         abort("Looks like we failed to compile the PDF")

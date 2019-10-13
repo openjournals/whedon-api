@@ -442,11 +442,6 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  get '/download' do
-    file = File.new(params[:file], 'r')
-    send_file(file, :disposition => 'attachment', :filename => File.basename("#{params[:file]}"))
-  end
-
   post '/dispatch' do
     if @action == "opened"
       say_hello
