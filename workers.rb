@@ -10,6 +10,10 @@ class PaperPreviewWorker
 
   SidekiqStatus::Container.ttl = 600
 
+  ENV["CURRENT_YEAR"] = 3030
+  ENV["CURRENT_VOLUME"] = 1
+  ENV["CURRENT_ISSUE"] = 1
+
   def perform(repository_address, journal, sha)
     result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
 
