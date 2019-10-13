@@ -1,3 +1,100 @@
+class PaperPreviewWorker
+  require 'cloudinary'
+  require 'sidekiq'
+  require 'sidekiq_status'
+  require 'whedon'
+
+  include Sidekiq::Worker
+  include SidekiqStatus::Worker
+
+  sidekiq_options retry: false
+
+  SidekiqStatus::Container.ttl = 600
+
+  def perform(repository_address, journal, sha)
+    ENV["CURRENT_YEAR"] = '3030'
+    ENV["CURRENT_VOLUME"] = '1'
+    ENV["CURRENT_ISSUE"] = '1'
+
+    result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
+
+    if !status.success?
+      return result, stderr, status
+    end
+
+    paper_paths = find_paper_paths("tmp/#{sha}")
+
+    if journal == "JOSS"
+      journal_name = "Journal of Open Source Software"
+    elsif journal == "JOSE"
+      journal_name = "Journal of Open Source Education"
+    end
+
+    if paper_paths.empty?
+      self.payload = "Can't find any papers to compile. Make sure there's a file named <code>paper.md</code> in your repository."
+      abort("Can't find any papers to compile.")
+    elsif paper_paths.size == 1
+      begin
+        Whedon::Paper.new(sha, paper_paths.first)
+      rescue RuntimeError => e
+        self.payload = e.message
+        abort("Can't find any papers to compile.")
+        return
+      end
+
+      latex_template_path = "#{Whedon.resources}/#{journal}/latex.template"
+      csl_file = "#{Whedon.resources}/#{journal}/apa.csl"
+      directory = File.dirname(paper_paths.first)
+      # TODO: may eventually want to swap out the latex template
+      `cd #{directory} && pandoc \
+      -V repository="#{repository_address}" \
+      -V archive_doi="PENDING" \
+      -V paper_url="PENDING" \
+      -V journal_name="#{journal_name}" \
+      -V formatted_doi="10.21105/#{journal}.0XXXX" \
+      -V review_issue_url="XXXX" \
+      -V graphics="true" \
+      -V issue="1" \
+      -V volume="1" \
+      -V page="1" \
+      -V logo_path="#{Whedon.resources}/#{journal}/logo.png" \
+      -V aas_logo_path="#{Whedon.resources}/#{journal}/aas-logo.png" \
+      -V year="2019" \
+      -V submitted="01 January 1900" \
+      -V published="01 January 3030" \
+      -V citation_author="Mickey Mouse et al." \
+      -o #{sha}.pdf -V geometry:margin=1in \
+      --pdf-engine=xelatex \
+      --filter pandoc-citeproc #{File.basename(paper_paths.first)} \
+      --from markdown+autolink_bare_uris \
+      --csl=#{csl_file} \
+      --template #{latex_template_path}`
+
+      if File.exists?("#{directory}/#{sha}.pdf")
+        response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
+        self.payload = response['url']
+      else
+        self.payload = "Looks like we failed to compile the PDF."
+        abort("Looks like we failed to compile the PDF")
+      end
+    else
+      self.payload = "There seems to be more than one paper.md present. Aborting..."
+      abort("There seems to be more than one paper.md present. Aborting...")
+    end
+  end
+
+  def find_paper_paths(search_path=nil)
+    search_path ||= "tmp/#{review_issue_id}"
+    paper_paths = []
+
+    Find.find(search_path) do |path|
+      paper_paths << path if path =~ /\bpaper\.tex$|\bpaper\.md$/
+    end
+
+    return paper_paths
+  end
+end
+
 class ReviewReminderWorker
   require_relative 'github'
   require_relative 'config_helper'

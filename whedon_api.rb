@@ -7,6 +7,7 @@ require 'fileutils'
 require 'json'
 require 'octokit'
 require 'rest-client'
+require 'securerandom'
 require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
@@ -26,9 +27,7 @@ class WhedonApi < Sinatra::Base
   before do
     set_configs unless journal_configs_initialized?
 
-    if %w[heartbeat].include? request.path_info.split('/')[1]
-      pass
-    else
+    if %w[dispatch].include? request.path_info.split('/')[1]
       sleep(2) unless testing? # This seems to help with auto-updating GitHub issue threads
       params = JSON.parse(request.env["rack.input"].read)
 
@@ -50,6 +49,8 @@ class WhedonApi < Sinatra::Base
       @config = settings.configs[@nwo]
 
       halt 422 unless @config # We probably want to restrict this
+    else
+      pass
     end
   end
 
@@ -420,6 +421,25 @@ class WhedonApi < Sinatra::Base
   # The actual Sinatra URL path methods
   get '/heartbeat' do
     "BOOM boom. BOOM boom. BOOM boom."
+  end
+
+  get '/' do
+    erb :preview
+  end
+
+  post '/preview' do
+    sha = SecureRandom.hex
+    job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], sha)
+    redirect "/preview?id=#{job_id}"
+  end
+
+  get '/preview' do
+    begin
+      container = SidekiqStatus::Container.load(params[:id])
+      erb :status, :locals => { :status => container.status, :payload => container.payload }
+    rescue SidekiqStatus::Container::StatusNotFound
+      erb :status, :locals => { :status => 'missing' }
+    end
   end
 
   post '/dispatch' do
