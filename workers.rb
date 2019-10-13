@@ -51,7 +51,7 @@ class PaperPreviewWorker
       -V archive_doi="PENDING" \
       -V paper_url="PENDING" \
       -V journal_name="#{journal_name}" \
-      -V formatted_doi="10.21105/joss.0XXXX" \
+      -V formatted_doi="10.21105/#{journal}.0XXXX" \
       -V review_issue_url="XXXX" \
       -V graphics="true" \
       -V issue="1" \
