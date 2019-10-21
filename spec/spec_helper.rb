@@ -36,14 +36,14 @@ RSpec.configure do |config|
       with(
        headers: {
       'Accept'=>'*/*',
-      'User-Agent'=>'Faraday v0.14.0'
+      'User-Agent'=>'Faraday v0.15.4'
        }).to_return(status: 301, body: "", headers: {})
 
     stub_request(:head, "https://doi.org/10.1038/INVALID").
       with(
        headers: {
         'Accept'=>'*/*',
-        'User-Agent'=>'Faraday v0.14.0'
+        'User-Agent'=>'Faraday v0.15.4'
        }).to_return(status: 404, body: "", headers: {})
 
   end
