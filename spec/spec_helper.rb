@@ -34,18 +34,24 @@ RSpec.configure do |config|
 
     stub_request(:head, "https://doi.org/10.1038/nmeth.3252").
       with(
-       headers: {
-      'Accept'=>'*/*',
-      'User-Agent'=>'Faraday v0.15.4'
-       }).to_return(status: 301, body: "", headers: {})
+        headers: {
+          'Accept'=>'*/*',
+          'User-Agent'=>'Faraday v0.15.4'
+        }).to_return(status: 301, body: "", headers: {})
 
     stub_request(:head, "https://doi.org/10.1038/INVALID").
       with(
-       headers: {
-        'Accept'=>'*/*',
-        'User-Agent'=>'Faraday v0.15.4'
-       }).to_return(status: 404, body: "", headers: {})
+        headers: {
+          'Accept'=>'*/*',
+          'User-Agent'=>'Faraday v0.15.4'
+        }).to_return(status: 404, body: "", headers: {})
 
+    stub_request(:head, "https://doi.org/http://notadoi.org/bioinformatics/btp450").
+      with(
+        headers: {
+          'Accept'=>'*/*',
+          'User-Agent'=>'Faraday v0.15.4'
+        }).to_return(status: 400, body: "", headers: {})
   end
 
   config.include RSpecMixin
