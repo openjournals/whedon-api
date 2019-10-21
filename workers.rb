@@ -12,7 +12,7 @@ class PaperPreviewWorker
   SidekiqStatus::Container.ttl = 600
 
   def perform(repository_address, journal, sha)
-    ENV["CURRENT_YEAR"] = '3030'
+    ENV["CURRENT_YEAR"] = Time.new.year.to_s
     ENV["CURRENT_VOLUME"] = '1'
     ENV["CURRENT_ISSUE"] = '1'
 
