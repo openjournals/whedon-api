@@ -16,7 +16,7 @@ describe DOIWorker do
     it "should know how to check DOIs" do
       expect(subject.check_dois(bibtex)).to eq(
           {
-            :invalid =>["10.1038/INVALID is INVALID", "http://notadoi.org/bioinformatics/btp450 is INVALID"],
+            :invalid =>["10.1038/INVALID is INVALID", "http://notadoi.org/bioinformatics/btp450 is INVALID because of 'https://doi.org/' prefix"],
             :missing=>[],
             :ok=>["10.1038/nmeth.3252 is OK"]
             }
