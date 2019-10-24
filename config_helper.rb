@@ -11,6 +11,7 @@ module ConfigHelper
     ENV['JOURNAL_NAME'] = config.site_name
     ENV['CURRENT_ISSUE'] = config.current_issue
     ENV['CURRENT_VOLUME'] = config.current_volume
+    ENV['CURRENT_YEAR'] = Time.now.year.to_s
     ENV['JOURNAL_ISSN'] = config.journal_issn
     ENV['JOURNAL_LAUNCH_DATE'] = config.journal_launch_date
     ENV['CROSSREF_USERNAME'] = config.crossref_username
