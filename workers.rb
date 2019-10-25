@@ -33,7 +33,7 @@ class PaperPreviewWorker
     elsif journal == "JOSE"
       journal_name = "Journal of Open Source Education"
     end
-
+    
     if paper_paths.empty?
       self.payload = "Can't find any papers to compile. Make sure there's a file named <code>paper.md</code> in your repository."
       abort("Can't find any papers to compile.")
