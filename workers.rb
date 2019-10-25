@@ -11,12 +11,16 @@ class PaperPreviewWorker
 
   SidekiqStatus::Container.ttl = 600
 
-  def perform(repository_address, journal, sha)
+  def perform(repository_address, journal, custom_branch=nil, sha)
     ENV["CURRENT_YEAR"] = '3030'
     ENV["CURRENT_VOLUME"] = '1'
     ENV["CURRENT_ISSUE"] = '1'
 
-    result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
+    if custom_branch
+      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
+    else
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
+    end
 
     if !status.success?
       return result, stderr, status

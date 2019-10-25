@@ -24,8 +24,16 @@
           <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
         <form id="preview-form" action="/preview" accept-charset="UTF-8" method="post">
           <div class="form-group">
-            <label for="repository">Paper repository address</label>
-            <input placeholder="e.g. https://github.com/arfon/fidgit" class="form-control" type="text" name="repository" id="repository" />
+            <div class="row">
+              <div class="col">
+                <label for="repository">Paper repository address</label>
+                <input placeholder="e.g. https://github.com/arfon/fidgit" class="form-control" type="text" name="repository" id="repository" />
+              </div>
+              <div class="col">
+                <label for="branch">Custom branch (optional)</label>
+                <input placeholder="e.g. joss-paper-branch" class="form-control" type="text" name="branch" id="branch" />
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label for="journal">Compile paper for:</label>

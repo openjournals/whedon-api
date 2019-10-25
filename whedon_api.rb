@@ -429,7 +429,8 @@ class WhedonApi < Sinatra::Base
 
   post '/preview' do
     sha = SecureRandom.hex
-    job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], sha)
+    branch = params[:branch].empty? ? nil : params[:branch]
+    job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], params[:branch], sha)
     redirect "/preview?id=#{job_id}"
   end
 
