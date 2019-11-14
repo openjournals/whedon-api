@@ -90,6 +90,7 @@ class WhedonApi < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
+    check_references
     process_pdf
   end
 
