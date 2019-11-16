@@ -33,7 +33,7 @@ class PaperPreviewWorker
     elsif journal == "JOSE"
       journal_name = "Journal of Open Source Education"
     end
-    
+
     if paper_paths.empty?
       self.payload = "Can't find any papers to compile. Make sure there's a file named <code>paper.md</code> in your repository."
       abort("Can't find any papers to compile.")
@@ -66,6 +66,8 @@ class PaperPreviewWorker
       -V year="2019" \
       -V submitted="01 January 1900" \
       -V published="01 January 3030" \
+      -V editor_name="Editor Name" \
+      -V editor_url="http://example.com" \
       -V citation_author="Mickey Mouse et al." \
       -o #{sha}.pdf -V geometry:margin=1in \
       --pdf-engine=xelatex \
