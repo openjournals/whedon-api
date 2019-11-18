@@ -55,7 +55,7 @@ describe WhedonApi do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).thrice
+      expect(github_client).to receive(:add_comment).exactly(3).times
       post '/dispatch', pre_review_created_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
