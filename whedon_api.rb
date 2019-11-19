@@ -183,7 +183,7 @@ class WhedonApi < Sinatra::Base
       check_editor
       schedule_reminder($1, $2, $3)
     # We don't understand the command so say as much...
-    else
+    when /\A@whedon/i
       respond erb :sorry unless @sender == "whedon"
     end
   end
