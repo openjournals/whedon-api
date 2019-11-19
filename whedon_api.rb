@@ -182,6 +182,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
       schedule_reminder($1, $2, $3)
+    # We don't understand the command so say as much...
+    else
+      respond erb :sorry
     end
   end
 
