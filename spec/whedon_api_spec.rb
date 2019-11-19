@@ -11,6 +11,7 @@ describe WhedonApi do
   let(:whedon_start_review_from_editor_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-935.json') }
   let(:whedon_start_review_from_non_editor_ready) { json_fixture('whedon-start-review-non-editor-on-pre-review-issue-935.json') }
   let(:whedon_generate_pdf) { json_fixture('whedon-generate-pdf-936.json') }
+  let(:whedon_nonsense) { json_fixture('whedon-nonsense-936.json') }
   let(:whedon_accept_no_doi) { json_fixture('whedon-accept-no-doi-on-review-issue-937.json')}
   let(:whedon_accept_with_doi) { json_fixture('whedon-accept-with-doi-on-review-issue-938.json')}
   let(:whedon_accept_for_reals_with_doi) { json_fixture('whedon-accept-for-reals-with-doi-on-review-issue-938.json')}
@@ -197,6 +198,18 @@ describe WhedonApi do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting PDF compilation. Reticulating splines etc.../)
       post '/dispatch', whedon_generate_pdf, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when speaking nonsense' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry human, I don't understand that/)
+      post '/dispatch', whedon_nonsense, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should initialize properly" do
