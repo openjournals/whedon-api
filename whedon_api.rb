@@ -184,7 +184,7 @@ class WhedonApi < Sinatra::Base
       schedule_reminder($1, $2, $3)
     # We don't understand the command so say as much...
     else
-      respond erb :sorry
+      respond erb :sorry unless @sender == "@whedon"
     end
   end
 
