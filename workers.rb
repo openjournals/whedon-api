@@ -348,10 +348,20 @@ class RepoWorker
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
+      repo_summary(issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
+    end
+  end
+
+  def repo_summary(issue_id)
+    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
+
+    if status.success?
+      message = "Software report (experimental):\n\n ```\n#{result}\n```"
+      bg_respond(nwo, issue_id, message)
     end
   end
 
