@@ -74,6 +74,9 @@
     },
     {
       "url": "https://github.com/openjournals/pandoc-buildpack"
+    },
+    {
+      "url": "https://github.com/openjournals/heroku-buildpack-apt"
     }
   ],
   "environments": {
