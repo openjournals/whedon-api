@@ -360,7 +360,7 @@ class RepoWorker
     result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
 
     if status.success?
-      message = "Software report (experimental):\n\n ```\n#{result}\n```"
+      message = "Software report (experimental):\n\n ```#{result}```"
       bg_respond(nwo, issue_id, message)
     end
   end
