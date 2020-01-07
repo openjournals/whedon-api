@@ -1,0 +1,9 @@
+{
+  "name": "whedon-deps",
+  "description": "Something important",
+  "scripts": {
+    "preinstall": "npm i -g gitinspector"
+  },
+  "author": "Arfon Smith",
+  "license": "MIT"
+}

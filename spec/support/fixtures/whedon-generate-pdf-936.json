@@ -77,7 +77,7 @@
     "created_at": "2018-09-12T10:46:14Z",
     "updated_at": "2018-09-12T10:46:14Z",
     "author_association": "COLLABORATOR",
-    "body": "@whedon generate pdf"
+    "body": "@whedon generate pdf from branch custom-branch-name"
   },
   "repository": {
     "id": 59520368,

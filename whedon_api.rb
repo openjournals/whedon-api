@@ -178,6 +178,8 @@ class WhedonApi < Sinatra::Base
       check_references($1)
     when /\A@whedon check references/i
       check_references
+    when /\A@whedon check repository/i
+      repo_detect
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
@@ -238,8 +240,6 @@ class WhedonApi < Sinatra::Base
   def check_references(custom_branch=nil)
     if custom_branch
       respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
-    else
-      respond "```\nAttempting to check references...\n```"
     end
 
     DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
@@ -272,8 +272,6 @@ class WhedonApi < Sinatra::Base
     # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
-    else
-      respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
     PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
