@@ -55,7 +55,7 @@ describe WhedonApi do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).exactly(3).times
+      expect(github_client).to receive(:add_comment).exactly(1).times
       post '/dispatch', pre_review_created_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -195,7 +195,7 @@ describe WhedonApi do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting PDF compilation. Reticulating splines etc.../)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting PDF compilation from custom branch custom-branch-name. Reticulating splines etc.../)
       post '/dispatch', whedon_generate_pdf, {'CONTENT_TYPE' => 'application/json'}
     end
 
