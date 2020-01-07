@@ -1,6 +1,5 @@
 {
   "name": "whedon-deps",
-  "version": "0.1",
   "description": "Something important",
   "scripts": {
     "preinstall": "npm i -g gitinspector"
