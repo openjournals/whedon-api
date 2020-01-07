@@ -83,7 +83,7 @@ describe WhedonApi do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect_any_instance_of(WhedonApi).to receive(:assign_reviewer).once.with('@reviewer')
-      expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, the reviewer is @reviewer/)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, @reviewer is now a reviewer/)
       post '/dispatch', whedon_assign_reviewer_from_editor, {'CONTENT_TYPE' => 'application/json'}
     end
 
