@@ -178,6 +178,8 @@ class WhedonApi < Sinatra::Base
       check_references($1)
     when /\A@whedon check references/i
       check_references
+    when /\A@whedon check repository/i
+      repo_detect
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
