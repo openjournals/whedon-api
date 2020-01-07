@@ -359,10 +359,19 @@ class RepoWorker
   def repo_summary(nwo, issue_id)
     result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
 
+    message = "```\nSoftware report (experimental):\n"
+
     if status.success?
-      message = "```\nSoftware report (experimental):\n#{result}```"
-      bg_respond(nwo, issue_id, message)
+      message << "#{result}"
     end
+
+    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && gitinspector .")
+
+    if status.success?
+      message << "\n\n#{result}```"
+    end
+
+    bg_respond(nwo, issue_id, message)
   end
 
   def detect_license(issue_id)
