@@ -365,7 +365,7 @@ class RepoWorker
       message << "#{result}"
     end
 
-    result, stderr, status = Open3.capture3("PYTHONIOENCODING=utf-8 cd tmp/#{issue_id} && gitinspector .")
+    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && PYTHONIOENCODING=utf-8 gitinspector .")
 
     if status.success?
       message << "\n\n#{result}```"
