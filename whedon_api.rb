@@ -235,8 +235,6 @@ class WhedonApi < Sinatra::Base
   def check_references(custom_branch=nil)
     if custom_branch
       respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
-    else
-      respond "```\nAttempting to check references...\n```"
     end
 
     DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
@@ -269,8 +267,6 @@ class WhedonApi < Sinatra::Base
     # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
-    else
-      respond "```\nAttempting PDF compilation. Reticulating splines etc...\n```"
     end
 
     PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
