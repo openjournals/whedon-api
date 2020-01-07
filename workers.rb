@@ -182,7 +182,7 @@ class DOIWorker
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
-          message = "```Reference check summary:\n"
+          message = "```\nReference check summary:\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase} DOIs\n\n"
             if messages.empty?
@@ -360,7 +360,7 @@ class RepoWorker
     result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
 
     if status.success?
-      message = "Software report (experimental):\n\n ```#{result}```"
+      message = "```\nSoftware report (experimental):#{result}```"
       bg_respond(nwo, issue_id, message)
     end
   end
