@@ -182,7 +182,7 @@ class DOIWorker
       if bibtex_path
         doi_summary = check_dois(bibtex_path)
         if doi_summary.any?
-          message = "```Reference check summary:\n"
+          message = "```\nReference check summary:\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase} DOIs\n\n"
             if messages.empty?
@@ -348,11 +348,30 @@ class RepoWorker
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
+      repo_summary(nwo, issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
+  end
+
+  def repo_summary(nwo, issue_id)
+    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
+
+    message = "```\nSoftware report (experimental):\n"
+
+    if status.success?
+      message << "#{result}"
+    end
+
+    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && PYTHONIOENCODING=utf-8 gitinspector .")
+
+    if status.success?
+      message << "\n\n#{result}```"
+    end
+
+    bg_respond(nwo, issue_id, message)
   end
 
   def detect_license(issue_id)
