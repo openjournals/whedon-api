@@ -132,7 +132,7 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon assign (.*) as reviewer/i
       check_editor
       assign_reviewer($1)
-      respond "OK, the reviewer is #{$1}"
+      respond "OK, #{$1} is now a reviewer"
     when /\A@whedon add (.*) as reviewer/i
       check_editor
       add_reviewer($1)
