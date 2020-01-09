@@ -172,7 +172,7 @@ class WhedonApi < Sinatra::Base
       check_eic
       deposit(dry_run=false)
     when /\A@whedon reject/i
-      check_editor
+      check_eic
       reject_paper
     when /\A@whedon accept/i
       check_editor

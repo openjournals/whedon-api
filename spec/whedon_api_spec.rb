@@ -12,6 +12,7 @@ describe WhedonApi do
   let(:whedon_start_review_from_non_editor_ready) { json_fixture('whedon-start-review-non-editor-on-pre-review-issue-935.json') }
   let(:whedon_generate_pdf) { json_fixture('whedon-generate-pdf-936.json') }
   let(:whedon_reject) { json_fixture('whedon-reject-936.json') }
+  let(:whedon_reject_non_eic) { json_fixture('whedon-reject-non-eic-936.json') }
   let(:whedon_nonsense) { json_fixture('whedon-nonsense-936.json') }
   let(:whedon_really_nonsense) { json_fixture('whedon-really-nonsense-936.json') }
   let(:whedon_accept_no_doi) { json_fixture('whedon-accept-no-doi-on-review-issue-937.json')}
@@ -95,7 +96,19 @@ describe WhedonApi do
     end
   end
 
-  context 'when rejecting a paper' do
+  context 'when rejecting a paper as a regular user' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry/)
+      post '/dispatch', whedon_reject_non_eic, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(last_response).to be_forbidden
+    end
+  end
+
+  context 'when rejecting a paper as an EIC' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Paper rejected/)
