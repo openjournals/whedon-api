@@ -45,6 +45,10 @@ class FakeGitHub < Sinatra::Base
     json_response 200, 'review-issue-938-labels.json'
   end
 
+  post '/repos/openjournals/joss-reviews-testing/issues/936/labels' do
+    json_response 200, 'review-issue-936-labels.json'
+  end
+
   post '/repos/openjournals/joss-reviews-testing/issues/938/comments' do
     json_response 201, 'comment-created-938.json'
   end

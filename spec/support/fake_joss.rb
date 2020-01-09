@@ -4,6 +4,11 @@ class FakeJoss < Sinatra::Base
     json_response 201, 'joss-paper.json'
   end
 
+  # Reject paper
+  post '/papers/api_reject' do
+    status 204
+  end
+
   private
 
   def json_response(response_code, file_name)
