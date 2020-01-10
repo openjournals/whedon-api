@@ -171,6 +171,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon accept deposit=true/i
       check_eic
       deposit(dry_run=false)
+    when /\A@whedon reject/i
+      check_eic
+      reject_paper
     when /\A@whedon accept/i
       check_editor
       deposit(dry_run=true)
@@ -187,6 +190,18 @@ class WhedonApi < Sinatra::Base
     # We don't understand the command so say as much...
     when /\A@whedon/i
       respond erb :sorry unless @sender == "whedon"
+    end
+  end
+
+  def reject_paper
+    url = "#{@config.site_host}/papers/api_reject?id=#{@issue_id}&secret=#{@config.site_api_key}"
+    response = RestClient.post(url, "")
+
+    if response.code == 204
+      label_issue(@nwo, @issue_id, ['rejected'])
+      respond "Paper rejected."
+    else
+      respond "There was a problem rejecting the paper."
     end
   end
 
