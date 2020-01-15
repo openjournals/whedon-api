@@ -290,7 +290,7 @@ class DOIWorker
     return true if doi_string.nil?
 
     if doi_string.include?('http')
-      url = doi_string
+      return true
     else
       url = "https://doi.org/#{doi_string}"
     end
