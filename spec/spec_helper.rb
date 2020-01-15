@@ -46,7 +46,7 @@ RSpec.configure do |config|
           'User-Agent'=>'Faraday v0.15.4'
         }).to_return(status: 404, body: "", headers: {})
 
-    stub_request(:head, "https://doi.org/http://notadoi.org/bioinformatics/btp450").
+    stub_request(:head, "http://notadoi.org/bioinformatics/btp450").
       with(
         headers: {
           'Accept'=>'*/*',

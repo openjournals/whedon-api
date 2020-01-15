@@ -289,7 +289,12 @@ class DOIWorker
   def invalid_doi?(doi_string)
     return true if doi_string.nil?
 
-    url = "https://doi.org/#{doi_string}"
+    if doi_string.include?('http')
+      url = doi_string
+    else
+      url = "https://doi.org/#{doi_string}"
+    end
+
     escaped_url = URI.escape(url)
 
     begin
