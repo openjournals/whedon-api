@@ -306,6 +306,8 @@ class DOIWorker
       end
     rescue Faraday::ConnectionFailed
       return true
+    rescue URI::InvalidURIError
+      return true
     end
   end
 
