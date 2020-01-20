@@ -50,38 +50,17 @@ class PaperPreviewWorker
       csl_file = "#{Whedon.resources}/#{journal}/apa.csl"
       directory = File.dirname(paper_paths.first)
       # TODO: may eventually want to swap out the latex template
-      `cd #{directory} && pandoc \
-      -V repository="#{repository_address}" \
-      -V archive_doi="PENDING" \
-      -V paper_url="PENDING" \
-      -V journal_name="#{journal_name}" \
-      -V formatted_doi="10.21105/#{journal}.0XXXX" \
-      -V review_issue_url="XXXX" \
-      -V graphics="true" \
-      -V issue="1" \
-      -V volume="1" \
-      -V page="1" \
-      -V logo_path="#{Whedon.resources}/#{journal}/logo.png" \
-      -V aas_logo_path="#{Whedon.resources}/#{journal}/aas-logo.png" \
-      -V year="2019" \
-      -V submitted="01 January 1900" \
-      -V published="01 January 3030" \
-      -V editor_name="Editor Name" \
-      -V editor_url="http://example.com" \
-      -V citation_author="Mickey Mouse et al." \
-      -o #{sha}.pdf -V geometry:margin=1in \
-      --pdf-engine=xelatex \
-      --filter pandoc-citeproc #{File.basename(paper_paths.first)} \
-      --from markdown+autolink_bare_uris \
-      --csl=#{csl_file} \
-      --template #{latex_template_path}`
 
-      if File.exists?("#{directory}/#{sha}.pdf")
-        response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
-        self.payload = response['url']
+      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/#{journal}.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='1' -V volume='1' -V page='1' -V logo_path='#{Whedon.resources}/#{journal}/logo.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='2019' -V submitted='01 January 1900' -V published='01 January 3030' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Mickey Mouse et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --filter pandoc-citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
+
+      if status.success?
+        if File.exists?("#{directory}/#{sha}.pdf")
+          response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
+          self.payload = response['url']
+        end
       else
-        self.payload = "Looks like we failed to compile the PDF."
-        abort("Looks like we failed to compile the PDF")
+        self.payload = "Looks like we failed to compile the PDF with the following error: \n\n #{stderr}"
+        abort("Looks like we failed to compile the PDF.")
       end
     else
       self.payload = "There seems to be more than one paper.md present. Aborting..."
