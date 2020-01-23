@@ -81,6 +81,10 @@ module GitHub
     github_client.add_labels_to_an_issue(nwo, issue_id, languages)
   end
 
+  def close_issue(nwo, issue_id)
+    github_client.close_issue(nwo, issue_id)
+  end
+
   # Get the SHA for the last commit in the master branch of the papers repo
   def get_master_ref(papers)
     github_client.refs(papers).select { |r| r[:ref] == "refs/heads/master" }.first.object.sha

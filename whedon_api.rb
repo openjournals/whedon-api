@@ -156,6 +156,7 @@ class WhedonApi < Sinatra::Base
       if editor && reviewers.any?
         review_issue_id = start_review
         respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
+        close_issue(@nwo, @issue_id)
       else
         respond erb :missing_editor_reviewer
         halt

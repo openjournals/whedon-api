@@ -17,8 +17,12 @@ class FakeGitHub < Sinatra::Base
   end
 
   # Pre-review issue with editor and reviewer assigned
-
   get '/repos/openjournals/joss-reviews-testing/issues/935' do
+    json_response 200, 'pre-review-issue-935.json'
+  end
+
+  # Closing pre-review issue once review has been started.
+  patch '/repos/openjournals/joss-reviews-testing/issues/935' do
     json_response 200, 'pre-review-issue-935.json'
   end
 
