@@ -9,6 +9,11 @@ class FakeJoss < Sinatra::Base
     status 204
   end
 
+  # Withdraw paper
+  post '/papers/api_withdraw' do
+    status 204
+  end
+
   private
 
   def json_response(response_code, file_name)
