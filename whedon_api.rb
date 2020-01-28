@@ -204,6 +204,7 @@ class WhedonApi < Sinatra::Base
     if response.code == 204
       label_issue(@nwo, @issue_id, ['rejected'])
       respond "Paper rejected."
+      close_issue(@nwo, @issue_id)
     else
       respond "There was a problem rejecting the paper."
     end
@@ -216,6 +217,7 @@ class WhedonApi < Sinatra::Base
     if response.code == 204
       label_issue(@nwo, @issue_id, ['withdrawn'])
       respond "Paper withdrawn."
+      close_issue(@nwo, @issue_id)
     else
       respond "There was a problem withdrawing the paper."
     end
