@@ -145,6 +145,9 @@ class WhedonApi < Sinatra::Base
       check_editor
       assign_editor($1)
       respond "OK, the editor is #{$1}"
+    when /\A@whedon invite (.*) as editor/i
+      check_eic
+      invite_editor($1)
     when /\A@whedon set (.*) as archive/
       check_editor
       assign_archive($1)
@@ -194,6 +197,18 @@ class WhedonApi < Sinatra::Base
     # We don't understand the command so say as much...
     when /\A@whedon/i
       respond erb :sorry unless @sender == "whedon"
+    end
+  end
+
+  def invite_editor(editor)
+    editor_handle = editor.gsub(/^\@/, "").strip
+    url = "#{@config.site_host}/papers/api_editor_invite?id=#{@issue_id}&editor=#{editor_handle}&secret=#{@config.site_api_key}"
+    response = RestClient.post(url, "")
+
+    if response.code == 204
+      respond "@#{editor_handle} has been invited to edit this submission."
+    else
+      respond "There was a problem inviting `@#{editor_handle}` to edit this submission."
     end
   end
 
