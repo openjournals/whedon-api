@@ -14,6 +14,11 @@ class FakeJoss < Sinatra::Base
     status 204
   end
 
+  # Invite editor
+  post '/papers/api_editor_invite' do
+    status 204
+  end
+
   private
 
   def json_response(response_code, file_name)
