@@ -90,7 +90,7 @@ class WhedonApi < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
-    check_references
+    check_references(nil, clear_cache=false)
     process_pdf
   end
 
@@ -185,9 +185,9 @@ class WhedonApi < Sinatra::Base
       check_editor
       deposit(dry_run=true)
     when /\A@whedon check references from branch (.*)/
-      check_references($1)
+      check_references($1, clear_cache=true)
     when /\A@whedon check references/i
-      check_references
+      check_references(nil, clear_cache=true)
     when /\A@whedon check repository/i
       repo_detect
     # Detect strings like '@whedon remind @arfon in 2 weeks'
@@ -285,12 +285,12 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  def check_references(custom_branch=nil)
+  def check_references(custom_branch=nil, clear_cache=false)
     if custom_branch
       respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
     end
 
-    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache=true)
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
   def deposit(dry_run)
