@@ -135,14 +135,14 @@ class DOIWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config, custom_branch)
+  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Trying to debug a race condition on Heroku
     sleep(10)
     # Download the paper
-    stdout, stderr, status = download(issue_id)
+    stdout, stderr, status = download(issue_id, clear_cache)
 
     if status.success?
       # Need to checkout the new branch before looking for the paper.
@@ -301,8 +301,8 @@ class DOIWorker
     return paper_paths.first
   end
 
-  def download(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+  def download(issue_id, clear_cache)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
     Open3.capture3("whedon download #{issue_id}")
   end
 end

@@ -290,7 +290,7 @@ class WhedonApi < Sinatra::Base
       respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
     end
 
-    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache=true)
   end
 
   def deposit(dry_run)
@@ -302,7 +302,7 @@ class WhedonApi < Sinatra::Base
 
       if dry_run == true
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch=nil)
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch=nil, clear_cache=false)
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted'])
