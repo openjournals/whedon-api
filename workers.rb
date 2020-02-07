@@ -130,6 +130,8 @@ class DOIWorker
 
   include Sidekiq::Worker
 
+  sidekiq_options retry: false
+
   # Sets the Whedon environment
   include ConfigHelper
   # Including this means we can talk to GitHub from the background worker.
@@ -318,6 +320,7 @@ class RepoWorker
   require 'sidekiq'
 
   include Sidekiq::Worker
+  sidekiq_options retry: false
 
   # Sets the Whedon environment
   include ConfigHelper
@@ -390,6 +393,7 @@ class PDFWorker
   require 'sidekiq'
 
   include Sidekiq::Worker
+  sidekiq_options retry: false
 
   # Sets the Whedon environment
   include ConfigHelper
@@ -449,6 +453,7 @@ class DepositWorker
   require 'twitter'
 
   include Sidekiq::Worker
+  sidekiq_options retry: false
 
   # Sets the Whedon environment
   include ConfigHelper
