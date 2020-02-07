@@ -91,7 +91,7 @@ class WhedonApi < Sinatra::Base
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
     check_references(nil, clear_cache=false)
-    process_pdf
+    process_pdf(nil, clear_cache=false)
   end
 
   # When an issue is closed we want to encourage authors to add the JOSS status
@@ -169,9 +169,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon list reviewers/i
       respond all_reviewers
     when /\A@whedon generate pdf from branch (.*)/
-      process_pdf($1)
+      process_pdf($1, clear_cache=true)
     when /\A@whedon generate pdf/i
-      process_pdf
+      process_pdf(nil, clear_cache=true)
     when /\A@whedon accept deposit=true/i
       check_eic
       deposit(dry_run=false)
@@ -316,13 +316,13 @@ class WhedonApi < Sinatra::Base
   end
 
   # Download and compile the PDF
-  def process_pdf(custom_branch=nil)
+  def process_pdf(custom_branch=nil, clear_cache=false)
     # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
+    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
   # Detect the languages and license of the review repository

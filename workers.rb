@@ -396,12 +396,12 @@ class PDFWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config, custom_branch)
+  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Compile the paper
-    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -419,8 +419,8 @@ class PDFWorker
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download_and_compile(issue_id, custom_branch=nil)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+  def download_and_compile(issue_id, custom_branch=nil, clear_cache)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
 
     result, stderr, status = Open3.capture3("whedon download #{issue_id}")
 
