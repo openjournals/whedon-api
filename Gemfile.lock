@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 9847f98e9ec6c9e96a7b5b5750ee811d4324d5b2
-  ref: 9847f98e9ec6c9e96a7b5b5750ee811d4324d5b2
+  revision: 90d0be86733ff8a8eb7e883b92acd770cd491121
+  ref: 90d0be86733ff8a8eb7e883b92acd770cd491121
   specs:
     whedon (0.1.0)
       bibtex-ruby
@@ -28,7 +28,7 @@ GEM
       rake (~> 10.4)
     aws_cf_signer (0.1.3)
     backports (2.8.2)
-    bibtex-ruby (5.0.1)
+    bibtex-ruby (5.1.1)
       latex-decode (~> 0.0)
     buftok (0.2.0)
     byebug (11.0.1)
