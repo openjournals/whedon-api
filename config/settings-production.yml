@@ -8,6 +8,7 @@ journals:
         - kthyng
         - kyleniemeyer
         - labarba
+      eic-team-name: openjournals/joss-eics
       papers_repo: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: https://joss.theoj.org/reviewer-signup.html
@@ -30,8 +31,9 @@ journals:
       editor_team_id: 2414911
       eics:
         - labarba
+        - kyleniemeyer
+      eic-team-name: openjournals/jose-eics
       papers_repo: openjournals/jose-papers
-      # TODO: Create this spreadsheet or equivalent
       reviewers: https://bit.ly/jose-reviewers
       reviewers_signup: http://jose.theoj.org/reviewer-signup.html
       site_host: https://jose.theoj.org
@@ -49,6 +51,7 @@ journals:
       editor_team_id: 3213896
       eics:
         - vchuravy
+      eic-team-name: JuliaCon/jcon-eics
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: http://bit.ly/2V9GSFq
@@ -70,6 +73,7 @@ journals:
       editor_team_id: 2009411
       eics:
         - arfon
+      eic-team-name: openjournals/joss-eics-testing
       papers_repo: openjournals/joss-papers-testing
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: https://joss.theoj.org/reviewer-signup.html
