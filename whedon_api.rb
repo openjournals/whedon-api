@@ -148,6 +148,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon invite (.*) as editor/i
       check_eic
       invite_editor($1)
+    when /\A@whedon re-invite (.*) as reviewer/i
+      check_editor
+      invite_reviewer($1)
     when /\A@whedon set (.*) as archive/
       check_editor
       assign_archive($1)
@@ -405,6 +408,11 @@ class WhedonApi < Sinatra::Base
 
   def editor
     issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
+  end
+
+  def invite_reviewer(reviewer_name)
+    reviewer_name = reviewer_name.sub(/^@/, "").downcase
+    github_client.add_collaborator(@nwo, reviewer_name)
   end
 
   def reviewers
