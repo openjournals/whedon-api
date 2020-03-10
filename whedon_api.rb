@@ -415,7 +415,7 @@ class WhedonApi < Sinatra::Base
     existing_invitees = github_client.repository_invitations(@nwo).collect {|i| i.invitee.login.downcase }
 
     if existing_invitees.include?(reviewer_name)
-      respond "@#{reviewer_name} is already invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
+      respond "The reviewer already has a pending invite.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
     elsif github_client.collaborator?(@nwo, reviewer_name)
       respond "@#{reviewer_name} already has access."
     else
