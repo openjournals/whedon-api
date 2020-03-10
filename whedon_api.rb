@@ -413,7 +413,7 @@ class WhedonApi < Sinatra::Base
   def invite_reviewer(reviewer_name)
     reviewer_name = reviewer_name.sub(/^@/, "").downcase
     if github_client.add_collaborator(@nwo, reviewer_name)
-      respond "OK. @#{reviewer_name} has been re-invited."
+      respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
     else
       respond "Sorry, I couldn't re-invite @#{reviewer_name}."
     end
