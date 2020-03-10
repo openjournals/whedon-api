@@ -413,18 +413,15 @@ class WhedonApi < Sinatra::Base
   def invite_reviewer(reviewer_name)
     reviewer_name = reviewer_name.sub(/^@/, "").downcase
     existing_invitees = github_client.repository_invitations(@nwo).collect {|i| i.invitee.login.downcase }
-    existing_collaborators = github_client.collaborators(@nwo).collect {|c| c.login.downcase }
 
     if existing_invitees.include?(reviewer_name)
       respond "@#{reviewer_name} is already invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-    elsif existing_collaborators.include?(reviewer_name)
+    elsif github_client.collaborator?(@nwo, reviewer_name)
       respond "@#{reviewer_name} already has access."
     else
-      if github_client.add_collaborator(@nwo, reviewer_name)
-        respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-      else
-        respond "Sorry, I couldn't re-invite @#{reviewer_name}."
-      end
+      # Ideally we should check if a user exists here... (for another day)
+      github_client.add_collaborator(@nwo, reviewer_name)
+      respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
     end
   end
 
