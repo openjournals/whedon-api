@@ -432,8 +432,8 @@ class WhedonApi < Sinatra::Base
   # Send an HTTP POST to the GitHub API here due to Octokit problems
   def update_assignees(logins)
     data = { "assignees" => logins }
-    url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees?access_token=#{ENV['GH_TOKEN']}"
-    RestClient.post(url, data.to_json)
+    url = "https://api.github.com/repos/#{@nwo}/issues/#{@issue_id}/assignees"
+    RestClient.post(url, data.to_json, {:Authorization => ENV['GH_TOKEN']})
   end
 
   # This method is called when an editor says: '@whedon start review'.
