@@ -143,8 +143,8 @@ class WhedonApi < Sinatra::Base
       respond "OK, #{$1} is no longer a reviewer"
     when /\A@whedon assign (.*) as editor/i
       check_editor
-      assign_editor($1)
-      respond "OK, the editor is #{$1}"
+      new_editor = assign_editor($1)
+      respond "OK, the editor is @#{new_editor}"
     when /\A@whedon invite (.*) as editor/i
       check_eic
       invite_editor($1)
@@ -368,6 +368,7 @@ class WhedonApi < Sinatra::Base
 
   # TODO: Refactor this mess
   def assign_editor(new_editor)
+    new_editor = @sender if new_editor == "me"
     new_editor = new_editor.gsub(/^\@/, "").strip
     new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
     # This line updates the GitHub issue with the new editor
@@ -378,6 +379,7 @@ class WhedonApi < Sinatra::Base
 
     reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
+    new_editor
   end
 
   # Change the reviewer listed at the top of the issue (clobber any that exist)
