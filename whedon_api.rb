@@ -175,18 +175,24 @@ class WhedonApi < Sinatra::Base
       process_pdf($1, clear_cache=true)
     when /\A@whedon generate pdf/i
       process_pdf(nil, clear_cache=true)
+    when /\A@whedon accept deposit=true from branch (.*)/i
+      check_eic
+      deposit(dry_run=false, $1)
     when /\A@whedon accept deposit=true/i
       check_eic
       deposit(dry_run=false)
+    when /\A@whedon accept from branch (.*)/i
+      check_editor
+      deposit(dry_run=true, $1)
+    when /\A@whedon accept/i
+      check_editor
+      deposit(dry_run=true)
     when /\A@whedon reject/i
       check_eic
       reject_paper
     when /\A@whedon withdraw/i
       check_eic
       withdraw_paper
-    when /\A@whedon accept/i
-      check_editor
-      deposit(dry_run=true)
     when /\A@whedon check references from branch (.*)/
       check_references($1, clear_cache=true)
     when /\A@whedon check references/i
@@ -296,7 +302,7 @@ class WhedonApi < Sinatra::Base
     DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
-  def deposit(dry_run)
+  def deposit(dry_run, custom_branch=nil)
     if review_issue?
       if !archive_doi?
         respond "No archive DOI set. Exiting..."
@@ -306,12 +312,12 @@ class WhedonApi < Sinatra::Base
       if dry_run == true
         label_issue(@nwo, @issue_id, ['recommend-accept'])
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch=nil, clear_cache=false)
-        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=true)
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache=false)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted', 'published'])
         respond "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
-        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, dry_run=false)
+        DepositWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, dry_run=false)
       end
     else
       respond "I can't accept a paper that hasn't been reviewed!"
