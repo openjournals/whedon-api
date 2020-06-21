@@ -460,12 +460,12 @@ class DepositWorker
   # Include to communicate from background worker to GitHub
   include GitHub
 
-  def perform(nwo, issue_id, config, dry_run)
+  def perform(nwo, issue_id, config, custom_branch, dry_run)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download and compile the paper
-    pdf_path, stderr, status = download_and_compile(issue_id)
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
@@ -482,7 +482,11 @@ class DepositWorker
     if dry_run == true
       pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
-      pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true\n```"
+      if custom_branch
+        pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true from branch #{custom_branch} \n```"
+      else
+        pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true\n```"
+      end
     else
       pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
@@ -492,7 +496,7 @@ class DepositWorker
       id = "%05d" % issue_id
       doi = "https://doi.org/#{config.doi_prefix}/#{config.journal_alias}.#{id}"
 
-      pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? notify your editorial technical team..."
+      pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes to verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? Notify your editorial technical team..."
 
       # Only Tweet if configured with keys
       if config.twitter_consumer_key
@@ -525,9 +529,9 @@ class DepositWorker
     bg_respond(nwo, issue_id, response)
   end
 
-  # Use the Whedon gem to download the software to a local tmp directory and compile it
-  def download_and_compile(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
+  # Use the Whedon gem to download the software to a local tmp directory
+  def download_and_compile(issue_id, custom_branch=nil, clear_cache=true)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
 
     result, stderr, status = Open3.capture3("whedon download #{issue_id}")
 
@@ -535,7 +539,11 @@ class DepositWorker
       return result, stderr, status
     end
 
-    Open3.capture3("whedon compile #{issue_id}")
+    if custom_branch
+      Open3.capture3("whedon compile #{issue_id} #{custom_branch}")
+    else
+      Open3.capture3("whedon compile #{issue_id}")
+    end
   end
 
   def deposit(issue_id)
