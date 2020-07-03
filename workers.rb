@@ -384,7 +384,7 @@ class RepoWorker
     puts "CHECKING STATEMENT OF NEED"
 
     # Does the paper include 'statement of need'
-    unless File.open(paper_paths.first).read() =~ /Statement of Need/i
+    unless File.open(paper_paths.first).read() =~ /# Statement of Need/i
       puts "FIRST PAPER IS #{paper_paths.first}"
       bg_respond(nwo, issue_id, "Failed to discover a `Statement of need` section in paper")
     end
