@@ -337,8 +337,10 @@ class RepoWorker
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
+      statement = detect_statement_of_need(issue_id)
       repo_summary(nwo, issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
+      bg_respond(nwo, issue_id, "Failed to discover a `Statement of need` section in paper") if statement.nil?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
@@ -373,6 +375,20 @@ class RepoWorker
 
     # Take top three languages from Linguist
     project.languages.keys.take(3)
+  end
+
+  def detect_statement_of_need(issue_id)
+    paper_paths = find_paper_paths("tmp/#{issue_id}")
+
+    if paper_paths.empty?
+      return nil
+    elsif paper_paths.size == 1
+      if File.open(paper_paths.first).read() =~ /Statement of Need/i
+        return true
+      else
+        return false
+      end
+    end
   end
 
   def download(issue_id)
