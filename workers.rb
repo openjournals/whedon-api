@@ -337,7 +337,7 @@ class RepoWorker
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
-      detect_statement_of_need(issue_id)
+      detect_statement_of_need(nwo, issue_id)
       repo_summary(nwo, issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
@@ -376,7 +376,7 @@ class RepoWorker
     project.languages.keys.take(3)
   end
 
-  def detect_statement_of_need(issue_id)
+  def detect_statement_of_need(nwo, issue_id)
     paper_paths = find_paper_paths("tmp/#{issue_id}")
 
     return if paper_paths.empty?
