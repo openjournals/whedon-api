@@ -395,6 +395,17 @@ class RepoWorker
     FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
     Open3.capture3("whedon download #{issue_id}")
   end
+
+  def find_paper_paths(search_path=nil)
+    search_path ||= "tmp/#{review_issue_id}"
+    paper_paths = []
+
+    Find.find(search_path) do |path|
+      paper_paths << path if path =~ /\bpaper\.tex$|\bpaper\.md$/
+    end
+
+    return paper_paths
+  end
 end
 
 # This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
