@@ -203,6 +203,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
       schedule_reminder($1, $2, $3)
+    when /\A@whedon query scope/
+      check_editor
+      label_issue(@nwo, @issue_id, ['query-scope'])
     # We don't understand the command so say as much...
     when /\A@whedon/i
       respond erb :sorry unless @sender == "whedon"
