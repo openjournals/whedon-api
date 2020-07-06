@@ -161,7 +161,14 @@ class DOIWorker
       bibtex_path = "#{File.dirname(paper_path)}/#{bibtex_filename}"
 
       if bibtex_path
-        doi_summary = check_dois(bibtex_path)
+        begin
+          entries = BibTeX.open(bibtex_path, :filter => :latex)
+        rescue BibTeX::ParseError => e
+          bg_respond(nwo, issue_id, "Checking the BibTeX entries failed with the following error: \n\n #{e.message}") and return
+        end
+
+        doi_summary = check_dois(entries)
+
         if doi_summary.any?
           message = "```\nReference check summary:\n"
           doi_summary.each do |type, messages|
@@ -234,9 +241,8 @@ class DOIWorker
   end
 
   # TODO: refactor this monster. Soon...
-  def check_dois(bibtex_path)
+  def check_dois(entries)
     doi_summary = {:ok => [], :missing => [], :invalid => []}
-    entries = BibTeX.open(bibtex_path, :filter => :latex)
 
     if entries.any?
       entries.each do |entry|
