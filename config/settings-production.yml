@@ -51,12 +51,13 @@ journals:
       editor_team_id: 3213896
       eics:
         - vchuravy
+        - matbesancon
       eic_team_name: JuliaCon/jcon-eics
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
       reviewers: http://bit.ly/2V9GSFq
       reviewers_signup: https://forms.gle/yANMe4c9YmuW9MWcA
-      site_host: https://submissions.juliacon.org
+      site_host: https://proceedings.juliacon.org
       doi_prefix: "10.21105"
       journal_alias: jcon
       journal_launch_date: '2019-04-22'
