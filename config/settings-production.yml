@@ -52,6 +52,7 @@ journals:
       eics:
         - vchuravy
         - matbesancon
+        - arfon
       eic_team_name: JuliaCon/jcon-eics
       papers_repo: JuliaCon/proceedings-papers
       # TODO: Create this spreadsheet or equivalent
