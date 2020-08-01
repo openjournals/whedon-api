@@ -130,7 +130,7 @@ module GitHub
 
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
   # to write the compiled PDF to a named branch.
-  # Returns the URL to the PDF on GitHub
+  # Returns the URL to the raw PDF on GitHub
   def create_git_pdf(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     pdf_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.pdf"
@@ -140,7 +140,7 @@ module GitHub
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "#{journal_alias}.#{id}")
 
-    return gh_response.content.html_url
+    return gh_response.content.download_url
   end
 
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
