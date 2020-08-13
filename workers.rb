@@ -12,10 +12,6 @@ class PaperPreviewWorker
   SidekiqStatus::Container.ttl = 600
 
   def perform(repository_address, journal, custom_branch=nil, sha)
-    ENV["CURRENT_YEAR"] = '3030'
-    ENV["CURRENT_VOLUME"] = '1'
-    ENV["CURRENT_ISSUE"] = '1'
-
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
     else
@@ -51,7 +47,7 @@ class PaperPreviewWorker
       directory = File.dirname(paper_paths.first)
       # TODO: may eventually want to swap out the latex template
 
-      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/#{journal}.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='1' -V volume='1' -V page='1' -V logo_path='#{Whedon.resources}/#{journal}/logo.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='2019' -V submitted='01 January 1900' -V published='01 January 3030' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Mickey Mouse et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --filter pandoc-citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
+      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V year=XXXX -V issue=X -V volume=X -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/#{journal}.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='1' -V volume='1' -V page='1' -V logo_path='#{Whedon.resources}/#{journal}/logo.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='2019' -V submitted='01 January 1900' -V published='01 January 3030' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Mickey Mouse et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --filter pandoc-citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
 
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
