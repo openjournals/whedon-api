@@ -245,6 +245,7 @@ class DOIWorker
     if entries.any?
       entries.each do |entry|
         next if entry.comment?
+        next if entry.preamble?
 
         if entry.has_field?('doi') && !entry.doi.empty?
           if invalid_doi?(entry.doi)
