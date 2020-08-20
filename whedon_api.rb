@@ -171,17 +171,17 @@ class WhedonApi < Sinatra::Base
       respond erb :editors, :locals => { :editors => @config.editors }
     when /\A@whedon list reviewers/i
       respond all_reviewers
-    when /\A@whedon generate pdf from branch (.*)/
+    when /\A@whedon generate pdf from branch (.\w*)/
       process_pdf($1, clear_cache=true)
     when /\A@whedon generate pdf/i
       process_pdf(nil, clear_cache=true)
-    when /\A@whedon accept deposit=true from branch (.*)/i
+    when /\A@whedon accept deposit=true from branch (.\w*)/i
       check_eic
       deposit(dry_run=false, $1)
     when /\A@whedon accept deposit=true/i
       check_eic
       deposit(dry_run=false)
-    when /\A@whedon accept from branch (.*)/i
+    when /\A@whedon accept from branch (.\w*)/i
       check_editor
       deposit(dry_run=true, $1)
     when /\A@whedon accept/i
@@ -193,7 +193,7 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon withdraw/i
       check_eic
       withdraw_paper
-    when /\A@whedon check references from branch (.*)/
+    when /\A@whedon check references from branch (.\w*)/
       check_references($1, clear_cache=true)
     when /\A@whedon check references/i
       check_references(nil, clear_cache=true)
