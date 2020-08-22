@@ -2,7 +2,7 @@ require File.expand_path '../spec_helper.rb', __FILE__
 require 'sidekiq/testing'
 
 describe DOIWorker do
-  let(:bibtex) { fixture('paper.bib') }
+  let(:entries) { BibTeX.open(fixture('paper.bib'), :filter => :latex) }
 
   before(:each) do
     Sidekiq::Worker.clear_all
@@ -14,7 +14,7 @@ describe DOIWorker do
 
   context "instance methods" do
     it "should know how to check DOIs" do
-      expect(subject.check_dois(bibtex)).to eq(
+      expect(subject.check_dois(entries)).to eq(
           {
             :invalid =>["10.1038/INVALID is INVALID", "http://notadoi.org/bioinformatics/btp450 is INVALID because of 'https://doi.org/' prefix"],
             :missing=>[],
