@@ -168,7 +168,7 @@ class DOIWorker
         doi_summary = check_dois(entries)
 
         if doi_summary.any?
-          message = "```\nReference check summary:\n"
+          message = "```\nReference check summary (note 'MISSING' DOIs are suggestions that need verification):\n"
           doi_summary.each do |type, messages|
             message << "\n#{type.to_s.upcase} DOIs\n\n"
             if messages.empty?
@@ -261,7 +261,7 @@ class DOIWorker
         else
           if entry.has_field?('title')
             if candidate_doi = crossref_lookup(entry.title.value)
-              doi_summary[:missing].push("https://doi.org/#{candidate_doi} may be missing for title: #{entry.title}")
+              doi_summary[:missing].push("#{candidate_doi} may be a valid DOI for title: #{entry.title}")
             end
           end
         end
