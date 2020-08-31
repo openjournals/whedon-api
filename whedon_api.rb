@@ -492,12 +492,10 @@ class WhedonApi < Sinatra::Base
 
   # Check that the person sending the command is an editor-in-chief
   def check_eic
-    respond "Deposits are paused currently sorry"
-    halt 403
-    # unless @config.eics.include?(@sender)
-    #   respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do."
-    #   halt 403
-    # end
+    unless @config.eics.include?(@sender)
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do."
+      halt 403
+    end
   end
 
   # The actual Sinatra URL path methods
