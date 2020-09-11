@@ -445,9 +445,9 @@ class PDFWorker
     # If we've got this far then push a copy of the PDF to the papers repository
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+    pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
-    pdf_response = "[ :point_right: Check article proof :page_facing_up: :point_left: ](#{pdf_url})"
+    pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pdf_response)
@@ -505,7 +505,7 @@ class DepositWorker
     # If we've got this far then push a copy of the PDF to the papers repository
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    pdf_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+    pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
     crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
     crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
