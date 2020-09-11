@@ -140,7 +140,7 @@ module GitHub
                                                 File.open("#{file_path.strip}").read,
                                                 :branch => "#{journal_alias}.#{id}")
 
-    return gh_response.content.html_url
+    return gh_response.content.html_url, gh_response.content.download_url
   end
 
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
