@@ -1,14 +1,14 @@
 {
   "name": "Whedon API",
-  "description": "The Whedon Bot for interacting with reviewers on JOSS, JOSE and other journals",
+  "description": "The RoboNeuro Bot for interacting with reviewers on NeuroLibre",
   "keywords": [
-    "Whedon",
-    "JOSS",
+    "RoboNeuro",
+    "NeuroLibre",
     "Open Journals",
     "bots"
   ],
   "website": "http://openjournals.org",
-  "repository": "https://github.com/openjournals/whedon-api/tree/master",
+  "repository": "https://github.com/neurolibre/whedon-api/tree/master",
   "success_url": "/heartbeat",
   "scripts": {
   },
@@ -24,15 +24,6 @@
     },
     "JOSS_API_KEY": {
       "description": "The API key for the JOSS site API"
-    },
-    "JOSE_API_KEY": {
-      "description": "The API key for the JOSE site API"
-    },
-    "JCON_API_KEY": {
-      "description": "The API key for the JCON site API"
-    },
-    "JOSS_API_KEY_TESTING": {
-      "description": "Test API key"
     },
     "GH_TOKEN": {
       "description": "The GitHub token for Whedon"
