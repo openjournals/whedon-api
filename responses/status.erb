@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Whedon preview status</title>
+  <link rel="stylesheet" media="all" href="application.css" />
+  <meta http-equiv="refresh" content="5">
+</head>
+<body>
+  <header class="container-fluid">
+  <nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand" href="/">
+      <img src="logo_medium.png" width="48" height="48" />
+      <img src="joss.svg" />
+    </a>
+  </nav>
+  </header>
+
+  <div class="container">
+    <div class="row justify-content-lg-center">
+      <div class="col-lg-8">
+        <h3>Whedon paper preview service</h3>
+        <p>This page auto-refreshes every 5 seconds, and will update automatically
+          once Whedon has compiled your paper. For more information on how to format
+          your <code>paper.md</code> file, please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
+
+        <% if status == 'complete' %>
+          <div class="alert alert-success" role="alert">
+            Paper compilation complete! <br /><br />
+            <a href="<%= payload %>">Click here to download preview &raquo;</a>
+          </div>
+        <% elsif status == 'working' %>
+          <div class="alert alert-primary" role="alert">
+            <center>
+              <img src="30.svg" alt="loading spinner" style="padding: 10px 0px;">
+            </center>
+            Your paper preview is currently being compiled, and should complete shortly...
+          </div>
+        <% elsif status == 'waiting' %>
+          <div class="alert alert-secondary" role="alert">
+            Your paper preview is queued, and should begin processing shortly...
+          </div>
+        <% elsif status == 'failed' || status == 'killed' %>
+          <div class="alert alert-danger" role="alert">
+            Your paper failed to compile with the following errors: <br /><br />
+            <%= payload %>
+          </div>
+        <% elsif status == 'missing' %>
+          <div class="alert alert-dark" role="alert">
+            No paper preview found with that id. Please try compiling again.
+          </div>
+        <% end %>
+
+        <a href="/">Try compiling another paper &rarr;</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

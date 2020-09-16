@@ -1,16 +1,15 @@
 journals:
   - openjournals/joss-reviews-testing:
-      editor_team_id: 3408147
+      editor_team_id: 2009411
       eics:
-        - emdupre
-      eic_team_name: neurolibre/editors
-      papers_repo: neurolibre/neurolibre-papers
-      reviewers: https://tinyurl.com/y22xx6ux
-      reviewers_signup: ''
-      site_host: https://neurolibre.herokuapp.com
-      doi_prefix: ""
-      journal_alias: NeuroLibre
-      journal_launch_date: ''
-      site_name: NeuroLibre
-      donate_url: ''
+        - arfon
+      papers: openjournals/joss-papers-testing
+      reviewers: https://bit.ly/joss-reviewers
+      reviewers_signup: http://joss.theoj.org/reviewer-signup.html
+      site_host: http://joss.theoj.org
+      doi_prefix: "10.21105"
+      journal_alias: joss
+      journal_launch_date: '2016-05-05'
+      site_name: Journal of Open Source Software
+      donate_url: https://www.flipcause.com/secure/cause_pdetails/Mjk3Nzk=
       site_api_key: <%= ENV['JOSS_API_KEY'] %>

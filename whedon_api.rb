@@ -90,6 +90,8 @@ class WhedonApi < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
+    check_references(nil, clear_cache=false)
+    process_pdf(nil, clear_cache=false)
   end
 
   # When an issue is closed we want to encourage authors to add the JOSS status
@@ -169,6 +171,10 @@ class WhedonApi < Sinatra::Base
       respond erb :editors, :locals => { :editors => @config.editors }
     when /\A@whedon list reviewers/i
       respond all_reviewers
+    when /\A@whedon generate pdf from branch (.\S*)/
+      process_pdf($1, clear_cache=true)
+    when /\A@whedon generate pdf/i
+      process_pdf(nil, clear_cache=true)
     when /\A@whedon accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -187,6 +193,10 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon withdraw/i
       check_eic
       withdraw_paper
+    when /\A@whedon check references from branch (.\S*)/
+      check_references($1, clear_cache=true)
+    when /\A@whedon check references/i
+      check_references(nil, clear_cache=true)
     when /\A@whedon check repository/i
       repo_detect
     # Detect strings like '@whedon remind @arfon in 2 weeks'
@@ -288,6 +298,14 @@ class WhedonApi < Sinatra::Base
     end
   end
 
+  def check_references(custom_branch=nil, clear_cache=false)
+    if custom_branch
+      respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
+    end
+
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
+  end
+
   def deposit(dry_run, custom_branch=nil)
     if review_issue?
       if !archive_doi?
@@ -308,6 +326,16 @@ class WhedonApi < Sinatra::Base
     else
       respond "I can't accept a paper that hasn't been reviewed!"
     end
+  end
+
+  # Download and compile the PDF
+  def process_pdf(custom_branch=nil, clear_cache=false)
+    # TODO refactor this so we're not passing so many arguments to the method
+    if custom_branch
+      respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
+    end
+
+    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
   # Detect the languages and license of the review repository
@@ -421,7 +449,7 @@ class WhedonApi < Sinatra::Base
   end
 
   # This method is called when an editor says: '@whedon start review'.
-  # At this point, Whedon talks to the NeuroLibre application which creates
+  # At this point, Whedon talks to the JOSS/JOSE application which creates
   # the actual review issue and responds with the serialized paper which
   # includes the 'review_issue_id' which is posted back into the PRE-REVIEW
   def start_review
