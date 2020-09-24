@@ -1,5 +1,5 @@
 {
-  "name": "Whedon API",
+  "name": "RoboNeuro API",
   "description": "The RoboNeuro Bot for interacting with reviewers on NeuroLibre",
   "keywords": [
     "RoboNeuro",
@@ -7,8 +7,8 @@
     "Open Journals",
     "bots"
   ],
-  "website": "http://openjournals.org",
-  "repository": "https://github.com/neurolibre/whedon-api/tree/master",
+  "website": "http://neurolibre.herokuapp.com",
+  "repository": "https://github.com/neurolibre/roboneuro-api/tree/master",
   "success_url": "/heartbeat",
   "scripts": {
   },
@@ -31,15 +31,6 @@
     "REDIS_PROVIDER": {
       "description": "The expected REDIS environment variable name for Sidekiq (don't modify this)",
       "value": "REDISTOGO_URL"
-    },
-    "CROSSREF_USERNAME": {
-      "description": "The username for depositing with Crossref"
-    },
-    "CROSSREF_PASSWORD": {
-      "description": "The password for depositing with Crossref"
-    },
-    "CROSSREF_EMAIL": {
-      "description": "The email used for the polite pool with Crossref search"
     }
   },
   "formation": {

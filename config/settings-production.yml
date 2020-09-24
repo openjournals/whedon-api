@@ -18,7 +18,7 @@ journals:
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
 
-  - openjournals/joss-reviews-testing:
+  - neurolibre/neurolibre-reviews-testing:
       editor_team_id: 3408147
       eics:
         - emdupre
