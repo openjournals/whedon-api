@@ -1,5 +1,5 @@
 {
-  "name": "RoboNeuro API",
+  "name": "RoboNeuro",
   "description": "The RoboNeuro Bot for interacting with reviewers on NeuroLibre",
   "keywords": [
     "RoboNeuro",
@@ -8,7 +8,7 @@
     "bots"
   ],
   "website": "http://neurolibre.herokuapp.com",
-  "repository": "https://github.com/neurolibre/roboneuro-api/tree/master",
+  "repository": "https://github.com/neurolibre/roboneuro/tree/master",
   "success_url": "/heartbeat",
   "scripts": {
   },

@@ -1,8 +1,7 @@
-# RoboNeuro API
+# RoboNeuro
 
-A small service that provides the basic RoboNeuro API.
-Used to help editors manage reviews for [The Journal of Open Source Software](http://joss.theoj.org).
-You can see him in action in [this review issue](https://github.com/openjournals/joss-reviews/issues/78).
+A small service that provides the basic RoboNeuro.
+Used to help editors manage reviews for [NeuroLibre](https://neurolibre.herokuapp.com).
 
 ### Here are some things that RoboNeuro can do:
 
@@ -43,7 +42,7 @@ EDITOR-ONLY TASKS
 
 ## Development
 
-Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?branch=master)](https://travis-ci.org/openjournals/whedon-api)
+Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?branch=master)](https://travis-ci.org/neurolibre/roboneuro)
 
 ## Contributing
 
@@ -57,4 +56,4 @@ Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?
 
 To deploy a version of RoboNeuro on Heroku, an `app.json` template is provided:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/openjournals/whedon-api)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/neurolibre/roboneuro)

@@ -5,7 +5,7 @@ WebMock.disable_net_connect!(allow_localhost: true)
 
 ENV['RACK_ENV'] = 'test'
 
-require File.expand_path '../../whedon_api.rb', __FILE__
+require File.expand_path '../../roboneuro.rb', __FILE__
 require File.expand_path '../../workers.rb', __FILE__
 require File.expand_path '../support/fake_github.rb', __FILE__
 require File.expand_path '../support/fake_joss.rb', __FILE__
