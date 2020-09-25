@@ -6,14 +6,14 @@ journals:
       eic_team_name: neurolibre/editors
       papers_repo: neurolibre/neurolibre-papers
       reviewers: https://tinyurl.com/y22xx6ux
-      reviewers_signup: ''
+      reviewers_signup: https://joss.theoj.org/reviewer-signup.html
       site_host: https://neurolibre.herokuapp.com
-      doi_prefix: ""
+      doi_prefix: "10.21105"
       journal_alias: NeuroLibre
-      journal_launch_date: ''
-      journal_issn: ''
+      journal_launch_date: '2016-05-05'
+      journal_issn: '2475-9066'
       site_name: NeuroLibre
-      donate_url: ''
+      donate_url: https://numfocus.org/donate-to-joss
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
