@@ -15,7 +15,7 @@ require 'pry'
 
 include GitHub
 
-class RoboNeuroApi < Sinatra::Base
+class RoboNeuro < Sinatra::Base
   register Sinatra::ConfigFile
 
   set :views, Proc.new { File.join(root, "responses") }
