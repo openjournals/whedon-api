@@ -23,10 +23,10 @@
       "description": "The API token of the account used to run restart.sh"
     },
     "JOSS_API_KEY": {
-      "description": "The API key for the JOSS site API"
+      "description": "The API key for the NeuroLibre site API"
     },
     "GH_TOKEN": {
-      "description": "The GitHub token for Whedon"
+      "description": "The GitHub token for RoboNeuro"
     },
     "REDIS_PROVIDER": {
       "description": "The expected REDIS environment variable name for Sidekiq (don't modify this)",
