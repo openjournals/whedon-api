@@ -25,10 +25,8 @@ class PaperPreviewWorker
 
     paper_paths = find_paper_paths("tmp/#{sha}")
 
-    if journal == "JOSS"
+    if journal == "NeuroLibre"
       journal_name = "Journal of Open Source Software"
-    elsif journal == "JOSE"
-      journal_name = "Journal of Open Source Education"
     end
 
     if paper_paths.empty?
