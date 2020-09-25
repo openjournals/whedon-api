@@ -1,9 +1,9 @@
 {
-  "name": "whedon-deps",
+  "name": "roboneuro-deps",
   "description": "Something important",
   "scripts": {
     "preinstall": "npm i -g gitinspector"
   },
-  "author": "Arfon Smith",
+  "author": "Elizabeth DuPre",
   "license": "MIT"
 }

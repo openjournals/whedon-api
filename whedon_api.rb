@@ -15,7 +15,7 @@ require 'pry'
 
 include GitHub
 
-class WhedonApi < Sinatra::Base
+class RoboNeuroApi < Sinatra::Base
   register Sinatra::ConfigFile
 
   set :views, Proc.new { File.join(root, "responses") }
@@ -90,13 +90,12 @@ class WhedonApi < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
-    check_references(nil, clear_cache=false)
-    process_pdf(nil, clear_cache=false)
+    # check_references(nil, clear_cache=false)
+    # process_pdf(nil, clear_cache=false)
   end
 
-  # When an issue is closed we want to encourage authors to add the JOSS status
-  # badge to their README but also potentially donate to JOSS (and sign up as a
-  # future reviewer)
+  # When an issue is closed we want to encourage authors to add the NeuroLibre
+  # status badge to their README but also potentially sign up as a future reviewer
   def say_goodbye
     if review_issue?
       # If the REVIEW has been marked as 'accepted'
@@ -106,8 +105,7 @@ class WhedonApi < Sinatra::Base
                                           :reviewers => @config.reviewers_signup,
                                           :doi_prefix => @config.doi_prefix,
                                           :doi_journal => @config.journal_alias,
-                                          :issue_id => @issue_id,
-                                          :donate_url => @config.donate_url}
+                                          :issue_id => @issue_id}
       end
     end
   end
@@ -123,41 +121,41 @@ class WhedonApi < Sinatra::Base
   # One giant case statement to decide how to handle an incoming message...
   def robawt_respond
     case @message
-    when /\A@whedon commands/i
+    when /\A@roboneuro commands/i
       if @config.editors.include?(@sender)
         respond erb :commands
       else
         respond erb :commands_public
       end
-    when /\A@whedon assign (.*) as reviewer/i
+    when /\A@roboneuro assign (.*) as reviewer/i
       check_editor
       assign_reviewer($1)
       respond "OK, #{$1} is now a reviewer"
-    when /\A@whedon add (.*) as reviewer/i
+    when /\A@roboneuro add (.*) as reviewer/i
       check_editor
       add_reviewer($1)
       respond "OK, #{$1} is now a reviewer"
-    when /\A@whedon remove (.*) as reviewer/i
+    when /\A@roboneuro remove (.*) as reviewer/i
       check_editor
       remove_reviewer($1)
       respond "OK, #{$1} is no longer a reviewer"
-    when /\A@whedon assign (.*) as editor/i
+    when /\A@roboneuro assign (.*) as editor/i
       check_editor
       new_editor = assign_editor($1)
       respond "OK, the editor is @#{new_editor}"
-    when /\A@whedon invite (.*) as editor/i
+    when /\A@roboneuro invite (.*) as editor/i
       check_eic
       invite_editor($1)
-    when /\A@whedon re-invite (.*) as reviewer/i
+    when /\A@roboneuro re-invite (.*) as reviewer/i
       check_editor
       invite_reviewer($1)
-    when /\A@whedon set (.*) as archive/
+    when /\A@roboneuro set (.*) as archive/
       check_editor
       assign_archive($1)
-    when /\A@whedon set (.*) as version/
+    when /\A@roboneuro set (.*) as version/
       check_editor
       assign_version($1)
-    when /\A@whedon start review/i
+    when /\A@roboneuro start review/i
       check_editor
       if editor && reviewers.any?
         review_issue_id = start_review
@@ -167,49 +165,49 @@ class WhedonApi < Sinatra::Base
         respond erb :missing_editor_reviewer
         halt
       end
-    when /\A@whedon list editors/i
+    when /\A@roboneuro list editors/i
       respond erb :editors, :locals => { :editors => @config.editors }
-    when /\A@whedon list reviewers/i
+    when /\A@roboneuro list reviewers/i
       respond all_reviewers
-    when /\A@whedon generate pdf from branch (.\S*)/
+    when /\A@roboneuro generate pdf from branch (.\S*)/
       process_pdf($1, clear_cache=true)
-    when /\A@whedon generate pdf/i
+    when /\A@roboneuro generate pdf/i
       process_pdf(nil, clear_cache=true)
-    when /\A@whedon accept deposit=true from branch (.\S*)/i
+    when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
-    when /\A@whedon accept deposit=true/i
+    when /\A@roboneuro accept deposit=true/i
       check_eic
       deposit(dry_run=false)
-    when /\A@whedon accept from branch (.\S*)/i
+    when /\A@roboneuro accept from branch (.\S*)/i
       check_editor
       deposit(dry_run=true, $1)
-    when /\A@whedon accept/i
+    when /\A@roboneuro accept/i
       check_editor
       deposit(dry_run=true)
-    when /\A@whedon reject/i
+    when /\A@roboneuro reject/i
       check_eic
       reject_paper
-    when /\A@whedon withdraw/i
+    when /\A@roboneuro withdraw/i
       check_eic
       withdraw_paper
-    when /\A@whedon check references from branch (.\S*)/
+    when /\A@roboneuro check references from branch (.\S*)/
       check_references($1, clear_cache=true)
-    when /\A@whedon check references/i
+    when /\A@roboneuro check references/i
       check_references(nil, clear_cache=true)
-    when /\A@whedon check repository/i
+    when /\A@roboneuro check repository/i
       repo_detect
-    # Detect strings like '@whedon remind @arfon in 2 weeks'
-    when /\A@whedon remind (.*) in (.*) (.*)/i
+    # Detect strings like '@roboneuro remind @emdupre in 2 weeks'
+    when /\A@roboneuro remind (.*) in (.*) (.*)/i
       check_editor
       schedule_reminder($1, $2, $3)
-    when /\A@whedon query scope/
+    when /\A@roboneuro query scope/
       check_editor
       label_issue(@nwo, @issue_id, ['query-scope'])
       respond "Submission flagged for editorial review."
     # We don't understand the command so say as much...
-    when /\A@whedon/i
-      respond erb :sorry unless @sender == "whedon"
+    when /\A@roboneuro/i
+      respond erb :sorry unless @sender == "roboneuro"
     end
   end
 
@@ -281,7 +279,7 @@ class WhedonApi < Sinatra::Base
     Chronic.parse("in #{size} #{unit}")
   end
 
-  # How Whedon talks
+  # How RoboNeuro talks
   def respond(comment, nwo=nil, issue_id=nil)
     nwo ||= @nwo
     issue_id ||= @issue_id
@@ -448,8 +446,8 @@ class WhedonApi < Sinatra::Base
     RestClient.post(url, data.to_json, {:Authorization => "token #{ENV['GH_TOKEN']}"})
   end
 
-  # This method is called when an editor says: '@whedon start review'.
-  # At this point, Whedon talks to the JOSS/JOSE application which creates
+  # This method is called when an editor says: '@roboneuro start review'.
+  # At this point, RoboNeuro talks to the NeuroLibre application which creates
   # the actual review issue and responds with the serialized paper which
   # includes the 'review_issue_id' which is posted back into the PRE-REVIEW
   def start_review
