@@ -339,6 +339,12 @@ class RepoWorker
     # Download the paper
     stdout, stderr, status = download(issue_id)
 
+    puts "IN THE REPO WORKER"
+    puts "stdout: #{stdout}"
+    puts "stderr: #{stderr}"
+    puts "status: #{status}"
+
+
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
