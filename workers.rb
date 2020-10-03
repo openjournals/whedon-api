@@ -459,14 +459,14 @@ class PDFWorker
 
     result, stderr, status = Open3.capture3("whedon download #{issue_id}")
 
-    if !status.success?
-      return result, stderr, status
-    end
-
-    if custom_branch
-      Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
+    if status.success?
+      if custom_branch
+        Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
+      else
+        Open3.capture3("whedon prepare #{issue_id}")
+      end
     else
-      Open3.capture3("whedon prepare #{issue_id}")
+      return result, stderr, status
     end
   end
 end
