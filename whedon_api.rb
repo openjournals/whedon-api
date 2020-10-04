@@ -90,8 +90,8 @@ class WhedonApi < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
-    check_references(nil, clear_cache=false)
-    process_pdf(nil, clear_cache=false)
+    check_references(nil)
+    process_pdf(nil)
   end
 
   # When an issue is closed we want to encourage authors to add the JOSS status
@@ -172,9 +172,9 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon list reviewers/i
       respond all_reviewers
     when /\A@whedon generate pdf from branch (.\S*)/
-      process_pdf($1, clear_cache=true)
+      process_pdf($1)
     when /\A@whedon generate pdf/i
-      process_pdf(nil, clear_cache=true)
+      process_pdf(nil)
     when /\A@whedon accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -194,9 +194,9 @@ class WhedonApi < Sinatra::Base
       check_eic
       withdraw_paper
     when /\A@whedon check references from branch (.\S*)/
-      check_references($1, clear_cache=true)
+      check_references($1)
     when /\A@whedon check references/i
-      check_references(nil, clear_cache=true)
+      check_references(nil)
     when /\A@whedon check repository/i
       repo_detect
     # Detect strings like '@whedon remind @arfon in 2 weeks'
@@ -298,12 +298,12 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  def check_references(custom_branch=nil, clear_cache=false)
+  def check_references(custom_branch=nil)
     if custom_branch
       respond "```\nAttempting to check references... from custom branch #{custom_branch}\n```"
     end
 
-    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
+    DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   def deposit(dry_run, custom_branch=nil)
@@ -316,7 +316,7 @@ class WhedonApi < Sinatra::Base
       if dry_run == true
         label_issue(@nwo, @issue_id, ['recommend-accept'])
         respond "```\nAttempting dry run of processing paper acceptance...\n```"
-        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache=false)
+        DOIWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, dry_run=true)
       else
         label_issue(@nwo, @issue_id, ['accepted', 'published'])
@@ -329,13 +329,13 @@ class WhedonApi < Sinatra::Base
   end
 
   # Download and compile the PDF
-  def process_pdf(custom_branch=nil, clear_cache=false)
+  def process_pdf(custom_branch=nil)
     # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
     end
 
-    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
+    PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   # Detect the languages and license of the review repository
