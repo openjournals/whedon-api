@@ -135,20 +135,19 @@ class DOIWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
+  def perform(nwo, issue_id, config, custom_branch)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Trying to debug a race condition on Heroku
-    sleep(10)
     # Download the paper
-    stdout, stderr, status = download(issue_id, clear_cache)
+    stdout, stderr, status = download(issue_id)
 
     if status.success?
       # Need to checkout the new branch before looking for the paper.
       `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
-      paper_path = find_paper(issue_id)
+      paper_path = find_paper(issue_id, jid)
+      
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
         bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
@@ -188,6 +187,9 @@ class DOIWorker
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to check the bibtex) failed for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
+
+    # Clean-up
+    FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
 
   # How different are two strings?
@@ -297,7 +299,7 @@ class DOIWorker
     end
   end
 
-  def find_paper(issue_id)
+  def find_paper(issue_id, search_path)
     search_path ||= "tmp/#{issue_id}"
     paper_paths = []
 
@@ -308,9 +310,8 @@ class DOIWorker
     return paper_paths.first
   end
 
-  def download(issue_id, clear_cache)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-    Open3.capture3("whedon download #{issue_id}")
+  def download(issue_id)
+    Open3.capture3("whedon download #{issue_id} #{jid}")
   end
 end
 
@@ -349,10 +350,13 @@ class RepoWorker
     else
       bg_respond(nwo, issue_id, "Downloading of the repository (to analyze the language) for issue ##{issue_id} failed with the following error: \n\n #{stderr}") and return
     end
+
+    # Clean-up
+    FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
 
   def repo_summary(nwo, issue_id)
-    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && cloc --quiet .")
+    result, stderr, status = Open3.capture3("cd #{jid} && cloc --quiet .")
 
     message = "```\nSoftware report (experimental):\n"
 
@@ -360,7 +364,7 @@ class RepoWorker
       message << "#{result}"
     end
 
-    result, stderr, status = Open3.capture3("cd tmp/#{issue_id} && PYTHONIOENCODING=utf-8 gitinspector .")
+    result, stderr, status = Open3.capture3("cd #{jid} && PYTHONIOENCODING=utf-8 gitinspector .")
 
     if status.success?
       message << "\n\n#{result}```"
@@ -370,11 +374,11 @@ class RepoWorker
   end
 
   def detect_license(issue_id)
-    return Licensee.project("tmp/#{issue_id}").license
+    return Licensee.project("#{jid}").license
   end
 
   def detect_languages(issue_id)
-    repo = Rugged::Repository.new("tmp/#{issue_id}")
+    repo = Rugged::Repository.new("#{jid}")
     project = Linguist::Repository.new(repo, repo.head.target_id)
 
     # Take top three languages from Linguist
@@ -382,7 +386,7 @@ class RepoWorker
   end
 
   def detect_statement_of_need(nwo, issue_id)
-    paper_paths = find_paper_paths("tmp/#{issue_id}")
+    paper_paths = find_paper_paths("#{jid}")
 
     return if paper_paths.empty?
 
@@ -396,8 +400,7 @@ class RepoWorker
   end
 
   def download(issue_id)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}")
-    Open3.capture3("whedon download #{issue_id}")
+    Open3.capture3("whedon download #{issue_id} #{jid}")
   end
 
   def find_paper_paths(search_path=nil)
@@ -431,14 +434,16 @@ class PDFWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
+  def perform(nwo, issue_id, config, custom_branch)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Compile the paper
-    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
+      # Clean-up
+      FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
@@ -451,22 +456,23 @@ class PDFWorker
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pdf_response)
+    
+    # Clean-up
+    FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download_and_compile(issue_id, custom_branch=nil, clear_cache)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-
-    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+  def download_and_compile(issue_id, custom_branch=nil)
+    result, stderr, status = Open3.capture3("whedon download #{issue_id} #{jid}")
 
     if !status.success?
       return result, stderr, status
     end
 
     if custom_branch
-      Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
+      Open3.capture3("whedon prepare #{issue_id} #{jid} #{custom_branch}")
     else
-      Open3.capture3("whedon prepare #{issue_id}")
+      Open3.capture3("whedon prepare #{issue_id} #{jid}")
     end
   end
 end
@@ -499,6 +505,8 @@ class DepositWorker
     pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
+      # Clean-up
+      FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
@@ -536,6 +544,8 @@ class DepositWorker
     end
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pr_response)
+    # Clean-up
+    FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
 
   def whedon_tweet(crossref_xml_path, nwo, issue_id, config)
@@ -561,23 +571,21 @@ class DepositWorker
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download_and_compile(issue_id, custom_branch=nil, clear_cache=true)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-
-    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+  def download_and_compile(issue_id, custom_branch=nil)
+    result, stderr, status = Open3.capture3("whedon download #{issue_id} #{jid}")
 
     if !status.success?
       return result, stderr, status
     end
 
     if custom_branch
-      Open3.capture3("whedon compile #{issue_id} #{custom_branch}")
+      Open3.capture3("whedon compile #{issue_id} #{jid} #{custom_branch}")
     else
-      Open3.capture3("whedon compile #{issue_id}")
+      Open3.capture3("whedon compile #{issue_id} #{jid}")
     end
   end
 
   def deposit(issue_id)
-    Open3.capture3("whedon deposit #{issue_id}")
+    Open3.capture3("whedon deposit #{issue_id} #{jid}")
   end
 end
