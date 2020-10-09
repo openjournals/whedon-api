@@ -470,11 +470,8 @@ class PDFWorker
       return result, stderr, status
     end
 
-    if custom_branch
-      Open3.capture3("whedon prepare #{issue_id} #{jid} #{custom_branch}")
-    else
-      Open3.capture3("whedon prepare #{issue_id} #{jid}")
-    end
+    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+    Open3.capture3("whedon prepare #{issue_id} #{jid}")
   end
 end
 
@@ -579,11 +576,9 @@ class DepositWorker
       return result, stderr, status
     end
 
-    if custom_branch
-      Open3.capture3("whedon compile #{issue_id} #{jid} #{custom_branch}")
-    else
-      Open3.capture3("whedon compile #{issue_id} #{jid}")
-    end
+    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+
+    Open3.capture3("whedon compile #{issue_id} #{jid}")
   end
 
   def deposit(issue_id)
