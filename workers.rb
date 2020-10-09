@@ -144,7 +144,7 @@ class DOIWorker
 
     if status.success?
       # Need to checkout the new branch before looking for the paper.
-      `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+      `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
       paper_path = find_paper(issue_id, jid)
       
