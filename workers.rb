@@ -263,8 +263,12 @@ class DOIWorker
         # If there's no DOI present, check Crossref to see if we can find a candidate DOI for this entry.
         else
           if entry.has_field?('title')
-            if candidate_doi = crossref_lookup(entry.title.value)
-              doi_summary[:missing].push("#{candidate_doi} may be a valid DOI for title: #{entry.title}")
+            begin
+              if candidate_doi = crossref_lookup(entry.title.value)
+                doi_summary[:missing].push("#{candidate_doi} may be a valid DOI for title: #{entry.title}")
+              end
+            rescue Serrano::InternalServerError
+              # Do nothing, error from Crossref.
             end
           end
         end
