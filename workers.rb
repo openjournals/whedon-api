@@ -144,7 +144,7 @@ class DOIWorker
 
     if status.success?
       # Need to checkout the new branch before looking for the paper.
-      `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+      `cd #{jid} && git checkout #{custom_branch} --no-guess --quiet && cd` if custom_branch
 
       paper_path = find_paper(issue_id, jid)
       
@@ -474,7 +474,7 @@ class PDFWorker
       return result, stderr, status
     end
 
-    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+    `cd #{jid} && git checkout #{custom_branch} --no-guess --quiet && cd` if custom_branch
     Open3.capture3("whedon prepare #{issue_id} #{jid}")
   end
 end
@@ -580,7 +580,7 @@ class DepositWorker
       return result, stderr, status
     end
 
-    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+    `cd #{jid} && git checkout #{custom_branch} --no-guess --quiet && cd` if custom_branch
 
     Open3.capture3("whedon compile #{issue_id} #{jid}")
   end
