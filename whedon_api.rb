@@ -82,7 +82,7 @@ class WhedonApi < Sinatra::Base
   def say_hello
     if issue.title.match(/^\[REVIEW\]:/)
       respond erb :reviewer_welcome, :locals => { :reviewer => reviewers, :nwo => @nwo, :reviewers => @config.reviewers }
-      reviewers.each {|r| schedule_reminder(r, '1', 'week')}
+      reviewers.each {|r| schedule_reminder(r, '1', 'week', quiet=true)}
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
       repo_detect
@@ -252,7 +252,7 @@ class WhedonApi < Sinatra::Base
     end
   end
 
-  def schedule_reminder(human, size, unit)
+  def schedule_reminder(human, size, unit, quiet=false)
     # Check that the person we're expecting to remind is actually
     # mentioned in the issue body (i.e. is a reviewer or author)
     issue = github_client.issue(@nwo, @issue_id)
@@ -271,7 +271,7 @@ class WhedonApi < Sinatra::Base
     if schedule_at
       # Schedule reminder
       ReviewReminderWorker.perform_at(schedule_at, human, @nwo, @issue_id, serialized_config)
-      respond "Reminder set for #{human} in #{size} #{unit}"
+      respond "Reminder set for #{human} in #{size} #{unit}" unless quiet
     else
       respond "I don't recognize this description of time '#{size}' '#{unit}'."
     end
