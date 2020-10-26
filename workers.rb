@@ -12,6 +12,7 @@ class PaperPreviewWorker
   SidekiqStatus::Container.ttl = 600
 
   def perform(repository_address, journal, custom_branch=nil, sha)
+     ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
 
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
@@ -28,6 +29,8 @@ class PaperPreviewWorker
     if journal == "NeuroLibre"
       journal = "joss"
       journal_name = "Journal of Open Source Software"
+    elsif journal == "JOSE"
+      journal_name = "Journal of Open Source Education"
     end
 
     if paper_paths.empty?

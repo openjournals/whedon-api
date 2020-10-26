@@ -90,8 +90,8 @@ class RoboNeuro < Sinatra::Base
       repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
-    # check_references(nil, clear_cache=false)
-    # process_pdf(nil, clear_cache=false)
+    check_references(nil, clear_cache=false)
+    process_pdf(nil, clear_cache=false)
   end
 
   # When an issue is closed we want to encourage authors to add the NeuroLibre
