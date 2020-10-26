@@ -10,8 +10,10 @@ journals:
       site_host: https://neurolibre.herokuapp.com
       doi_prefix: "10.21105"
       journal_alias: NeuroLibre
-      journal_launch_date: '2016-05-05'
+      journal_launch_date: '2020-05-05'
       journal_issn: '2475-9066'
+      current_issue: "1"
+      current_volume: "1"
       site_name: NeuroLibre
       donate_url: https://numfocus.org/donate-to-joss
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
