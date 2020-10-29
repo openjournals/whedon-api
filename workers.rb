@@ -137,7 +137,7 @@ class JBPreviewWorker
     jb_paths = []
 
     Find.find(search_path) do |path|
-      jb_paths << path if path =~ /_toc\.yml$|_config\.yml$/
+      jb_paths << path if path =~ /_toc\.yml$/
     end
   end
 
@@ -680,9 +680,7 @@ class JBWorker
 
       jb_path = find_jb(issue_id)
       result, stderr, status = Open3.capture3("pip install -r #{jb_path}/requirements.txt && jupyter-book build #{jb_path}")
-    end
-
-    if !status.success?
+    else
       bg_respond(nwo, issue_id, "Jupyter Book failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
