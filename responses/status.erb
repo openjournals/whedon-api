@@ -9,8 +9,7 @@
   <header class="container-fluid">
   <nav class="navbar navbar-expand-lg">
     <a class="navbar-brand" href="/">
-      <img src="logo_medium.png" width="48" height="48" />
-      <img src="joss.svg" />
+      <img src="neurolibre_logo.svg" width="48" height="48" />
     </a>
   </nav>
   </header>
@@ -20,8 +19,9 @@
       <div class="col-lg-8">
         <h3>RoboNeuro paper preview service</h3>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
-          once Whedon has compiled your paper. For more information on how to format
-          your <code>paper.md</code> file, please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
+          once RoboNeuro has compiled your NeuroLibre notebooks and accompanying paper.
+          For more information on how to format these files,
+          please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
 
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
@@ -46,7 +46,7 @@
           </div>
         <% elsif status == 'missing' %>
           <div class="alert alert-dark" role="alert">
-            No paper preview found with that id. Please try compiling again.
+            No paper or notebooks found for that repository. Please try compiling again.
           </div>
         <% end %>
 
