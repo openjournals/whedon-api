@@ -133,6 +133,8 @@ class JBPreviewWorker
     Find.find(search_path) do |path|
       jb_paths << path if path =~ /_toc\.yml/
     end
+
+    return jb_paths
   end
 
 class ReviewReminderWorker
