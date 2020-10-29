@@ -26,11 +26,13 @@ class PaperPreviewWorker
 
     paper_paths = find_paper_paths("tmp/#{sha}")
 
-    if journal == "NeuroLibre"
-      journal = "joss"
+    if journal == "joss"
       journal_name = "Journal of Open Source Software"
     elsif journal == "JOSE"
       journal_name = "Journal of Open Source Education"
+    elsif journal == "NeuroLibre"
+      journal = "joss"
+      journal_name = "Journal of Open Source Software"
     end
 
     if paper_paths.empty?
@@ -78,6 +80,66 @@ class PaperPreviewWorker
     return paper_paths
   end
 end
+
+class JBPreviewWorker
+  require 'sidekiq'
+  require 'sidekiq_status'
+  require 'whedon'
+
+  include Sidekiq::Worker
+  include SidekiqStatus::Worker
+
+  sidekiq_options retry: false
+
+  SidekiqStatus::Container.ttl = 600
+
+  def perform(repository_address, journal, custom_branch=nil, sha)
+    if custom_branch
+      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
+    else
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
+    end
+
+    if !status.success?
+      return result, stderr, status
+    end
+
+    jb_paths = find_jb("tmp/#{sha}")
+
+    if paper_paths.empty?
+      self.payload = "Can't find a Jupyter Book to build. Make sure there's a file named <code>_toc.yml</code> in your repository."
+      abort("Can't find a Jupyter Book to build.")
+    elsif paper_paths.size == 1
+      begin
+        result, stderr, status = Open3.capture3("pip install -r #{jb_paths.first}/requirements.txt && jupyter-book build #{jb_paths.first}")
+      rescue RuntimeError => e
+        self.payload = e.message
+        abort("Can't find a Jupyter Book to build.")
+        return
+    end
+
+    if status.success?
+      if File.exists?("#{directory}/#{sha}/_build/html/index.html")
+        self.payload = "https://www.ismercuryinretrograde.com/"
+      end
+    else
+      self.payload = "Looks like we failed to build the Jupyter Book with the following error: \n\n #{stderr}"
+      abort("Looks like we failed to build the Jupyter Book.")
+    end
+    else
+      self.payload = "There seems to be more than one _toc.yml present. Aborting..."
+      abort("There seems to be more than one _toc.yml present. Aborting...")
+    end
+  end
+
+  def find_jb(issue_id)
+    search_path ||= "tmp/#{issue_id}"
+    jb_paths = []
+
+    Find.find(search_path) do |path|
+      jb_paths << path if path =~ /_toc\.yml$|_config\.yml$/
+    end
+  end
 
 class ReviewReminderWorker
   require_relative 'github'
@@ -581,4 +643,74 @@ class DepositWorker
   def deposit(issue_id)
     Open3.capture3("whedon deposit #{issue_id}")
   end
+end
+
+# This is the Sidekiq worker that processes Jupyter Books.
+# Where possible, we try and capture errors from any of the
+# executed tasks and report them back to the review issue.
+class JBWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+
+  require 'open3'
+  require 'ostruct'
+  require 'sidekiq'
+  require 'whedon'
+
+  include Sidekiq::Worker
+  sidekiq_options retry: false
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Include to communicate from background worker to GitHub
+  include GitHub
+
+  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+
+    # Trying to debug a race condition on Heroku, following PDFWorker
+    sleep(10)
+    # Download the notebooks
+    stdout, stderr, status = download(issue_id, clear_cache)
+
+    if status.success?
+      # Need to checkout the new branch before looking for the Jupyter Book.
+      `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+
+      jb_path = find_jb(issue_id)
+      result, stderr, status = Open3.capture3(`pip install -r #{jb_path}/requirements.txt && jupyter-book build #{jb_path}`)
+    end
+
+    if !status.success?
+      bg_respond(nwo, issue_id, "Jupyter Book failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+    end
+
+    # If we've got this far then push a copy of the built site to the papers repository
+    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
+
+    book_url, book_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+
+    book_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
+
+    # Finally, respond in the review issue with the Jupyter Book URL
+    bg_respond(nwo, issue_id, book_response)
+  end
+
+  def download(issue_id, clear_cache)
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
+    Open3.capture3("whedon download #{issue_id}")
+  end
+
+  def find_jb(issue_id)
+    search_path ||= "tmp/#{issue_id}"
+    jb_paths = []
+
+    Find.find(search_path) do |path|
+      jb_paths << path if path =~ /_toc\.yml$|_config\.yml$/
+    end
+
+    return jb_paths.first
+  end
+
 end

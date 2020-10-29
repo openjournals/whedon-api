@@ -173,6 +173,8 @@ class RoboNeuro < Sinatra::Base
       process_pdf($1, clear_cache=true)
     when /\A@roboneuro generate pdf/i
       process_pdf(nil, clear_cache=true)
+    when /\A@roboneuro build jupyter-book/i
+      build_book(nil, clear_cache=true)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -334,6 +336,16 @@ class RoboNeuro < Sinatra::Base
     end
 
     PDFWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
+  end
+
+  # Download and compile the PDF
+  def build_book(custom_branch=nil, clear_cache=false)
+    # TODO refactor this so we're not passing so many arguments to the method
+    if custom_branch
+      respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
+    end
+
+    JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
   # Detect the languages and license of the review repository
@@ -508,7 +520,10 @@ class RoboNeuro < Sinatra::Base
   post '/preview' do
     sha = SecureRandom.hex
     branch = params[:branch].empty? ? nil : params[:branch]
-    job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+    if params[:journal] == 'joss'
+      job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+    else params[:journal] == 'jose'
+      job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
     redirect "/preview?id=#{job_id}"
   end
 
