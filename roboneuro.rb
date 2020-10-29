@@ -520,9 +520,9 @@ class RoboNeuro < Sinatra::Base
   post '/preview' do
     sha = SecureRandom.hex
     branch = params[:branch].empty? ? nil : params[:branch]
-    if params[:journal] == 'joss'
+    if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-    elsif params[:journal] == 'jose'
+    elsif params[:journal] == 'NeuroLibre notebooks'
       job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
     end
     redirect "/preview?id=#{job_id}"

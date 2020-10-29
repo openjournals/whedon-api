@@ -26,14 +26,8 @@ class PaperPreviewWorker
 
     paper_paths = find_paper_paths("tmp/#{sha}")
 
-    if journal == "joss"
-      journal_name = "Journal of Open Source Software"
-    elsif journal == "JOSE"
-      journal_name = "Journal of Open Source Education"
-    elsif journal == "NeuroLibre"
-      journal = "joss"
-      journal_name = "Journal of Open Source Software"
-    end
+    journal = "joss"
+    journal_name = "Journal of Open Source Software"
 
     if paper_paths.empty?
       self.payload = "Can't find any papers to compile. Make sure there's a file named <code>paper.md</code> in your repository."
@@ -132,12 +126,12 @@ class JBPreviewWorker
     end
   end
 
-  def find_jb(issue_id)
-    search_path ||= "tmp/#{issue_id}"
+  def find_jb(search_path=nil)
+    search_path ||= "tmp/#{review_issue_id}"
     jb_paths = []
 
     Find.find(search_path) do |path|
-      jb_paths << path if path =~ /_toc\.yml$/
+      jb_paths << path if path =~ /_toc\.yml/
     end
   end
 
