@@ -116,16 +116,16 @@ class JBPreviewWorker
         self.payload = e.message
         abort("Can't find a Jupyter Book to build.")
         return
-    end
-
-    if status.success?
-      if File.exists?("#{directory}/#{sha}/_build/html/index.html")
-        self.payload = "https://www.ismercuryinretrograde.com/"
       end
-    else
-      self.payload = "Looks like we failed to build the Jupyter Book with the following error: \n\n #{stderr}"
-      abort("Looks like we failed to build the Jupyter Book.")
-    end
+
+      if status.success?
+        if File.exists?("#{directory}/#{sha}/_build/html/index.html")
+          self.payload = "https://www.ismercuryinretrograde.com/"
+        end
+      else
+        self.payload = "Looks like we failed to build the Jupyter Book with the following error: \n\n #{stderr}"
+        abort("Looks like we failed to build the Jupyter Book.")
+      end
     else
       self.payload = "There seems to be more than one _toc.yml present. Aborting..."
       abort("There seems to be more than one _toc.yml present. Aborting...")
@@ -679,7 +679,7 @@ class JBWorker
       `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
       jb_path = find_jb(issue_id)
-      result, stderr, status = Open3.capture3(`pip install -r #{jb_path}/requirements.txt && jupyter-book build #{jb_path}`)
+      result, stderr, status = Open3.capture3("pip install -r #{jb_path}/requirements.txt && jupyter-book build #{jb_path}")
     end
 
     if !status.success?
@@ -712,5 +712,5 @@ class JBWorker
 
     return jb_paths.first
   end
-
+end
 end
