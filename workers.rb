@@ -100,10 +100,10 @@ class JBPreviewWorker
 
     jb_paths = find_jb("tmp/#{sha}")
 
-    if paper_paths.empty?
+    if jb_paths.empty?
       self.payload = "Can't find a Jupyter Book to build. Make sure there's a file named <code>_toc.yml</code> in your repository."
       abort("Can't find a Jupyter Book to build.")
-    elsif paper_paths.size == 1
+    elsif jb_paths.size == 1
       begin
         result, stderr, status = Open3.capture3("pip install -r #{jb_paths.first}/requirements.txt && jupyter-book build #{jb_paths.first}")
       rescue RuntimeError => e
