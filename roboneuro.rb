@@ -522,8 +522,9 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'joss'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-    else params[:journal] == 'jose'
+    elsif params[:journal] == 'jose'
       job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+    end
     redirect "/preview?id=#{job_id}"
   end
 
