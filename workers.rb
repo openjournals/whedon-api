@@ -115,6 +115,8 @@ class JBPreviewWorker
         return
       end
 
+      directory = File.dirname(jb_paths.first)
+
       if status.success?
         if File.exists?("#{directory}/#{sha}/_build/html/index.html")
           self.payload = "https://www.ismercuryinretrograde.com/"
