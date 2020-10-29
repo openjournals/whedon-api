@@ -8,8 +8,7 @@
   <header class="container-fluid">
   <nav class="navbar navbar-expand-lg">
     <a class="navbar-brand" href="/">
-      <img src="logo_medium.png" width="48" height="48" />
-      <img src="joss.svg" />
+      <img src="neurolibre_logo.svg" width="48" height="48" />
     </a>
   </nav>
   </header>
@@ -18,32 +17,32 @@
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
         <h3>RoboNeuro paper preview service</h3>
-        <p>You can use this page to test that your JOSS or JOSE paper compiles properly before submitting.
-          Enter the location of your Git repository that contains your <code>paper.md</code> file, and pick
-          which journal you'd like a preview for. For more information on how to format your paper, please
+        <p>You can use this page to test that your NeuroLibre notebooks and accompanying paper compile properly before submitting.
+          Enter the location of your Git repository that contains your <code>_toc.yml</code> and <code>paper.md</code> files,
+          and pick which one you'd like a preview for. For more information on how to format your paper, please
           <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
         <form id="preview-form" action="/preview" accept-charset="UTF-8" method="post">
           <div class="form-group">
             <div class="row">
               <div class="col">
                 <label for="repository">Paper repository address</label>
-                <input placeholder="e.g. https://github.com/arfon/fidgit" class="form-control" type="text" name="repository" id="repository" />
+                <input placeholder="e.g. https://github.com/emdupre/nha2020-nilearn" class="form-control" type="text" name="repository" id="repository" />
               </div>
               <div class="col">
                 <label for="branch">Custom branch (optional)</label>
-                <input placeholder="e.g. joss-paper-branch" class="form-control" type="text" name="branch" id="branch" />
+                <input placeholder="e.g. neurolibre-submission-branch" class="form-control" type="text" name="branch" id="branch" />
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label for="journal">Compile paper for:</label>
+            <label for="journal">Compile:</label>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="journal" id="journaljoss" value="NeuroLibre" checked>
-              <label class="form-check-label" for="inlineRadio1">NeuroLibre</label>
+              <input class="form-check-input" type="radio" name="journal" id="journaljoss" value="NeuroLibre paper" checked>
+              <label class="form-check-label" for="inlineRadio1">NeuroLibre paper</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="journal" id="journaljose" value="jose">
-              <label class="form-check-label" for="inlineRadio2">JOSE</label>
+              <input class="form-check-input" type="radio" name="journal" id="journaljose" value="NeuroLibre notebooks">
+              <label class="form-check-label" for="inlineRadio2">NeuroLibre notebooks</label>
             </div>
           </div>
           <div class="form-actions">
