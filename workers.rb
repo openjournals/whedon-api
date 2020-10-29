@@ -76,6 +76,7 @@ class PaperPreviewWorker
 end
 
 class JBPreviewWorker
+  require 'pathname'
   require 'sidekiq'
   require 'sidekiq_status'
   require 'whedon'
@@ -105,7 +106,9 @@ class JBPreviewWorker
       abort("Can't find a Jupyter Book to build.")
     elsif jb_paths.size == 1
       begin
-        result, stderr, status = Open3.capture3("pip install -r #{jb_paths.first}/requirements.txt && jupyter-book build #{jb_paths.first}")
+        original_path = Pathname(jb_paths.first)
+        target_path = original_path.parent.parent
+        result, stderr, status = Open3.capture3("pip install -r #{target_path}/requirements.txt && jupyter-book build #{target_path}/content/")
       rescue RuntimeError => e
         self.payload = e.message
         abort("Can't find a Jupyter Book to build.")
