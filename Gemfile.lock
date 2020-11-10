@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/openjournals/whedon.git
-  revision: 8db9f43069bdef150a50adf2a1e811d47f35ca59
-  ref: 8db9f43069bdef150a50adf2a1e811d47f35ca59
+  revision: a852c1ce3cd09f64869f09106e6ee102cd65bb23
+  ref: a852c1ce3cd09f64869f09106e6ee102cd65bb23
   specs:
     whedon (0.1.0)
       bibtex-ruby
