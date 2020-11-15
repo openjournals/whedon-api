@@ -132,12 +132,20 @@ class WhedonApi < Sinatra::Base
       end
     when /\A@whedon assign (.*) as reviewer/i
       check_editor
-      assign_reviewer($1)
-      respond "OK, #{$1} is now a reviewer"
+      if editor?
+        assign_reviewer($1)
+        respond "OK, #{$1} is now a reviewer"
+      else
+        respond "You need to assign an editor first."
+      end
     when /\A@whedon add (.*) as reviewer/i
       check_editor
-      add_reviewer($1)
-      respond "OK, #{$1} is now a reviewer"
+      if editor?
+        add_reviewer($1)
+        respond "OK, #{$1} is now a reviewer"
+      else
+        respond "You need to assign an editor first."
+      end
     when /\A@whedon remove (.*) as reviewer/i
       check_editor
       remove_reviewer($1)
@@ -419,6 +427,10 @@ class WhedonApi < Sinatra::Base
     update_assignees([editor] | reviewer_logins)
   end
 
+  def editor?
+    !issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/).nil?
+  end
+  
   def editor
     issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   end
