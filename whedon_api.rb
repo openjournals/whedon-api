@@ -82,7 +82,7 @@ class WhedonApi < Sinatra::Base
   def say_hello
     if issue.title.match(/^\[REVIEW\]:/)
       respond erb :reviewer_welcome, :locals => { :reviewer => reviewers, :nwo => @nwo, :reviewers => @config.reviewers }
-      reviewers.each {|r| schedule_reminder(r, '1', 'week', quiet=true)}
+      reviewers.each {|r| schedule_reminder(r, '2', 'weeks', quiet=true)}
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
       repo_detect
