@@ -14,6 +14,13 @@ class PaperPreviewWorker
   def perform(repository_address, journal, custom_branch=nil, sha)
     ENV["JOURNAL_LAUNCH_DATE"] = '2016-05-05'
 
+    result, stderr, status = Open3.capture3("git ls-remote #{repository_address}")
+
+    if !status.success?
+      self.payload = "Invalid Git repository address. Check that the repository can be cloned using the value entered in the form, and that access doesn't require authentication."
+      abort("Can't access that repository address")
+    end
+
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
     else
