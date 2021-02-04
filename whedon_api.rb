@@ -85,12 +85,11 @@ class WhedonApi < Sinatra::Base
       reviewers.each {|r| schedule_reminder(r, '2', 'weeks', quiet=true)}
     # Newly created [PRE REVIEW] issue. Time to say hello
     elsif assignees.any?
-      repo_detect
       respond erb :welcome, :locals => { :editor => assignees.first, :reviewers => @config.reviewers }
     else
-      repo_detect
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
+    repo_detect
     check_references(nil)
     process_pdf(nil)
   end
@@ -430,7 +429,7 @@ class WhedonApi < Sinatra::Base
   def editor?
     !issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/).nil?
   end
-  
+
   def editor
     issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   end
