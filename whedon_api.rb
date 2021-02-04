@@ -89,7 +89,7 @@ class WhedonApi < Sinatra::Base
     else
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
     end
-    repo_detect
+    repo_detect(nil)
     check_references(nil)
     process_pdf(nil)
   end
@@ -205,8 +205,10 @@ class WhedonApi < Sinatra::Base
       check_references($1)
     when /\A@whedon check references/i
       check_references(nil)
+    when /\A@whedon check repository from branch (.\S*)/
+      repo_detect($1)
     when /\A@whedon check repository/i
-      repo_detect
+      repo_detect(nil)
     # Detect strings like '@whedon remind @arfon in 2 weeks'
     when /\A@whedon remind (.*) in (.*) (.*)/i
       check_editor
@@ -347,8 +349,8 @@ class WhedonApi < Sinatra::Base
   end
 
   # Detect the languages and license of the review repository
-  def repo_detect
-    RepoWorker.perform_async(@nwo, @issue_id, serialized_config)
+  def repo_detect(custom_branch=nil)
+    RepoWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch)
   end
 
   # Update the archive on the review issue

@@ -154,7 +154,7 @@ class DOIWorker
       `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
       paper_path = find_paper(issue_id, jid)
-      
+
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
         bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
@@ -345,12 +345,12 @@ class RepoWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config)
+  def perform(nwo, issue_id, config, custom_branch)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download the paper
-    stdout, stderr, status = download(issue_id)
+    stdout, stderr, status = download(issue_id, custom_branch)
 
     if status.success?
       languages = detect_languages(issue_id)
@@ -411,8 +411,10 @@ class RepoWorker
     end
   end
 
-  def download(issue_id)
-    Open3.capture3("whedon download #{issue_id} #{jid}")
+  def download(issue_id, custom_branch=nil)
+    download_result = Open3.capture3("whedon download #{issue_id} #{jid}")
+    download_result = Open3.capture3("git -C #{jid} checkout #{custom_branch}") if custom_branch
+    download_result
   end
 
   def find_paper_paths(search_path=nil)
@@ -468,7 +470,7 @@ class PDFWorker
 
     # Finally, respond in the review issue with the PDF URL
     bg_respond(nwo, issue_id, pdf_response)
-    
+
     # Clean-up
     FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
   end
