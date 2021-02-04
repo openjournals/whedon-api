@@ -2,6 +2,7 @@ require File.expand_path '../spec_helper.rb', __FILE__
 
 describe WhedonApi do
   let(:pre_review_created_payload) { json_fixture('pre-review-created-with-editor.json') }
+  let(:review_created_payload) { json_fixture('review-created-with-editor.json') }
   let(:wrong_repo_payload) { json_fixture('pre-review-created-with-editor-for-wrong-repo.json') }
   let(:junk_payload) { json_fixture('junk-payload.json') }
   let(:pre_review_closed_payload) { json_fixture('pre-review-issue-closed-936.json') }
@@ -58,13 +59,31 @@ describe WhedonApi do
     end
   end
 
-  context 'with a payload from an known repository' do
+  context 'when starting a PRE-REVIEW issue with a payload from an known repository' do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).exactly(1).times
       post '/dispatch', pre_review_created_payload, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should initialize properly" do
+      expect(subject.journal_configs_initialized?).to be_truthy
+    end
+
+    it "should say hello" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'when starting a REVIEW issue with a payload from an known repository' do
+    before do
+      expect(PDFWorker).to receive(:perform_async).once
+      expect(RepoWorker).to receive(:perform_async).once
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).exactly(1).times
+      post '/dispatch', review_created_payload, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should initialize properly" do
