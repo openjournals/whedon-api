@@ -112,10 +112,10 @@ class ReviewReminderWorker
     # of the state of the reviewer checklists. Otherwise, check if they
     # need a reminder.
     if human.strip == author
-      bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how things are progressing here.")
+      bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how things are progressing here (this is an automated reminder).")
     else
       if needs_reminder?(nwo, issue.body, human)
-        bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going.")
+        bg_respond(nwo, issue_id, ":wave: #{human}, please update us on how your review is going (this is an automated reminder).")
       end
     end
   end
