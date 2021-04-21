@@ -142,6 +142,23 @@ class JBPreviewWorker
     return jb_paths
   end
 
+  class NLPreviewWorker
+    require 'rest-client'
+    
+    def perform(repository_address, journal, custom_branch=nil, sha)
+    
+     self.payload= RestClient::Request.new(
+          :method => :post,
+          :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+          :user => neurolibre,
+          :password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}",
+          :verify_ssl => false
+          :payload => { repo_url: "#{repository_address}" }
+          :headers => { :accept => :json, content_type: :json }
+       ).execute
+    end
+   end
+
 class ReviewReminderWorker
   require_relative 'github'
   require_relative 'config_helper'
