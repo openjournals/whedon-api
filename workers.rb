@@ -158,7 +158,7 @@ class NLPreviewWorker
      self.payload= RestClient::Request.new(
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-          :user => neurolibre,
+          :user => 'neurolibre',
           :password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}",
           :verify_ssl => false,
           :payload => { repo_url: "#{repository_address}" },
