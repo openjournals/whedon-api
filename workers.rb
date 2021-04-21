@@ -155,7 +155,7 @@ class NLPreviewWorker
   sidekiq_options retry: false
 
   def perform(repository_address, journal, custom_branch=nil, sha)
-    
+=begin
     response = RestClient::Request.new(
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
@@ -174,7 +174,10 @@ class NLPreviewWorker
           fail "Invalid response #{response.to_str} received."
         end
       end
-
+=end
+      url = "neurolibre:#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}@neurolibre-data.conp.cloud:8081/api/v1/resources/books?repo_url=#{respository_address}"
+      response = RestClient.post(url, "")
+      self.payload = response.to_json
   end
 end
 
