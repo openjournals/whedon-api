@@ -147,6 +147,7 @@ class NLPreviewWorker
   require 'rest-client'
   require 'sidekiq'
   require 'sidekiq_status'
+  require 'json'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
@@ -155,7 +156,7 @@ class NLPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
     
-     self.payload= RestClient::Request.new(
+    response = RestClient::Request.new(
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
           :user => 'neurolibre',
@@ -163,7 +164,17 @@ class NLPreviewWorker
           :verify_ssl => false,
           :payload => { repo_url: "#{repository_address}" },
           :headers => { :accept => :json, content_type: :json }
-       ).execute
+       ).execute do |response, request, result|
+        case response.code
+        when 400
+          [ :error, self.payload = "Bad things happened :("]
+        when 200
+          [ :success, self.payload = response.to_json ]
+        else
+          fail "Invalid response #{response.to_str} received."
+        end
+      end
+
   end
 end
 
