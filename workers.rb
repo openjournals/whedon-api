@@ -160,9 +160,9 @@ class NLPreviewWorker
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
           :user => 'neurolibre',
-          :password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}",
+          :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
           :verify_ssl => false,
-          :payload => { repo_url: "#{repository_address}" },
+          :payload => { repo_url: repository_address },
           :headers => { :accept => :json, content_type: :json }
        ).execute do |response, request, result|
         case response.code
