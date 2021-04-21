@@ -141,8 +141,9 @@ class JBPreviewWorker
 
     return jb_paths
   end
+end
 
-  class NLPreviewWorker
+class NLPreviewWorker
   require 'rest-client'
   require 'sidekiq'
   require 'sidekiq_status'
@@ -163,8 +164,8 @@ class JBPreviewWorker
           :payload => { repo_url: "#{repository_address}" },
           :headers => { :accept => :json, content_type: :json }
        ).execute
-    end
-   end
+  end
+end
 
 class ReviewReminderWorker
   require_relative 'github'
