@@ -175,9 +175,12 @@ class NLPreviewWorker
         end
       end
 =end
-      url = "neurolibre:#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}@neurolibre-data.conp.cloud:8081/api/v1/resources/books?repo_url=#{repository_address}"
-      response = RestClient.post(url, "")
-      self.payload = response.to_json
+
+      data = { "repo_url" => repository_address }
+      url = "https://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
+      response = RestClient.post(url, data.to_json, {:user => "neurolibre",:password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"})
+      puts JSON.parse(response)
+      self.payload = JSON.parse(response)
   end
 end
 
