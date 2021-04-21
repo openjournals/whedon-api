@@ -737,4 +737,3 @@ class JBWorker
     return jb_paths.first
   end
 end
-end
