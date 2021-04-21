@@ -143,9 +143,16 @@ class JBPreviewWorker
   end
 
   class NLPreviewWorker
-    require 'rest-client'
-    
-    def perform(repository_address, journal, custom_branch=nil, sha)
+  require 'rest-client'
+  require 'sidekiq'
+  require 'sidekiq_status'
+
+  include Sidekiq::Worker
+  include SidekiqStatus::Worker
+
+  sidekiq_options retry: false
+
+  def perform(repository_address, journal, custom_branch=nil, sha)
     
      self.payload= RestClient::Request.new(
           :method => :post,
