@@ -206,8 +206,8 @@ class NLPreviewWorker
             :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
             :headers => { :content_type => :json }
          ).execute
-          puts response_in.to_str
-          self.payload = response_in.to_json
+          # Send payload in str for now, we need some front-end changes. 
+          self.payload = response_in.to_str
         when 200
           [ :success, parse_json(response.to_str) ]
         else
