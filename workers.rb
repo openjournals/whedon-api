@@ -160,7 +160,7 @@ class NLPreviewWorker
       :repo_url => repository_address
     }.to_json
 
-    response = RestClient::Request.execute(
+    response = RestClient::Request.new(
           method: :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
           verify_ssl: false,
@@ -168,13 +168,22 @@ class NLPreviewWorker
           :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
           :payload => post_params,
           :headers => { :content_type => :json }
-       )
+       ).execute do |response, request, result|
+        case response.code
+        when 409
+          [ :success, self.payload = JSON.parse(response)]
+        when 200
+          [ :success, parse_json(response.to_str) ]
+        else
+          fail "Invalid response #{response.to_str} received."
+        end
+      end
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
       #response = RestClient.post(url, data.to_json, {:user => "neurolibre",:password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"})
-      puts JSON.parse(response.to_str)
-      self.payload = JSON.parse(response)
+      #puts JSON.parse(response.to_str)
+      #self.payload = JSON.parse(response)
   end
 end
 
