@@ -197,6 +197,7 @@ class NLPreviewWorker
           post_params = {
             :commit_hash => latest_sha
           }.to_json
+
           response_in = RestClient::Request.new(
             method: :get,
             :url => "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books?commit_hash=#{latest_sha}",
@@ -205,8 +206,8 @@ class NLPreviewWorker
             :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
             :headers => { :content_type => :json }
          ).execute
-
-          self.payload = response_in.to_str
+          puts response_in.to_str
+          self.payload = response_in.to_json
         when 200
           [ :success, parse_json(response.to_str) ]
         else
