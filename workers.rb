@@ -171,7 +171,7 @@ class NLPreviewWorker
        ).execute do |response, request, result|
         case response.code
         when 409
-          [ :success, self.payload = JSON.parse(response)]
+          [ :success, self.payload = response.to_str]
         when 200
           [ :success, parse_json(response.to_str) ]
         else
