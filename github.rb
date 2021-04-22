@@ -178,4 +178,20 @@ module GitHub
 
     return gh_response.html_url
   end
+
+  def get_latest_book_build_sha(target_repo,custom_branch=nil)
+  
+    if custom_branch.nil?
+      sha = github_client.commits(target_repo).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
+    else
+      sha = github_client.commits(target_repo,custom_branch).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
+    end
+    
+    if !sha.nil? 
+      # Return sha only 
+      sha = sha[1]
+    end
+
+    return sha
+  end
 end

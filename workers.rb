@@ -148,17 +148,37 @@ class NLPreviewWorker
   require 'sidekiq'
   require 'sidekiq_status'
   require 'json'
+  require 'uri'
+  require_relative 'github'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
+  include GitHub
 
   sidekiq_options retry: false
 
   def perform(repository_address, journal, custom_branch=nil, sha)
 
+  uri = URI(repository_address)
+  gh_repo = uri.path[1...] # user/repo
+
+  if custom_branch
+    # Get latest sha with --book-build in comments in custom_branch
+    latest_sha = get_latest_book_build_sha(gh_repo,custom_branch)
+  else
+    # Get latest sha with --book-build in comments 
+    latest_sha = get_latest_book_build_sha(gh_repo)
+  end
+
+  if latest_sha.nil? 
+    # Terminate 
+    fail "Repository does not contain any commits with --build-book message."
+  else
     post_params = {
-      :repo_url => repository_address
+      :repo_url => repository_address,
+      :commit_hash => latest_sha
     }.to_json
+  end
 
     response = RestClient::Request.new(
           method: :post,
@@ -170,8 +190,11 @@ class NLPreviewWorker
           :headers => { :content_type => :json }
        ).execute do |response, request, result|
         case response.code
-        when 409
-          [ :success, self.payload = response.to_str]
+        when 409 # Conflict: Means that a build with requested hash already exists. 
+          # In that case, first we'll attempt to return build book. 
+          self.payload = response.to_str
+          self.another_response = "See if it works"
+          
         when 200
           [ :success, parse_json(response.to_str) ]
         else
@@ -185,6 +208,7 @@ class NLPreviewWorker
       #puts JSON.parse(response.to_str)
       #self.payload = JSON.parse(response)
   end
+
 end
 
 class ReviewReminderWorker
