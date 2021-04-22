@@ -173,6 +173,8 @@ class NLPreviewWorker
   if latest_sha.nil? 
     # Terminate 
     fail "Repository does not contain any commits with --build-book message."
+    self.payload = "Repository does not contain any commits messages with --build-book flag."
+    abort("Jupyter Book build is triggered for the latest commit message with --build-book flag.")
   else
     post_params = {
       :repo_url => repository_address,
@@ -191,10 +193,22 @@ class NLPreviewWorker
        ).execute do |response, request, result|
         case response.code
         when 409 # Conflict: Means that a build with requested hash already exists. 
-          # In that case, first we'll attempt to return build book. 
-          self.payload = response.to_str
-          self.another_response = "See if it works"
-          
+          # In that case, first we'll attempt to return build book.
+          # If there's no book, connect to stream.
+          post_params = {
+            :commit_hash => latest_sha
+          }.to_json
+          response_in = RestClient::Request.new(
+            method: :get,
+            :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => post_params,
+            :headers => { :content_type => :json }
+         ).execute
+
+          self.payload = response_in.to_str
         when 200
           [ :success, parse_json(response.to_str) ]
         else

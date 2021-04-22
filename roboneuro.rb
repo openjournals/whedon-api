@@ -532,7 +532,7 @@ class RoboNeuro < Sinatra::Base
   get '/preview' do
     begin
       container = SidekiqStatus::Container.load(params[:id])
-      erb :status, :locals => { :status => container.status, :payload => container.payload }
+      erb :status, :locals => { :status => container.status, :payload => container.payload}
     rescue SidekiqStatus::Container::StatusNotFound
       erb :status, :locals => { :status => 'missing' }
     end
