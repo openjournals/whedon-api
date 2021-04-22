@@ -156,7 +156,7 @@ class NLPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
 
-    response = RestClient::Request.execute(
+    response = RestClient::Request.new(
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
           :user => 'neurolibre',
@@ -164,9 +164,7 @@ class NLPreviewWorker
           :verify_ssl => false,
           :payload => { repo_url: repository_address },
           :headers => { :accept => :json, content_type: :json }
-          #:headers => {:user => "neurolibre",:password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"}
-       )
-
+       ).execute 
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
