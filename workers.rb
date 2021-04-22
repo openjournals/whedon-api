@@ -172,7 +172,6 @@ class NLPreviewWorker
 
   if latest_sha.nil? 
     # Terminate 
-    fail "Repository does not contain any commits with --build-book message."
     self.payload = "Repository does not contain any commits messages with --build-book flag."
     abort("Jupyter Book build is triggered for the latest commit message with --build-book flag.")
   else
@@ -200,11 +199,10 @@ class NLPreviewWorker
           }.to_json
           response_in = RestClient::Request.new(
             method: :get,
-            :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+            :url => "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books?commit_hash=#{latest_sha}",
             verify_ssl: false,
             :user => 'neurolibre',
             :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-            :payload => post_params,
             :headers => { :content_type => :json }
          ).execute
 
