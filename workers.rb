@@ -159,15 +159,17 @@ class NLPreviewWorker
     response = RestClient::Request.execute(
           :method => :post,
           :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-          :verify_ssl => false,
-          :payload => { repo_url: repository_address },
-          :headers => {:user => "neurolibre", :password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"}
+          :verify_ssl =>  false,
+          :user => 'neurolibre',
+          :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+          :payload => {"repo_url" : "#{repository_address}"},
+          :headers => { :content_type => :json }
        )
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
       #response = RestClient.post(url, data.to_json, {:user => "neurolibre",:password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"})
-      puts JSON.parse(response)
+      puts JSON.parse(response.to_str)
       self.payload = JSON.parse(response)
   end
 end
