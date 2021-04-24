@@ -150,10 +150,12 @@ class NLPreviewWorker
   require 'json'
   require 'uri'
   require_relative 'github'
+  require_relative 'neurolibre'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
   include GitHub
+  include NeuroLibre
 
   sidekiq_options retry: false
 
@@ -181,39 +183,7 @@ class NLPreviewWorker
     }.to_json
   end
 
-    response = RestClient::Request.new(
-          method: :post,
-          :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-          verify_ssl: false,
-          :user => 'neurolibre',
-          :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-          :payload => post_params,
-          :headers => { :content_type => :json }
-       ).execute do |response, request, result|
-        case response.code
-        when 409 # Conflict: Means that a build with requested hash already exists. 
-          # In that case, first we'll attempt to return build book.
-          # If there's no book, connect to stream.
-          post_params = {
-            :commit_hash => latest_sha
-          }.to_json
-
-          response_in = RestClient::Request.new(
-            method: :get,
-            :url => "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books?commit_hash=#{latest_sha}",
-            verify_ssl: false,
-            :user => 'neurolibre',
-            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-            :headers => { :content_type => :json }
-         ).execute
-          # Send payload in str for now, we need some front-end changes. 
-          self.payload = response_in.to_str
-        when 200
-          [ :success, parse_json(response.to_str) ]
-        else
-          fail "Invalid response #{response.to_str} received."
-        end
-      end
+   self.payload = request_book_build(post_params)
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
