@@ -43,7 +43,8 @@ module NeuroLibre
         elsif !repo_name.nil?
             api_url += "?repo_name=#{repo_name}"
         end
-    
+        
+        puts api_url
         response = RestClient::Request.new(
             method: :get,
             :url => api_url,
@@ -101,6 +102,8 @@ module NeuroLibre
             # In that case, first we'll attempt to return build book.
     
             payload_in = JSON.parse(payload_in)
+            puts "hit 409"
+            puts payload_in['commit_hash']
             result = get_built_books(commit_sha:payload_in['commit_hash'])
     
             return result
