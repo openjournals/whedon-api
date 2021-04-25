@@ -15,9 +15,9 @@ class PaperPreviewWorker
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
 
     if custom_branch
-      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
+      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
     else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd tmp/#{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png ")
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd tmp/#{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
     end
 
     if !status.success?
