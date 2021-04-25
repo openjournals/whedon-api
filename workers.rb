@@ -68,7 +68,7 @@ class PaperPreviewWorker
     paper_paths = []
 
     Find.find(search_path) do |path|
-      paper_paths << path if path =~ /\bpaper\.tex$|\bpaper\.md$/
+      paper_paths << path if path =~ /\bpreprint\.tex$|\bpreprint\.md$/
     end
 
     return paper_paths
@@ -521,7 +521,7 @@ class RepoWorker
     paper_paths = []
 
     Find.find(search_path) do |path|
-      paper_paths << path if path =~ /\bpaper\.tex$|\bpaper\.md$/
+      paper_paths << path if path =~ /\bpreprint\.tex$|\bpreprint\.md$/
     end
 
     return paper_paths
