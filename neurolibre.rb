@@ -126,9 +126,19 @@ module NeuroLibre
                 payload_in = JSON.parse(payload_in)
                 puts "hit 409"
                 puts payload_in['commit_hash']
-                result = get_built_books(commit_sha:payload_in['commit_hash'])
-                result = JSON.parse(result)
-                return result[0]['book_url']
+                begin
+                    result = get_built_books(commit_sha:payload_in['commit_hash'])
+                    result = JSON.parse(result)
+                    return result[0]['book_url']
+                rescue
+                    # We need a better indexing of successfull/failed attempts. More importantly 
+                    # we also need to know if a build is ongoing. 
+                    puts "Returning the latest successful book build"
+                    reponame = URI(payload_in['repo_url']).path.split('/').last
+                    result = get_built_books(repo_name:reponame)
+                    result = JSON.parse(result)
+                    return result[0]['book_url']
+                end
         
                 when 200
                 
