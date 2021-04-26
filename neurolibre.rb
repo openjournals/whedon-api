@@ -87,7 +87,8 @@ module NeuroLibre
         # Payload contains repo_url and commit_hash
         block = proc { |response|
             puts response.read_body
-            case response.code
+            puts response.read_body.code
+            case response.read_body.code
             when 409
                 payload_in = JSON.parse(payload_in)
                 puts "hit 409"
