@@ -3,6 +3,7 @@
 <head>
   <title>RoboNeuro preview status</title>
   <link rel="stylesheet" media="all" href="application.css" />
+  <link rel="stylesheet" media="all" href="neurolibre.css" />
   <meta http-equiv="refresh" content="5">
 </head>
 <body>
@@ -17,33 +18,38 @@
   <div class="container">
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
-        <h3>RoboNeuro paper preview service -- TEST</h3>
+        <h3>RoboNeuro preprint preview service </h3>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
-          once RoboNeuro has compiled your NeuroLibre notebooks and accompanying paper.
+          once RoboNeuro has compiled your NeuroLibre notebooks or accompanying paper.
           For more information on how to format these files,
           please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
 
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
-            Paper compilation complete! <br /><br />
-            <a href="<%= payload %>">Click here to download preview &raquo;</a>
-            <%= payload %>
+            Preprint compilation complete! <br /><br />
+            <% if payload['type'] == 'book' %>
+              <a href="<%= payload['book_url'] %>">Click here to download preview &raquo;</a>
+              <%= payload['book_url'] %>
+            <% else %>
+              <a href="<%= payload['paper_url'] %>">Click here to download preview &raquo;</a>
+              <%= payload['paper_url'] %>
+            <% end %>
           </div>
         <% elsif status == 'working' %>
           <div class="alert alert-primary" role="alert">
             <center>
               <img src="30.svg" alt="loading spinner" style="padding: 10px 0px;">
             </center>
-            Your paper preview is currently being compiled, and should complete shortly...
+            Your preprint preview is currently being compiled, and should complete shortly...
           </div>
         <% elsif status == 'waiting' %>
           <div class="alert alert-secondary" role="alert">
-            Your paper preview is queued, and should begin processing shortly...
+            Your preprint preview is queued, and should begin processing shortly...
           </div>
         <% elsif status == 'failed' || status == 'killed' %>
           <div class="alert alert-danger" role="alert">
-            Your paper failed to compile with the following errors: <br /><br />
-            <%= payload %>
+            Your preprint build failed to compile with the following errors: <br /><br />
+            <%= payload['error'] %>
           </div>
         <% elsif status == 'missing' %>
           <div class="alert alert-dark" role="alert">
@@ -52,6 +58,14 @@
         <% end %>
 
         <a href="/">Try compiling another paper &rarr;</a>
+
+        <br> 
+
+        <input type="checkbox" id="_checkbox">
+        <label for="_checkbox"> 
+        <div id="tick_mark"></div>
+        </label>
+
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@ class PaperPreviewWorker
   require 'sidekiq'
   require 'sidekiq_status'
   require 'whedon'
+  require 'json'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
@@ -13,6 +14,14 @@ class PaperPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
+
+    self.payload = {
+      :error => '',
+      :type => 'paper',
+      :paper_url => ''
+    }.to_json
+
+    payload = JSON.parse(payload)
 
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
@@ -30,13 +39,13 @@ class PaperPreviewWorker
     journal_name = "NeuroLibre"
 
     if paper_paths.empty?
-      self.payload = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
+      self.payload['error'] = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
       abort("Can't find any papers to compile.")
     elsif paper_paths.size == 1
       begin
         Whedon::Paper.new(sha, paper_paths.first)
       rescue RuntimeError => e
-        self.payload = e.message
+        self.payload['error'] = e.message
         abort("Can't find any papers to compile.")
         return
       end
@@ -52,14 +61,14 @@ class PaperPreviewWorker
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
           response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
-          self.payload = response['url']
+          self.payload['paper_url'] = response['url']
         end
       else
-        self.payload = "Looks like we failed to compile the PDF with the following error: \n\n #{stderr}"
+        self.payload['error'] = "Looks like we failed to compile the PDF with the following error: \n\n #{stderr}"
         abort("Looks like we failed to compile the PDF.")
       end
     else
-      self.payload = "There seems to be more than one preprint.md present. Aborting..."
+      self.payload['error'] = "There seems to be more than one preprint.md present. Aborting..."
       abort("There seems to be more than one preprint.md present. Aborting...")
     end
   end
@@ -184,7 +193,7 @@ class NLPreviewWorker
     }.to_json
   end
 
-   self.payload = request_book_build(post_params)
+   self.payload = JSON.parse(request_book_build(post_params))
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
