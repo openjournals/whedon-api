@@ -15,9 +15,9 @@ class PaperPreviewWorker
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
 
     if custom_branch
-      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
+      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
     else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd tmp/#{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logo_preprint.png")
     end
 
     if !status.success?
@@ -46,7 +46,7 @@ class PaperPreviewWorker
       directory = File.dirname(paper_paths.first)
       # TODO: may eventually want to swap out the latex template
 
-      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logo_preprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Mickey Mouse et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
+      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='#{directory}/logo_preprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
 
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
