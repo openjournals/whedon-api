@@ -85,37 +85,37 @@ module NeuroLibre
 
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
-        block = proc { |response|
-            puts response.read_body
-            puts response
-            puts response.message
-            code = response.code
-            if code == 409
-                payload_in = JSON.parse(payload_in)
-                puts "hit 409"
-                puts payload_in['commit_hash']
-                result = get_built_books(commit_sha:payload_in['commit_hash'])
-                return result
-            elsif code == 200
-                response.read_body do |chunk|
-                puts chunk
-                end
-            else
-                fail "Invalid response #{response.code} received."
-            end
-        }
-        RestClient::Request.execute(
-            method: :post,
-            :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-            verify_ssl: false,
-            :user => 'neurolibre',
-            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-            :payload => payload_in,
-            :headers => { :content_type => :json },
-            block_response: block
-        )
-        
+        begin
+            block = proc { |response|
+                response.error! unless response.code == "200"
+                
+                    response.read_body do |chunk|
+                    puts chunk
+                    end
+            }
+            RestClient::Request.execute(
+                method: :post,
+                :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_in,
+                :headers => { :content_type => :json },
+                block_response: block
+            )
+        rescue
+
+            
+        end
 
     end
 
 end
+
+
+
+payload_in = JSON.parse(payload_in)
+puts "hit 409"
+puts payload_in['commit_hash']
+result = get_built_books(commit_sha:payload_in['commit_hash'])
+return result
