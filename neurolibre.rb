@@ -127,7 +127,7 @@ module NeuroLibre
                 puts "hit 409"
                 puts payload_in['commit_hash']
                 result = get_built_books(commit_sha:payload_in['commit_hash'])
-                return result['book_url']
+                return result[0]['book_url']
         
                 when 200
                 
