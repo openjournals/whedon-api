@@ -19,11 +19,11 @@
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
         <h3>RoboNeuro preprint preview service </h3>
+        <% payload %>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
           once RoboNeuro has compiled your NeuroLibre notebooks or accompanying paper.
           For more information on how to format these files,
           please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
-
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
             Preprint compilation complete! <br /><br />
@@ -61,11 +61,12 @@
 
         <br> 
 
+=begin
         <input type="checkbox" id="_checkbox">
         <label for="_checkbox"> 
         <div id="tick_mark"></div>
         </label>
-
+=end
       </div>
     </div>
   </div>

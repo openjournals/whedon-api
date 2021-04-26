@@ -15,13 +15,7 @@ class PaperPreviewWorker
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
 
-    self.payload = {
-      :error => '',
-      :type => 'paper',
-      :paper_url => ''
-    }.to_json
-
-    payload = JSON.parse(payload)
+    self.payload['type'] = 'paper'
 
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
@@ -173,7 +167,8 @@ class NLPreviewWorker
 
   uri = URI(repository_address)
   gh_repo = uri.path[1...] # user/repo
-
+  self.payload['type'] = 'book'
+  
   if custom_branch
     # Get latest sha with --book-build in comments in custom_branch
     latest_sha = get_latest_book_build_sha(gh_repo,custom_branch)
@@ -184,7 +179,7 @@ class NLPreviewWorker
 
   if latest_sha.nil? 
     # Terminate 
-    self.payload = "Repository does not contain any commits messages with --build-book flag."
+    self.payload['error'] = "Repository does not contain any commits messages with --build-book flag."
     abort("Jupyter Book build is triggered for the latest commit message with --build-book flag.")
   else
     post_params = {
@@ -193,7 +188,8 @@ class NLPreviewWorker
     }.to_json
   end
 
-   self.payload = JSON.parse(request_book_build(post_params))
+   op = JSON.parse(request_book_build(post_params))
+   self.payload['book_url'] = op['book_url']
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
