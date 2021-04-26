@@ -89,9 +89,8 @@ module NeuroLibre
             puts response.read_body
             puts response
             puts response.message
-            puts response.code
-            puts response.read_body.code
-            case response.code
+            code = response.code
+            case code
             when 409
                 payload_in = JSON.parse(payload_in)
                 puts "hit 409"
