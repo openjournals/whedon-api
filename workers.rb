@@ -185,7 +185,7 @@ class NLPreviewWorker
     }.to_json
   end
 
-   op = JSON.parse(request_book_build(post_params))
+   op = request_book_build(post_params)
    self.payload = op['book_url']
 
       #data = { "repo_url" => repository_address }
