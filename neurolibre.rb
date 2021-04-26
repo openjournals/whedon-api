@@ -86,10 +86,21 @@ module NeuroLibre
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
         block = proc { |response|
-            response.read_body do |chunk|
-            puts chunk
+            case response.code
+            when 409
+                payload_in = JSON.parse(payload_in)
+                puts "hit 409"
+                puts payload_in['commit_hash']
+                result = get_built_books(commit_sha:payload_in['commit_hash'])
+                return result
+            when 200
+                response.read_body do |chunk|
+                puts chunk
+                end
+                
+            else
+                fail "Invalid response #{response.code} received."
             end
-            self.payload = response
         }
         response = RestClient::Request.new(
             method: :post,
@@ -100,32 +111,8 @@ module NeuroLibre
             :payload => payload_in,
             :headers => { :content_type => :json },
             block_response: block
-        ).execute do |response|
-            case response.code
-            when 409
-    
-            # Conflict: Means that a build with requested hash already exists. 
-            # In that case, first we'll attempt to return build book.
-    
-            payload_in = JSON.parse(payload_in)
-            puts "hit 409"
-            puts payload_in['commit_hash']
-            result = get_built_books(commit_sha:payload_in['commit_hash'])
-    
-            return result
-    
-            when 200
-            
-                #result = JSON.parse(result)
-                puts "Returned 200"
-                #return result
-            
-            else
-            
-                fail "Invalid response #{response.code} received."
-            
-            end
-          end
+        )
+
     end
 
 end
