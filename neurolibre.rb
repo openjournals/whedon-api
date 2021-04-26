@@ -93,7 +93,8 @@ module NeuroLibre
             :user => 'neurolibre',
             :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
             :payload => payload_in,
-            :headers => { :content_type => :json }
+            :headers => { :content_type => :json },
+            block_response: block
         ).execute do |response|
             case response.code
             when 409
@@ -110,7 +111,13 @@ module NeuroLibre
     
             when 200
             
-                result = JSON.parse(result)
+                #result = JSON.parse(result)
+                puts "Returned 200"
+                block = proc { |response|
+                response.read_body do |chunk|
+                  puts chunk
+                end
+               }
                 return result
             
             else
