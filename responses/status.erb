@@ -19,7 +19,9 @@
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
         <h3>RoboNeuro preprint preview service </h3>
-        <% payload %>
+        <p><% payload['type'] %></p>
+        <p><% payload.type %></p>
+        <p><% payload.["type"] %></p>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
           once RoboNeuro has compiled your NeuroLibre notebooks or accompanying paper.
           For more information on how to format these files,
@@ -61,12 +63,6 @@
 
         <br> 
 
-=begin
-        <input type="checkbox" id="_checkbox">
-        <label for="_checkbox"> 
-        <div id="tick_mark"></div>
-        </label>
-=end
       </div>
     </div>
   </div>
