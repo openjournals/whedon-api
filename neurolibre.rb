@@ -85,7 +85,11 @@ module NeuroLibre
 
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
-    
+        block = proc { |response|
+            response.read_body do |chunk|
+            puts chunk
+            end
+        }
         response = RestClient::Request.new(
             method: :post,
             :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
@@ -113,12 +117,7 @@ module NeuroLibre
             
                 #result = JSON.parse(result)
                 puts "Returned 200"
-                block = proc { |response|
-                response.read_body do |chunk|
-                  puts chunk
-                end
-               }
-                return result
+                #return result
             
             else
             
