@@ -15,8 +15,6 @@ class PaperPreviewWorker
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
 
-    self.payload['type'] = 'paper'
-
     if custom_branch
       result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
     else
@@ -33,13 +31,13 @@ class PaperPreviewWorker
     journal_name = "NeuroLibre"
 
     if paper_paths.empty?
-      self.payload['error'] = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
+      self.payload = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
       abort("Can't find any papers to compile.")
     elsif paper_paths.size == 1
       begin
         Whedon::Paper.new(sha, paper_paths.first)
       rescue RuntimeError => e
-        self.payload['error'] = e.message
+        self.payload = e.message
         abort("Can't find any papers to compile.")
         return
       end
@@ -55,14 +53,14 @@ class PaperPreviewWorker
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
           response = Cloudinary::Uploader.upload("#{directory}/#{sha}.pdf")
-          self.payload['paper_url'] = response['url']
+          self.payload = response['url']
         end
       else
-        self.payload['error'] = "Looks like we failed to compile the PDF with the following error: \n\n #{stderr}"
+        self.payload = "Looks like we failed to compile the PDF with the following error: \n\n #{stderr}"
         abort("Looks like we failed to compile the PDF.")
       end
     else
-      self.payload['error'] = "There seems to be more than one preprint.md present. Aborting..."
+      self.payload = "There seems to be more than one preprint.md present. Aborting..."
       abort("There seems to be more than one preprint.md present. Aborting...")
     end
   end
@@ -167,8 +165,7 @@ class NLPreviewWorker
 
   uri = URI(repository_address)
   gh_repo = uri.path[1...] # user/repo
-  self.payload['type'] = 'book'
-  
+
   if custom_branch
     # Get latest sha with --book-build in comments in custom_branch
     latest_sha = get_latest_book_build_sha(gh_repo,custom_branch)
@@ -179,7 +176,7 @@ class NLPreviewWorker
 
   if latest_sha.nil? 
     # Terminate 
-    self.payload['error'] = "Repository does not contain any commits messages with --build-book flag."
+    self.payload = "Repository does not contain any commits messages with --build-book flag."
     abort("Jupyter Book build is triggered for the latest commit message with --build-book flag.")
   else
     post_params = {
@@ -189,7 +186,7 @@ class NLPreviewWorker
   end
 
    op = JSON.parse(request_book_build(post_params))
-   self.payload['book_url'] = op['book_url']
+   self.payload = op['book_url']
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"

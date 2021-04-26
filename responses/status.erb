@@ -19,9 +19,6 @@
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
         <h3>RoboNeuro preprint preview service </h3>
-        <p><% payload['type'] %></p>
-        <p><% payload.type %></p>
-        <p><% payload["type"] %></p>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
           once RoboNeuro has compiled your NeuroLibre notebooks or accompanying paper.
           For more information on how to format these files,
@@ -29,13 +26,7 @@
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
             Preprint compilation complete! <br /><br />
-            <% if payload['type'] == 'book' %>
-              <a href="<%= payload['book_url'] %>">Click here to download preview &raquo;</a>
-              <%= payload['book_url'] %>
-            <% else %>
-              <a href="<%= payload['paper_url'] %>">Click here to download preview &raquo;</a>
-              <%= payload['paper_url'] %>
-            <% end %>
+              <a href="<%= payload %>">Click here to see the results &raquo;</a>
           </div>
         <% elsif status == 'working' %>
           <div class="alert alert-primary" role="alert">
@@ -51,7 +42,7 @@
         <% elsif status == 'failed' || status == 'killed' %>
           <div class="alert alert-danger" role="alert">
             Your preprint build failed to compile with the following errors: <br /><br />
-            <%= payload['error'] %>
+            <%= payload %>
           </div>
         <% elsif status == 'missing' %>
           <div class="alert alert-dark" role="alert">
