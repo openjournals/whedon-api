@@ -86,7 +86,7 @@ module NeuroLibre
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
         block = proc { |response|
-            puts response
+            puts response.read_body
             case response.code
             when 409
                 payload_in = JSON.parse(payload_in)
