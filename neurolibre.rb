@@ -89,6 +89,7 @@ module NeuroLibre
             response.read_body do |chunk|
             puts chunk
             end
+            self.payload = response
         }
         response = RestClient::Request.new(
             method: :post,
