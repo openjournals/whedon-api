@@ -60,10 +60,10 @@ module NeuroLibre
             result = JSON.parse(response)
     
             if result.is_a?(Array) && result.length()==1
-                result = result.map {|c| {:time_added => Time.parse(c['time_added']),:book_url => c['book_url'], :download_url => c['download_url']}, :type => 'book' }.to_json
+                result = result.map {|c| {:time_added => Time.parse(c['time_added']),:book_url => c['book_url'], :download_url => c['download_url'], :type => 'book' }}.to_json
             elsif result.is_a?(Array) && result.length() >1
                 # Array in reverse chronological order
-                result = result.map {|c| {:time_added => Time.parse(c['time_added']),:book_url => c['book_url'], :download_url => c['download_url']}, :type => 'book' }.sort_by { |hash| hash[:time_added].to_i }.reverse.to_json
+                result = result.map {|c| {:time_added => Time.parse(c['time_added']),:book_url => c['book_url'], :download_url => c['download_url'], :type => 'book' }}.sort_by { |hash| hash[:time_added].to_i }.reverse.to_json
             end
             
             return result
