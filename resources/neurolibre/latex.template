@@ -103,7 +103,9 @@ $endif$
             headheight=2.2cm, reversemp, includemp, marginparwidth=4.5cm]{geometry}
 
 % --- Default font ------------------------------------------------------------
-\renewcommand\familydefault{\sfdefault}
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault} 
+\usepackage[T1]{fontenc}
 
 % --- Style -------------------------------------------------------------------
 \renewcommand{\bibfont}{\small \sffamily}
@@ -429,16 +431,16 @@ $endif$
   %\hrule
   \sffamily\small
 
-  {\bfseries DOI:} \href{https://doi.org/$formatted_doi$}{\color{linky}{$formatted_doi$}}
+  {\bfseries DOI:} \href{https://doi.org/$formatted_doi$}{\color{red}{$formatted_doi$}}
 
   \vspace{2mm}
 
   {\bfseries Software}
   \begin{itemize}
     \setlength\itemsep{0em}
-    \item \href{$review_issue_url$}{\color{linky}{Review}} \ExternalLink
-    \item \href{$repository$}{\color{linky}{Repository}} \ExternalLink
-    \item \href{$archive_doi$}{\color{linky}{Archive}} \ExternalLink
+    \item \href{$review_issue_url$}{\color{red}{Review}} \ExternalLink
+    \item \href{$repository$}{\color{red}{Repository}} \ExternalLink
+    \item \href{$archive_doi$}{\color{red}{Archive}} \ExternalLink
   \end{itemize}
 
   \vspace{2mm}
@@ -447,7 +449,7 @@ $endif$
 
   \vspace{2mm}
 
-  {\bfseries Editor:} \href{$editor_url$}{$editor_name$} \ExternalLink \\
+  {\bfseries Editor:} \href{$editor_url$}{\color{red}$editor_name$} \ExternalLink \\
   \vspace{1mm}
   $if(reviewers)$
   {\bfseries Reviewers:}
@@ -465,7 +467,7 @@ $endif$
 
   \vspace{2mm}
   {\bfseries License}\\
-  Authors of papers retain copyright and release the work under a Creative Commons Attribution 4.0 International License (\href{http://creativecommons.org/licenses/by/4.0/}{\color{linky}{CC BY 4.0}}).
+  Authors of papers retain copyright and release the work under a Creative Commons Attribution 4.0 International License (\href{http://creativecommons.org/licenses/by/4.0/}{\color{red}{CC BY 4.0}}).
 
   $if(aas-doi)$
   \vspace{4mm}
