@@ -86,10 +86,14 @@ module NeuroLibre
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
         begin
+            puts "Attempting server-sent event stream connection..."
             block = proc { |response|
                 response.error! unless response.code == "200"
                 
                     response.read_body do |chunk|
+                    # Not sure if sidekiq can dynamically feed this to 
+                    # the browser if I were to upload payload in this loop. 
+                    # Anyway, we'll need to resolve another bug on test server to find that out. 
                     puts chunk
                     end
             }
@@ -123,8 +127,7 @@ module NeuroLibre
                 puts "hit 409"
                 puts payload_in['commit_hash']
                 result = get_built_books(commit_sha:payload_in['commit_hash'])
-        
-                return result
+                return result['book_url']
         
                 when 200
                 

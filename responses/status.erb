@@ -26,8 +26,7 @@
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
             Preprint compilation complete! <br /><br />
-              <a href="<%= payload %>">Click here to see the results &raquo;</a>
-              <%= payload %>
+              <a href="<%= payload %>">Click here to see your results &raquo;</a>
           </div>
         <% elsif status == 'working' %>
           <div class="alert alert-primary" role="alert">
