@@ -90,18 +90,16 @@ module NeuroLibre
             puts response
             puts response.message
             code = response.code
-            case code
-            when 409
+            if code == 409
                 payload_in = JSON.parse(payload_in)
                 puts "hit 409"
                 puts payload_in['commit_hash']
                 result = get_built_books(commit_sha:payload_in['commit_hash'])
                 return result
-            when 200
+            elsif code == 200
                 response.read_body do |chunk|
                 puts chunk
                 end
-                
             else
                 fail "Invalid response #{response.code} received."
             end
