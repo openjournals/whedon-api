@@ -104,18 +104,41 @@ module NeuroLibre
                 block_response: block
             )
         rescue
-
+            response = RestClient::Request.new(
+                method: :post,
+                :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_in,
+                :headers => { :content_type => :json }
+            ).execute do |response|
+                case response.code
+                when 409
+        
+                # Conflict: Means that a build with requested hash already exists. 
+                # In that case, first we'll attempt to return build book.
+        
+                payload_in = JSON.parse(payload_in)
+                puts "hit 409"
+                puts payload_in['commit_hash']
+                result = get_built_books(commit_sha:payload_in['commit_hash'])
+        
+                return result
+        
+                when 200
+                
+                    puts "pass"
+                
+                else
+                
+                    fail "Invalid response #{response.code} received."
+                
+                end
+              end
             
         end
 
     end
 
 end
-
-
-
-payload_in = JSON.parse(payload_in)
-puts "hit 409"
-puts payload_in['commit_hash']
-result = get_built_books(commit_sha:payload_in['commit_hash'])
-return result
