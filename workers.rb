@@ -186,7 +186,7 @@ class NLPreviewWorker
   end
 
    op = request_book_build(post_params)
-   self.payload = op['book_url']
+   self.payload = op
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
