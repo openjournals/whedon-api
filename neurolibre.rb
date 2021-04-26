@@ -94,7 +94,7 @@ module NeuroLibre
                     # Not sure if sidekiq can dynamically feed this to 
                     # the browser if I were to upload payload in this loop. 
                     # Anyway, we'll need to resolve another bug on test server to find that out. 
-                    return chunk
+                    puts chunk
                     end
             }
             RestClient::Request.execute(
