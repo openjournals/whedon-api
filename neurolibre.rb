@@ -103,7 +103,7 @@ module NeuroLibre
                 fail "Invalid response #{response.code} received."
             end
         }
-        response = RestClient::Request.new(
+        RestClient::Request.execute(
             method: :post,
             :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
             verify_ssl: false,
@@ -113,6 +113,7 @@ module NeuroLibre
             :headers => { :content_type => :json },
             block_response: block
         ).execute
+        
 
     end
 
