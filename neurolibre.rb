@@ -8,8 +8,11 @@ include GitHub
 
 module NeuroLibre
 
-    def get_latest_book_build_sha(target_repo,custom_branch=nil)
+    def get_latest_book_build_sha(repository_address,custom_branch=nil)
         
+        uri = URI(repository_address)
+        target_repo = uri.path[1...] # user/repo
+
         if custom_branch.nil? 
             sha = github_client.commits(target_repo).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
         else
@@ -153,6 +156,69 @@ module NeuroLibre
             
         end
 
+    end
+
+    def validate_repository_content(repository_address)
+        # Returns a JSON array containing fields:  
+        # - response 
+        # - reason
+        # If response is true, then the reposiotry meets minimum file/folder 
+        # level requirements. Otherwise, reason indicates why the repo 
+        # is not valid.
+
+        uri = URI(repository_address)
+        # Drop first slash
+        target_repo = uri.path[1...]
+        
+        base_folders = github_client.contents(target_repo).map {|c,t| [c.path,c.type]}.select { |e, i| i=='dir' }.flatten(1).select.with_index {|e,i| !i.odd?}
+        folder_level_check = base_folders.include?('binder') && base_folders.include?('content')
+    
+        binder_configs = [
+            "environment.yml",
+            "data_requirement.json",
+            "requirements.txt",
+            "Pipfile",
+            "Pipfile.lock",
+            "setup.py",
+            "Project.toml",
+            "REQUIRE",
+            "install.R",
+            "apt.txt",
+            "DESCRIPTION",
+            "manifest.yml",
+            "postBuild",
+            "start",
+            "runtime.txt",
+            "default.nix",
+            "Dockerfile",
+            "start"
+            ];
+    
+        # List required content. Updates require changing content_required.intersection(content_files).length() < 2 condition
+        content_required = ['_toc.yml','_config.yml']
+    
+        # Initialize default reponse
+        out = {:response => true, :reason => "Repository meets mimimum file/folder level requirements."}
+    
+        if folder_level_check
+            
+            # Check for BinderHub config files
+            binder_files = github_client.contents(target_repo,:path => 'binder/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
+            if  binder_configs.intersection(binder_files).length() == 0
+                out = {:response => false, :reason => "Binder folder does not contain a valid environment configuration file."}
+            end
+    
+            # Check for _toc.yml and _config.yml
+            content_files = github_client.contents(target_repo,:path => 'content/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
+            if content_required.intersection(content_files).length() < 2
+                out =  {:response => false, :reason => "Missing _toc.yml or _config.yml under the content folder."}
+            end
+    
+        else
+            out = {:response => false, :reason => "Missing /binder or /content folder."}
+        end
+    
+        return JSON.parse(out.to_json)
     end
 
 end

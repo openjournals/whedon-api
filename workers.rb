@@ -161,17 +161,17 @@ class NLPreviewWorker
 
   sidekiq_options retry: false
 
-  def perform(repository_address, journal, custom_branch=nil, sha)
-
-  uri = URI(repository_address)
-  gh_repo = uri.path[1...] # user/repo
-
+  def perform(repository_address, journal, email_address, custom_branch=nil, sha)
+  
+  if email_address
+    puts email_address
+  end
   if custom_branch
     # Get latest sha with --book-build in comments in custom_branch
-    latest_sha = get_latest_book_build_sha(gh_repo,custom_branch)
+    latest_sha = get_latest_book_build_sha(repository_address,custom_branch)
   else
     # Get latest sha with --book-build in comments 
-    latest_sha = get_latest_book_build_sha(gh_repo)
+    latest_sha = get_latest_book_build_sha(repository_address)
   end
 
   if latest_sha.nil? 
@@ -184,9 +184,16 @@ class NLPreviewWorker
       :commit_hash => latest_sha
     }.to_json
   end
-
-   op = request_book_build(post_params)
-   self.payload = op
+   
+   # First, try a get request. If fails, then attempt build. 
+   begin
+      op = get_built_books(commit_sha=latest_sha)
+      result = JSON.parse(op)
+      self.payload = result[0]['book_url']
+   rescue 
+      op = request_book_build(post_params)
+      self.payload = op
+   end
 
       #data = { "repo_url" => repository_address }
       #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
