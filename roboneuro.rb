@@ -34,7 +34,7 @@ class RoboNeuro < Sinatra::Base
   }
 
   Sinatra::Mailer.delivery_method = :sendmail
-  Sinatra::Mailer.config = {:sendmail_path => @config['sendmail']}
+  #Sinatra::Mailer.config = {:sendmail_path => @config['sendmail']}
 
   before do
     set_configs unless journal_configs_initialized?
@@ -543,11 +543,10 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-      email 
-      :to      => "agahkarakuzu@gmail.com",
-      :from    => "roboneuro@gmail.com",
-      :subject => "Welcome to Awesomeness!",
-      :body    => "whatever"
+      email :to      => "agahkarakuzu@gmail.com",
+            :from    => "roboneuro@gmail.com",
+            :subject => "Welcome to Awesomeness!",
+            :body    => "whatever"
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
       job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
