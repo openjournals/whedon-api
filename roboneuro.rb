@@ -33,6 +33,9 @@ class RoboNeuro < Sinatra::Base
   :auth   => :plain
   }
 
+  Sinatra::Mailer.delivery_method = :sendmail
+  Sinatra::Mailer.config = {:sendmail_path => @config['sendmail']}
+
   before do
     set_configs unless journal_configs_initialized?
 
@@ -517,6 +520,15 @@ class RoboNeuro < Sinatra::Base
     end
   end
 
+  def email
+    @email ||= Sinatra::Mailer::Email.new(
+      :to       => to,
+      :from     => from,
+      :subject  => subject,
+      :body     => body
+    )
+  end
+
   # The actual Sinatra URL path methods
   get '/heartbeat' do
     "BOOM boom. BOOM boom. BOOM boom."
@@ -531,7 +543,8 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-      email :to      => "agahkarakuzu@gmail.com",
+      email 
+      :to      => "agahkarakuzu@gmail.com",
       :from    => "roboneuro@gmail.com",
       :subject => "Welcome to Awesomeness!",
       :body    => "whatever"
