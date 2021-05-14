@@ -13,7 +13,7 @@ gem 'sidekiq'
 gem 'sidekiq_status'
 gem 'sinatra', '2.0.2'
 gem 'sinatra-contrib', '2.0.2'
-gem 'smtp-tls'
+gem "ambethia-smtp-tls", "1.1.2", :require => "smtp-tls"
 gem 'twitter'
 gem 'unicorn', '5.3.1'
 gem 'pry-byebug'
