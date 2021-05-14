@@ -12,7 +12,6 @@ require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
 require 'pry'
-require 'action_mailer'
 
 include GitHub
 
@@ -75,23 +74,6 @@ class RoboNeuro < Sinatra::Base
         params["editors"] = github_client.team_members(team_id).collect { |e| e.login }.sort
         settings.configs[nwo] = OpenStruct.new params
       end
-    end
-
-    configure do
-      ActionMailer::Base.delivery_method = :smtp
-      ActionMailer::Base.raise_delivery_errors = false
-      ActionMailer::Base.perform_deliveries = false
-      ActionMailer::Base.perform_caching = false
-      ActionMailer::Base.smtp_settings = {
-        :address        => 'smtp.sendgrid.net',
-        :port           => '587',
-        :authentication => :plain,
-        :user_name      => ENV['SENDGRID_USERNAME'],
-        :password       => ENV['SENDGRID_PASSWORD'],
-        :domain         => 'heroku.com',
-        :enable_starttls_auto => true
-      }
-      ActionMailer::Base.view_paths = File.expand_path('views')
     end
 
     settings.initialized = true
