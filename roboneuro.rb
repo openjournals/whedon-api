@@ -9,6 +9,7 @@ require 'octokit'
 require 'rest-client'
 require 'securerandom'
 require 'sinatra/config_file'
+require 'sinatra/mailer'
 require 'whedon'
 require 'yaml'
 require 'pry'
@@ -547,7 +548,7 @@ class RoboNeuro < Sinatra::Base
             :from    => "roboneuro@gmail.com",
             :subject => "Welcome to Awesomeness!",
             :body    => "whatever"
-            
+
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
       job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
