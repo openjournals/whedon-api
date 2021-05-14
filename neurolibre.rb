@@ -224,7 +224,7 @@ module NeuroLibre
 end
 
 require 'sinatra'
-require 'action_mailer'
+require 'actionmailer'
 
 class Mailer < ActionMailer::Base
   def contact
