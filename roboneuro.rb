@@ -544,10 +544,6 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-      email :to      => "agahkarakuzu@gmail.com",
-            :from    => "roboneuro@gmail.com",
-            :subject => "Welcome to Awesomeness!",
-            :body    => "whatever"
 
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
