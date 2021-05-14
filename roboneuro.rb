@@ -9,11 +9,9 @@ require 'octokit'
 require 'rest-client'
 require 'securerandom'
 require 'sinatra/config_file'
-require 'sinatra/mailer'
 require 'whedon'
 require 'yaml'
 require 'pry'
-require "smtp-tls"
 
 include GitHub
 
@@ -25,17 +23,6 @@ class RoboNeuro < Sinatra::Base
   config_file "config/settings-#{ENV['RACK_ENV']}.yml"
   set :configs, {}
   set :initialized, false
-
-  Sinatra::Mailer.config = {
-  :host   => 'smtp.sendgrid.net',
-  :port   => '587',
-  :user   => ENV["SENDGRID_USERNAME"],
-  :pass   => ENV["SENDGRID_PASSWORD"],
-  :auth   => :plain
-  }
-
-  Sinatra::Mailer.delivery_method = :sendmail
-  #Sinatra::Mailer.config = {:sendmail_path => @config['sendmail']}
 
   before do
     set_configs unless journal_configs_initialized?
@@ -521,15 +508,6 @@ class RoboNeuro < Sinatra::Base
     end
   end
 
-  def email
-    @email ||= Sinatra::Mailer::Email.new(
-      :to       => to,
-      :from     => from,
-      :subject  => subject,
-      :body     => body
-    )
-  end
-
   # The actual Sinatra URL path methods
   get '/heartbeat' do
     "BOOM boom. BOOM boom. BOOM boom."
@@ -544,7 +522,6 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
-
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
       job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
@@ -574,6 +551,4 @@ class RoboNeuro < Sinatra::Base
 
     robawt_respond if @message
   end
-
-  
 end
