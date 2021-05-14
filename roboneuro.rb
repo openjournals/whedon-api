@@ -12,6 +12,7 @@ require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
 require 'pry'
+require "smtp-tls"
 
 include GitHub
 
@@ -23,6 +24,14 @@ class RoboNeuro < Sinatra::Base
   config_file "config/settings-#{ENV['RACK_ENV']}.yml"
   set :configs, {}
   set :initialized, false
+
+  Sinatra::Mailer.config = {
+  :host   => 'smtp.sendgrid.net',
+  :port   => '587',
+  :user   => ENV["SENDGRID_USERNAME"],
+  :pass   => ENV["SENDGRID_PASSWORD"],
+  :auth   => :plain
+  }
 
   before do
     set_configs unless journal_configs_initialized?
@@ -522,6 +531,10 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+      email :to      => "agahkarakuzu@gmail.com",
+      :from    => "roboneuro@gmail.com",
+      :subject => "Welcome to Awesomeness!",
+      :body    => "whatever"
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
       job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
@@ -551,4 +564,6 @@ class RoboNeuro < Sinatra::Base
 
     robawt_respond if @message
   end
+
+  
 end
