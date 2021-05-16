@@ -8,17 +8,28 @@ include GitHub
 
 module NeuroLibre
 
-    def get_repo_name(in_address)
+    def get_repo_name(in_address, for_pdf=false)
         
-        uri = URI(in_address)
-        if uri.kind_of?(URI::HTTP) or uri.kind_of?(URI::HTTPS)
-            # This is full url, fetch user/repo
-            target_repo = uri.path[1...] # user/repo
+        if for_pdf
+            uri = URI(in_address)
+            if uri.kind_of?(URI::HTTP) or uri.kind_of?(URI::HTTPS)
+                # This is full url, fetch user/repo
+                target_repo = uri # user/repo
+            else
+                # assumes username/repo
+                target_repo = "https://github.com/#{in_address}"
+            end
         else
-            # assumes username/repo
-            target_repo = in_address
+            uri = URI(in_address)
+            if uri.kind_of?(URI::HTTP) or uri.kind_of?(URI::HTTPS)
+                # This is full url, fetch user/repo
+                target_repo = uri.path[1...] # user/repo
+            else
+                # assumes username/repo
+                target_repo = in_address
+            end
         end
-
+        
         return target_repo
     end
 

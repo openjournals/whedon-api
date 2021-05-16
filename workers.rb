@@ -4,9 +4,11 @@ class PaperPreviewWorker
   require 'sidekiq_status'
   require 'whedon'
   require 'json'
+  require_relative 'neurolibre'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
+  include NeuroLibre
 
   sidekiq_options retry: false
 
@@ -14,9 +16,18 @@ class PaperPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
+     
+     # From NeuroLibre module
+     repository_address = get_repo_name(repository_address,for_pdf=true)
 
     if custom_branch
-      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      begin
+        # means that user provided a tag or branch
+        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      rescue
+        # Means that user provided a commit sha
+        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      end
     else
       result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
     end
