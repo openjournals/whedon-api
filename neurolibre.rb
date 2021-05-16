@@ -8,23 +8,41 @@ include GitHub
 
 module NeuroLibre
 
+    def get_repo_name(in_address)
+        
+        uri = URI(in_address)
+        if uri.kind_of?(URI::HTTP) or uri.kind_of?(URI::HTTPS)
+            # This is full url, fetch user/repo
+            target_repo = uri.path[1...] # user/repo
+        else
+            # assumes username/repo
+            target_repo = in_address
+        end
+
+        return target_repo
+    end
+
     def get_latest_book_build_sha(repository_address,custom_branch=nil)
         
-        uri = URI(repository_address)
-        target_repo = uri.path[1...] # user/repo
+        target_repo = get_repo_name(repository_address)
 
         if custom_branch.nil? 
-            sha = github_client.commits(target_repo).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
+            #sha = github_client.commits(target_repo).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
+            begin
+                sha = github_client.commits(target_repo).map {|c,a| [c.sha]}.first
+            rescue
+                sha = nil
+            end
         else
-            sha = github_client.commits(target_repo,custom_branch).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
-        end
-        
-        if !sha.nil? 
-            # Return sha only 
-            sha = sha[1]
+            #sha = github_client.commits(target_repo,custom_branch).map {|c,a| [c.commit.message,c.sha]}.select{ |e, i| e[/\--build-book/] }.first
+            begin 
+                sha = github_client.commit(target_repo,custom_branch)['sha']
+            rescue
+                sha = nil
+            end
         end
 
-        return sha 
+        return sha
 
     end
 

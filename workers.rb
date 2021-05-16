@@ -174,10 +174,10 @@ class NLPreviewWorker
     latest_sha = get_latest_book_build_sha(repository_address)
   end
 
-  if latest_sha.nil? 
+  if latest_sha.nil?
     # Terminate 
-    self.payload = "Repository does not contain any commits messages with --build-book flag."
-    abort("Jupyter Book build is triggered for the latest commit message with --build-book flag.")
+    self.payload =  "Requested repository (or branch/tag/sha) does not exist: #{in_address}.\nPlease provide a GitHub URL or username/repository that exists (for branch/tag/sha, if provided)."
+    abort("Requested branch/sha does not exist for #{repository_address}")
   else
     post_params = {
       :repo_url => repository_address,
