@@ -54,7 +54,7 @@ module NeuroLibre
             end
         end
 
-        return sha
+        return sha[0]
 
     end
 
@@ -277,14 +277,9 @@ module NeuroLibre
           body "We have finished processing your request for #{repository_address} commit #{commit_sha}. Results #{results}"
         end
         
-        bdy = [
-        "<img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">",
-        "<details><summary>Binder Log</summary>#{results}</details>",
-        ].join("\n") + "\n"
-
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body bdy
+          body "<details><summary>Binder Log</summary><p>#{results}</p></details><br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
         end
       end
     end
