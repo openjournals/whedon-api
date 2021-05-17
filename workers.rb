@@ -184,6 +184,9 @@ class NLPreviewWorker
     # Get latest sha with --book-build in comments 
     latest_sha = get_latest_book_build_sha(repository_address)
   end
+  
+  puts repository_address
+  puts latest_sha
 
   if latest_sha.nil?
     # Terminate 

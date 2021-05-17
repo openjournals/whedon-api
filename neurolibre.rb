@@ -137,6 +137,7 @@ module NeuroLibre
         :user => 'neurolibre',
         :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
         :payload => payload_in,
+        :timeout => 500,
         :headers => { :content_type => :json }
         ).execute do |response|
             case response.code
