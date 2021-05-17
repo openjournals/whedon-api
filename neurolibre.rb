@@ -124,7 +124,7 @@ module NeuroLibre
         jsn =  JSON.parse(tmp.to_json)
         jsn  = jsn[0...-1].map {|c| JSON.parse(c) }
         # This is information about book build
-        jsn2 = jsn[-1].map {|c| c }
+        jsn2 = JSON.parse(jsn[-1])
 
         # We'll need to send a GET request at this point to fetch book build logs.
 
@@ -261,6 +261,20 @@ module NeuroLibre
     end
 
     def email_processed_request(user_mail,repository_address,sha,commit_sha,results_binder,results_book)
+        
+        
+        book_url = results_book['book_url']
+
+
+        book_log = RestClient::Request.new(
+        method: :get,
+        :url => results_book['book_build_logs'],
+        verify_ssl: false,
+        :user => 'neurolibre',
+        :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+        :headers => { :content_type => :json }
+        ).execute
+
         options_mail = { 
         :address => "smtp.gmail.com",
         :port                 => 587,
@@ -284,7 +298,7 @@ module NeuroLibre
         
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body "<h2>Binder logs</h2><div style=\"background-color:black;color:white;\"><p>#{results_binder}</p></div><br><h2>Book logs</h2> <div style=\"background-color:black;color:white;\"><p>#{results_book}</p></div> <br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
+          body "<a href=\"#{book_url}\"><h2>Click for the built book</h2></a><br><h2>Binder logs</h2><div style=\"background-color:black;color:white;\"><p>#{results_binder}</p></div><br><h2>Book logs</h2> <div style=\"background-color:black;color:white;\"><p>#{book_log}</p></div> <br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
         end
       end
     end
