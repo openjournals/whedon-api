@@ -275,15 +275,15 @@ module NeuroLibre
         text_part do
           body "We have finished processing your request for #{repository_address} commit #{commit_sha}. Results #{results}"
         end
-      
+        
+        bdy = [
+        "<img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">",
+        "<details><summary>Binder Log</summary>#{results}</details>",
+        ].join("\n") + "\n"
+
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body "<img src="https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true">
-                <details>
-                <summary>Binder Log</summary>
-                #{results}
-                </details>
-               "
+          body bdy
         end
       end
     end
