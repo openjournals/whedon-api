@@ -206,7 +206,7 @@ class NLPreviewWorker
       self.payload = result[0]['book_url']
    rescue 
       op = request_book_build(post_params)
-      email_processed_request(user_mail,repository_address,sha,commit_sha,op)
+      email_processed_request(email_address,short_address,sha,latest_sha,op)
       self.payload = op
    end
 
