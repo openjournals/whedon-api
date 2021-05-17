@@ -12,6 +12,7 @@ require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
 require 'pry'
+require 'mail'
 
 include GitHub
 
@@ -522,6 +523,23 @@ class RoboNeuro < Sinatra::Base
     branch = params[:branch].empty? ? nil : params[:branch]
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+      options_mail = { :address              => "smtp.gmail.com",
+            :port                 => 587,
+            :user_name            => ENV['RN_GMAIL_NAME'],
+            :password             => ENV['RN_GMAIL_PASS'],
+            :authentication       => 'plain',
+            :enable_starttls_auto => true  }
+
+      Mail.defaults do
+        delivery_method :smtp, options_mail
+      end
+
+      Mail.deliver do
+            to 'agahkarakuzu@gmail.com'
+          from 'roboneuro@gmail.com'
+        subject 'Test'
+          body 'Hurray!!! Test email!'
+      end
     elsif params[:journal] == 'NeuroLibre notebooks'
       #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
       job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
