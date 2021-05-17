@@ -124,11 +124,11 @@ module NeuroLibre
         jsn =  JSON.parse(tmp.to_json)
         jsn  = jsn[0...-1].map {|c| JSON.parse(c) }
         # This is information about book build
-        jsn2 = jsn[-1].map {|c| JSON.parse(c) }
+        jsn2 = jsn[-1].map {|c| c }
 
         # We'll need to send a GET request at this point to fetch book build logs.
 
-        return jsn.map {|c| c['message']}.join("<br>").html_safe, jsn2
+        return jsn.map {|c| c['message']}, jsn2
     end
 
     def request_book_build(payload_in)
