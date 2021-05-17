@@ -122,13 +122,13 @@ module NeuroLibre
         # Get rid of nils
         tmp = tmp_chomped.compact
         jsn =  JSON.parse(tmp.to_json)
-        jsn  = jsn[0...-1].map {|c| JSON.parse(c) }
+        jsn1  = jsn[0...-1].map {|c| JSON.parse(c) }
         # This is information about book build
         jsn2 = JSON.parse(jsn[-1])
 
         # We'll need to send a GET request at this point to fetch book build logs.
 
-        return jsn.map {|c| c['message']}, jsn2
+        return jsn1.map {|c| c['message']}, jsn2
     end
 
     def request_book_build(payload_in)
