@@ -29,7 +29,7 @@ module NeuroLibre
                 target_repo = in_address
             end
         end
-        
+
         return target_repo
     end
 
@@ -115,46 +115,33 @@ module NeuroLibre
         end
     end
 
+    def parse_neurolibre_response(response)
+        tmp =  response.to_str
+        tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}
+        # Get rid of nils
+        tmp = tmp_chomped.compact
+        jsn =  JSON.parse(tmp.to_json)
+        jsn  = jsn[0...-1].map {|c| JSON.parse(c) }
+
+        return jsn.map {|c| c['message']}
+    end
+
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
-        begin
-            puts "Attempting server-sent event stream connection..."
-            block = proc { |response|
-                response.error! unless response.code == "200"
-                
-                    response.read_body do |chunk|
-                    # Not sure if sidekiq can dynamically feed this to 
-                    # the browser if I were to upload payload in this loop. 
-                    # Anyway, we'll need to resolve another bug on test server to find that out. 
-                    puts chunk
-                    end
-            }
-            RestClient::Request.execute(
-                method: :post,
-                :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-                verify_ssl: false,
-                :user => 'neurolibre',
-                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-                :payload => payload_in,
-                :headers => { :content_type => :json },
-                block_response: block
-            )
-        rescue
-            response = RestClient::Request.new(
-                method: :post,
-                :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-                verify_ssl: false,
-                :user => 'neurolibre',
-                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-                :payload => payload_in,
-                :headers => { :content_type => :json }
-            ).execute do |response|
-                case response.code
-                when 409
-        
-                # Conflict: Means that a build with requested hash already exists. 
-                # In that case, first we'll attempt to return build book.
-        
+
+        response = RestClient::Request.new(
+        method: :post,
+        :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+        verify_ssl: false,
+        :user => 'neurolibre',
+        :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+        :payload => payload_in,
+        :headers => { :content_type => :json }
+        ).execute do |response|
+            case response.code
+            when 200
+                return parse_neurolibre_response(response)
+            when 409
                 payload_in = JSON.parse(payload_in)
                 puts "hit 409"
                 puts payload_in['commit_hash']
@@ -171,20 +158,8 @@ module NeuroLibre
                     result = JSON.parse(result)
                     return result[0]['book_url']
                 end
-        
-                when 200
-                
-                    puts "pass"
-                
-                else
-                
-                    fail "Invalid response #{response.code} received."
-                
-                end
-              end
-            
+            end
         end
-
     end
 
     def validate_repository_content(repository_address)
@@ -249,5 +224,69 @@ module NeuroLibre
     
         return JSON.parse(out.to_json)
     end
+
+    def email_received_request(user_mail,repository_address,sha,commit_sha)
+        options_mail = { 
+        :address => "smtp.gmail.com",
+        :port                 => 587,
+        :user_name            => ENV['RN_GMAIL_NAME'],
+        :password             => ENV['RN_GMAIL_PASS'],
+        :authentication       => 'plain',
+        :enable_starttls_auto => true  }
+
+      Mail.defaults do
+        delivery_method :smtp, options_mail
+      end
+
+      mail = Mail.deliver do
+        to       user_mail
+        from    'RoboNeuro'
+        subject "NeuroLibre - Your test request for #{repository_address}"
+      
+        text_part do
+          body "We have received your request for #{repository_address} commit #{commit_sha}."
+        end
+      
+        html_part do
+          content_type 'text/html; charset=UTF-8'
+          body '<img src="https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true">'
+        end
+      end
+    end
+
+    def email_processed_request(user_mail,repository_address,sha,commit_sha,results)
+        options_mail = { 
+        :address => "smtp.gmail.com",
+        :port                 => 587,
+        :user_name            => ENV['RN_GMAIL_NAME'],
+        :password             => ENV['RN_GMAIL_PASS'],
+        :authentication       => 'plain',
+        :enable_starttls_auto => true  }
+
+      Mail.defaults do
+        delivery_method :smtp, options_mail
+      end
+
+      mail = Mail.deliver do
+        to       user_mail
+        from    'RoboNeuro'
+        subject "NeuroLibre - Finished book build for #{repository_address}"
+      
+        text_part do
+          body "We have finished processing your request for #{repository_address} commit #{commit_sha}. Results #{results}"
+        end
+      
+        html_part do
+          content_type 'text/html; charset=UTF-8'
+          body "<img src="https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true">
+                <details>
+                <summary>Binder Log</summary>
+                #{results}
+                </details>
+               "
+        end
+      end
+    end
+
 
 end

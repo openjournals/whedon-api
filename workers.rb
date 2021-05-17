@@ -196,13 +196,17 @@ class NLPreviewWorker
     }.to_json
   end
    
-   # First, try a get request. If fails, then attempt build. 
+   # First, try a get request. If fails, then attempt build.
+   short_address = get_repo_name(repository_address)
+   email_received_request(email_address,short_address,sha,latest_sha)
+
    begin
       op = get_built_books(commit_sha=latest_sha)
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
    rescue 
       op = request_book_build(post_params)
+      email_processed_request(user_mail,repository_address,sha,commit_sha,op)
       self.payload = op
    end
 
