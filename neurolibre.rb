@@ -123,8 +123,12 @@ module NeuroLibre
         tmp = tmp_chomped.compact
         jsn =  JSON.parse(tmp.to_json)
         jsn  = jsn[0...-1].map {|c| JSON.parse(c) }
+        # This is information about book build
+        jsn2 = jsn[-1].map {|c| JSON.parse(c) }
 
-        return jsn.map {|c| c['message']}
+        # We'll need to send a GET request at this point to fetch book build logs.
+
+        return jsn.map {|c| c['message']}.join("<br>").html_safe, jsn2
     end
 
     def request_book_build(payload_in)
@@ -256,7 +260,7 @@ module NeuroLibre
       end
     end
 
-    def email_processed_request(user_mail,repository_address,sha,commit_sha,results)
+    def email_processed_request(user_mail,repository_address,sha,commit_sha,results_binder,results_book)
         options_mail = { 
         :address => "smtp.gmail.com",
         :port                 => 587,
@@ -275,12 +279,12 @@ module NeuroLibre
         subject "NeuroLibre - Finished book build for #{repository_address}"
       
         text_part do
-          body "We have finished processing your request for #{repository_address} commit #{commit_sha}. Results #{results}"
+          body "We have finished processing your request for #{repository_address} commit #{commit_sha}. Results #{results_binder}"
         end
         
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body "<details><summary>Binder Log</summary><p>#{results}</p></details><br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
+          body "<h2>Binder logs</h2><div style=\"background-color:black;color:white;\"><p>#{results_binder}</p></div><br><h2>Book logs</h2> <div style=\"background-color:black;color:white;\"><p>#{results_book}</p></div> <br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
         end
       end
     end

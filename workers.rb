@@ -204,13 +204,16 @@ class NLPreviewWorker
    email_received_request(email_address,short_address,sha,latest_sha)
 
    begin
-      op = get_built_books(commit_sha=latest_sha)
+      # FAILING THIS ONE ON PURPOSE FOR NOW
+      # FIXME LATER commit_sh:latest_sha
+      op = get_built_books(commit_sh=latest_sha)
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
    rescue 
-      op = request_book_build(post_params)
-      email_processed_request(email_address,short_address,sha,latest_sha,op)
-      self.payload = op
+      op_binder, op_book = request_book_build(post_params)
+      email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
+      # Temporary
+      self.payload = op_book
    end
 
       #data = { "repo_url" => repository_address }
