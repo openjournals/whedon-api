@@ -3,6 +3,7 @@ require 'json'
 require 'rest-client'
 require 'time'
 require_relative 'github'
+require 'mail'
 
 include GitHub
 

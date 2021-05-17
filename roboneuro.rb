@@ -12,7 +12,6 @@ require 'sinatra/config_file'
 require 'whedon'
 require 'yaml'
 require 'pry'
-require 'mail'
 
 include GitHub
 
