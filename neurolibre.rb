@@ -34,7 +34,10 @@ module NeuroLibre
                           <a href=\"https://neurolibre.herokuapp.com\"><img style=\"height:45px;margin-right:10px;float:right;margin-top:12px;\" src=\"https://cdn3.iconfinder.com/data/icons/black-white-social-media/32/www_logo_social_media-512.png\"></a>
                           </p></div>
                           """
-
+    def is_email_valid? email
+        email =~URI::MailTo::EMAIL_REGEXP
+    end
+    
     def get_repo_name(in_address, for_pdf=false)
         
         if for_pdf
@@ -240,13 +243,13 @@ module NeuroLibre
             
             # Check for BinderHub config files
             binder_files = github_client.contents(target_repo,:path => 'binder/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
-            if  binder_configs.intersection(binder_files).length() == 0
+            if  (binder_configs & binder_files).length() == 0
                 out = {:response => false, :reason => "Binder folder does not contain a valid environment configuration file."}
             end
     
             # Check for _toc.yml and _config.yml
             content_files = github_client.contents(target_repo,:path => 'content/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
-            if content_required.intersection(content_files).length() < 2
+            if (content_required & content_files).length() < 2
                 out =  {:response => false, :reason => "Missing _toc.yml or _config.yml under the content folder."}
             end
     

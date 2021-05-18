@@ -206,7 +206,6 @@ class NLPreviewWorker
   end
    # First, try a get request. If fails, then attempt build.
    short_address = get_repo_name(repository_address)
-   email_received_request(email_address,short_address,sha,latest_sha)
 
    begin
       # FAILING THIS ONE ON PURPOSE FOR NOW
@@ -215,6 +214,20 @@ class NLPreviewWorker
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
    rescue 
+    
+      if email_address.nil?
+        self.payload =  "Oops! Looks like you did not provide your email address. Your repository is ready for a NeuroLibre build, but we need a valid email address to start one."
+        abort("Please provide an email address.")
+      else
+        if  is_email_valid?(email_address) ? true : false
+          puts 'Mail address looks OK.'
+        else
+          self.payload =  "Oops! Looks like you did not provide a valid email address: #{email_address}. Your repository is ready for a NeuroLibre build, but we need a valid email address to start one."
+          abort("Please provide a valid email address.")
+        end
+      end
+
+      email_received_request(email_address,short_address,sha,latest_sha)
       op_binder, op_book = request_book_build(post_params)
       book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
       # Temporary
