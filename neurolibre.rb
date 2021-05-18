@@ -9,6 +9,32 @@ include GitHub
 
 module NeuroLibre
 
+    class << self
+        attr_accessor :logo
+        attr_accessor :header_start
+        attr_accessor :header_finish
+        attr_accessor :footer
+      end
+      self.logo = "https://raw.githubusercontent.com/neurolibre/docs.neurolibre.com/master/source/img/logo_neurolibre_old.png"
+      self.header_start = """
+                          <div style=\"background-color:#333;padding:3px;border-radius:10px;\">
+                          <center><img src=\" https://github.com/neurolibre/brand/blob/main/png/neurolibre_test_start.png?raw=true \" height=\"200px\"></img>
+                          </div>
+                          """
+      self.header_finish = """
+                          <div style=\"background-color:#333;padding:3px;border-radius:10px;\">
+                          <center><img src=\" https://github.com/neurolibre/brand/blob/main/png/neurolibre_test_finish.png?raw=true \" height=\"200px\"></img>
+                          </div>
+                          """
+          self.footer =   """
+                          <div style=\"background-color:#333;height:70px;border-radius:10px;\">
+                          <p><img src=\" https://github.com/neurolibre/neurolibre.com/blob/master/static/img/favicon.png?raw=true \" height=\"70px\" style=\"float:left;\"></p>
+                          <p><a href=\"https://twitter.com/neurolibre?lang=en\"><img style=\"height:45px;margin-right:10px;float:right;margin-top:12px;\" src=\"https://cdn2.iconfinder.com/data/icons/black-white-social-media/32/online_social_media_twitter-512.png\"></a></p>
+                          <a href=\"https://github.com/neurolibre\"><img style=\"height:45px;margin-right:10px;float:right;margin-top:12px;\" src=\"https://cdn2.iconfinder.com/data/icons/black-white-social-media/64/github_social_media_logo-512.png\"></a>
+                          <a href=\"https://neurolibre.herokuapp.com\"><img style=\"height:45px;margin-right:10px;float:right;margin-top:12px;\" src=\"https://cdn3.iconfinder.com/data/icons/black-white-social-media/32/www_logo_social_media-512.png\"></a>
+                          </p></div>
+                          """
+
     def get_repo_name(in_address, for_pdf=false)
         
         if for_pdf
@@ -255,7 +281,28 @@ module NeuroLibre
       
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body '<img src="https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true">'
+          body  """
+                <body>
+                #{NeuroLibre.header_start}
+                <center>
+                <h3><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{repository_address}</code></h3>
+                <p>This mail is to confirm that we have successfully received your request to build a NeuroLibre book.</p>
+                <h3><b>Your submission key is <code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{sha}</code></b></h3>
+                <div style=\"background-color:#f0eded;border-radius:15px;padding:10px\">
+                <p>We would like to remind you that the build process may take a while. We will send you the results when it is completed.</p>
+                <p>You can access the process page by clicking this button</p>
+                <a href=\"https://roboneuro.herokuapp.com/preview?id=#{sha}\">
+                <button type=\"button\" style=\"background-color:red;color:white;border-radius:6px;box-shadow:5px 5px 5px grey;padding:10px 24px;font-size: 14px;border: 2px solid #FFFFFF;\">RoboNeuro Build</button>
+                </a>
+                </div>
+                <h3><b>Building book at <a href=\"https://github.com/#{repository_address}/commit/#{commit_sha}\"><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{commit_sha[0...6]}</code></a></b></h3>
+                <p>For further information, please visit our <a href=\"https://docs.neurolibre.com/en/latest/\">documentation</a>.</p>
+                <p>Robotically yours,</p>
+                <p>RoboNeuro</p>
+                </center>
+                </body>
+                #{NeuroLibre.footer}
+                """
         end
       end
     end
@@ -265,6 +312,24 @@ module NeuroLibre
         
         book_url = results_book['book_url']
 
+        if book_url
+            book_html = """
+                        <div style=\"background-color:#28a745;border-radius:15px;padding:10px\">
+                        <p>🌱</p>
+                        <p><strong>Your <a href=\"#{book_url}\">NeuroLibre Book</a> is ready!</strong></p>
+                        <p>You can see the attached log files to inspect the build.</p>
+                        """
+        else
+            book_html = """
+                        <div style=\"background-color:#dc3545;border-radius:15px;padding:10px\">
+                        <p><strong>Looks like your book build was not successful.</strong></p>
+                        <p>Please see attached log files to resolve the problem.</p>
+                        """
+        end
+
+        File.open("binder_build_#{commit_sha}.log", "w+") do |f|
+            results_binder.each { |element| f.puts(element.strip) }
+        end
 
         book_log = RestClient::Request.new(
         method: :get,
@@ -274,6 +339,11 @@ module NeuroLibre
         :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
         :headers => { :content_type => :json }
         ).execute
+
+        File.open("book_build_#{commit_sha}.log", "w+") do |f|
+        # Remove ANSI colors
+            book_log.each_line { |element| f.puts(element.strip.gsub(/\e\[([;\d]+)?m/, '')) }
+        end
 
         options_mail = { 
         :address => "smtp.gmail.com",
@@ -287,7 +357,7 @@ module NeuroLibre
         delivery_method :smtp, options_mail
       end
 
-      mail = Mail.deliver do
+      @mail = Mail.new do
         to       user_mail
         from    'RoboNeuro'
         subject "NeuroLibre - Finished book build for #{repository_address}"
@@ -298,9 +368,31 @@ module NeuroLibre
         
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body "<a href=\"#{book_url}\"><h2>Click for the built book</h2></a><br><h2>Binder logs</h2><div style=\"background-color:black;color:white;\"><p>#{results_binder}</p></div><br><h2>Book logs</h2> <div style=\"background-color:black;color:white;\"><p>#{book_log}</p></div> <br><img src=\"https://github.com/neurolibre/brand/blob/main/png/logo_preprint.png?raw=true\">"
-        end
+          body  """
+                <body>
+                #{MyModule.header_finish}
+                <center>
+                <h3><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{repository_address}</code></h3>
+                <p>Your test request <code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{sha}</code> has been completed.</p>
+                #{book_html}
+                <h3><b>Git reference for this build was <a href=\"https://github.com/#{repository_address}/commit/#{commit_sha}\"><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{commit_sha[0...6]}</code></a></b></h3>
+                <p>For further information, please visit our <a href=\"https://docs.neurolibre.com/en/latest/\">documentation</a>.</p>
+                <p>Thank you for using our preview service,</p>
+                <p>RoboNeuro</p>
+                </center>
+                </body>
+                #{MyModule.footer}
+                """        end
+
+        add_file "./binder_build_#{commit_sha}.log"
+        add_file "./book_build_#{commit_sha}.log"
+
       end
+      
+      @round_tripped_mail = Mail.new(@mail.encoded)
+      @round_tripped_mail.deliver
+
+      return book_url
     end
 
 

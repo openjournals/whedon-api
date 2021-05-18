@@ -16,7 +16,7 @@
   <div class="container">
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
-        <center><img style="height:35vh;" src="https://github.com/neurolibre/brand/blob/main/png/preview_magn.png?raw=true"></center>
+        <center><img style="height:30vh;" src="https://github.com/neurolibre/brand/blob/main/png/preview_magn.png?raw=true"></center>
         <br>
         <center><p>You can use this page to test that your NeuroLibre notebooks and accompanying PDF compile properly before submitting.</p></center>
         <p><i class="fas fa-book"></i><b>NeuroLibre book</b> selection will trigger a build for your software environment and executable preprint. Before you start, please ensure that your repository meets the minimum requirements described in <a href="https://docs.neurolibre.com/en/latest/" target="_blank"><strong>NeuroLibre book organization </strong></a>guidelines.</p>
@@ -38,20 +38,21 @@
           <li> Click the <code>Compile preprint</code> button. Your PDF will be rendered.</li>
         </ul>
         </details>
+        <br>
         <form id="preview-form" action="/preview" accept-charset="UTF-8" method="post">
           <div class="form-group">
             <div class="row">
               <div class="col">
-                <label for="repository">Preprint repository name or URL</label>
-                <input placeholder="e.g. https://github.com/neurolibre/template or neurolibre/template" class="form-control" type="text" name="repository" id="repository" />
+                <label for="repository">Preprint repository</label>
+                <input placeholder="https://github.com/neurolibre/template or neurolibre/template" class="form-control" type="text" name="repository" id="repository" />
               </div>
               <div class="col">
-                <label for="branch">Git branch, tag or commit (optional)</label>
-                <input placeholder="HEAD" class="form-control" type="text" name="branch" id="branch" />
+                <label for="branch">Git reference (optional)</label>
+                <input placeholder="branch, tag or commit" class="form-control" type="text" name="branch" id="branch" />
               </div>
               <div class="col">
               <label for="email">Email address:</label>
-              <input placeholder="e.g. user@mail.com" class="form-control" type="text" name="email" id="email" />
+              <input placeholder="user@mail.com" class="form-control" type="text" name="email" id="email" />
             </div>
             </div>
           </div>

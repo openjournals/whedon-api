@@ -211,9 +211,9 @@ class NLPreviewWorker
       self.payload = result[0]['book_url']
    rescue 
       op_binder, op_book = request_book_build(post_params)
-      email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
+      book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
       # Temporary
-      self.payload = op_book
+      self.payload = book_url
    end
 
       #data = { "repo_url" => repository_address }
