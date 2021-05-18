@@ -147,9 +147,12 @@ module NeuroLibre
 
     def parse_neurolibre_response(response)
         tmp =  response.to_str
+        puts tmp
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s.sub(/\${([^}]+)}/,'')}.compact # Get rif of ${vars}
         tmp = tmp_chomped.map {|s| s[/\{([^}]+)\}/]} # Fetch {} only
-
+        puts "------------------------------------------"
+        puts tmp
+        puts tmp.class
         # Get rid of nils
         jsn =  JSON.parse(tmp.to_json)
         jsn1  = jsn[0...-1].map {|c| JSON.parse(c) }
