@@ -199,6 +199,11 @@ class NLPreviewWorker
     }.to_json
   end
    
+  content_validation = validate_repository_content("https://github.com/ltetrel/nha2020-nilearn")
+  if content_validation['response'] == false
+    self.payload =  content_validation['reason']
+    abort(content_validation['reason'])
+  end
    # First, try a get request. If fails, then attempt build.
    short_address = get_repo_name(repository_address)
    email_received_request(email_address,short_address,sha,latest_sha)
@@ -206,7 +211,7 @@ class NLPreviewWorker
    begin
       # FAILING THIS ONE ON PURPOSE FOR NOW
       # FIXME LATER commit_sh:latest_sha
-      op = get_built_books(commit_sh=latest_sha)
+      op = get_built_books(commit_sh:latest_sha)
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
    rescue 

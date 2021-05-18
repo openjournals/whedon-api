@@ -167,7 +167,7 @@ module NeuroLibre
         :user => 'neurolibre',
         :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
         :payload => payload_in,
-        :timeout => 500,
+        :timeout => 1800, # Give 30 minutes
         :headers => { :content_type => :json }
         ).execute do |response|
             case response.code
@@ -317,13 +317,16 @@ module NeuroLibre
                         <div style=\"background-color:#28a745;border-radius:15px;padding:10px\">
                         <p>🌱</p>
                         <p><strong>Your <a href=\"#{book_url}\">NeuroLibre Book</a> is ready!</strong></p>
-                        <p>You can see the attached log files to inspect the build.</p>
+                        <img style=\"height:50px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true\"></center>
+                        </div>
+                        <p>You can see attached log files to inspect the build.</p>
                         """
         else
             book_html = """
                         <div style=\"background-color:#dc3545;border-radius:15px;padding:10px\">
                         <p><strong>Looks like your book build was not successful.</strong></p>
                         <p>Please see attached log files to resolve the problem.</p>
+                        </div>
                         """
         end
 
