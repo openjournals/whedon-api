@@ -208,9 +208,7 @@ class NLPreviewWorker
    short_address = get_repo_name(repository_address)
 
    begin
-      # FAILING THIS ONE ON PURPOSE FOR NOW
-      # FIXME LATER commit_sh:latest_sha
-      op = get_built_books(commit_sh:latest_sha)
+      op = get_built_books(commit_sha:latest_sha)
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
    rescue 

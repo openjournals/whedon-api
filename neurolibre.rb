@@ -320,7 +320,7 @@ module NeuroLibre
                         <div style=\"background-color:gainsboro;border-radius:15px;padding:10px\">
                         <p>🌱</p>
                         <h2><strong>Your <a href=\"#{book_url}\">NeuroLibre Book</a> is ready!</strong></h2>
-                        <center><img style=\"height:50px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true\"></center>
+                        <center><img style=\"height:250px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true\"></center>
                         </div>
                         <p>You can see attached log files to inspect the build.</p>
                         """
