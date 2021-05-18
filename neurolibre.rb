@@ -37,7 +37,7 @@ module NeuroLibre
     def is_email_valid? email
         email =~URI::MailTo::EMAIL_REGEXP
     end
-    
+
     def get_repo_name(in_address, for_pdf=false)
         
         if for_pdf
@@ -260,7 +260,7 @@ module NeuroLibre
         return JSON.parse(out.to_json)
     end
 
-    def email_received_request(user_mail,repository_address,sha,commit_sha)
+    def email_received_request(user_mail,repository_address,sha,commit_sha,jid)
         options_mail = { 
         :address => "smtp.gmail.com",
         :port                 => 587,
@@ -294,11 +294,11 @@ module NeuroLibre
                 <div style=\"background-color:#f0eded;border-radius:15px;padding:10px\">
                 <p>We would like to remind you that the build process may take a while. We will send you the results when it is completed.</p>
                 <p>You can access the process page by clicking this button</p>
-                <a href=\"https://roboneuro.herokuapp.com/preview?id=#{sha}\">
+                <a href=\"https://roboneuro.herokuapp.com/preview?id=#{jid}\">
                 <button type=\"button\" style=\"background-color:red;color:white;border-radius:6px;box-shadow:5px 5px 5px grey;padding:10px 24px;font-size: 14px;border: 2px solid #FFFFFF;\">RoboNeuro Build</button>
                 </a>
                 </div>
-                <h3><b>Building book at <a href=\"https://github.com/#{repository_address}/commit/#{commit_sha}\"><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{commit_sha[0...6]}</code></a></b></h3>
+                <h3><b>Building book at Git sha <a href=\"https://github.com/#{repository_address}/commit/#{commit_sha}\"><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{commit_sha[0...6]}</code></a></b></h3>
                 <p>For further information, please visit our <a href=\"https://docs.neurolibre.com/en/latest/\">documentation</a>.</p>
                 <p>Robotically yours,</p>
                 <p>RoboNeuro</p>
@@ -317,10 +317,10 @@ module NeuroLibre
 
         if book_url
             book_html = """
-                        <div style=\"background-color:#28a745;border-radius:15px;padding:10px\">
+                        <div style=\"background-color:gainsboro;border-radius:15px;padding:10px\">
                         <p>🌱</p>
-                        <p><strong>Your <a href=\"#{book_url}\">NeuroLibre Book</a> is ready!</strong></p>
-                        <img style=\"height:50px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true\"></center>
+                        <h2><strong>Your <a href=\"#{book_url}\">NeuroLibre Book</a> is ready!</strong></h2>
+                        <center><img style=\"height:50px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true\"></center>
                         </div>
                         <p>You can see attached log files to inspect the build.</p>
                         """
