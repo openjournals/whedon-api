@@ -147,21 +147,18 @@ module NeuroLibre
 
     def parse_neurolibre_response(response)
         tmp =  response.to_str
-        #puts tmp
-        tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s.gsub(/\${([^}]+)}/,'')}.compact # Get rif of ${vars}
-        tmp = tmp_chomped.map {|s| s[/\{([^}]+)\}/]} # Fetch {} only
-        #puts "------------------------------------------"
-        #puts tmp
-        #puts tmp.class
-        # Get rid of nils
-        jsn =  JSON.parse(tmp.to_json)
-        jsn1  = jsn[0...-1].map {|c| JSON.parse(c) }
-        # This is information about book build
-        jsn2 = JSON.parse(jsn[-1])
+
+        # Get string between message": and , which is the message
+        binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
+        binder_messages = binder_messages.map{|string| string.strip[1...-1]}
+
+        # Fetch book build response into a hash
+        tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
+        book_json  = JSON.parse(tmp_chomped[-1])
 
         # We'll need to send a GET request at this point to fetch book build logs.
 
-        return jsn1.map {|c| c['message']}, jsn2
+        return binder_messages, book_json
     end
 
     def request_book_build(payload_in)
@@ -338,7 +335,7 @@ module NeuroLibre
         end
 
         File.open("binder_build_#{commit_sha}.log", "w+") do |f|
-            results_binder.each { |element| f.puts(element.strip) }
+            results_binder.each { |element| f.puts(element) }
         end
 
         book_log = RestClient::Request.new(
