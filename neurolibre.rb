@@ -370,7 +370,7 @@ module NeuroLibre
           content_type 'text/html; charset=UTF-8'
           body  """
                 <body>
-                #{MyModule.header_finish}
+                #{NeuroLibre.header_finish}
                 <center>
                 <h3><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{repository_address}</code></h3>
                 <p>Your test request <code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{sha}</code> has been completed.</p>
@@ -381,8 +381,9 @@ module NeuroLibre
                 <p>RoboNeuro</p>
                 </center>
                 </body>
-                #{MyModule.footer}
-                """        end
+                #{NeuroLibre.footer}
+                """
+         end
 
         add_file "./binder_build_#{commit_sha}.log"
         add_file "./book_build_#{commit_sha}.log"
