@@ -313,8 +313,22 @@ module NeuroLibre
 
     def email_processed_request(user_mail,repository_address,sha,commit_sha,results_binder,results_book)
         
-        
+        puts "Sending results email"
         book_url = results_book['book_url']
+        response = RestClient::Request.new(
+            method: :get,
+            :url => book_url,
+            verify_ssl: false,
+            :headers => { :content_type => :json }
+        ).execute do |response|
+        case response.code
+        when 404
+            puts "Looks like the book build has failed. Setting book_url to nil."
+            book_url = nil
+        when 200 
+            puts "Book url successful."
+        end
+        end
 
         if book_url
             book_html = """
@@ -329,6 +343,7 @@ module NeuroLibre
             book_html = """
                         <div style=\"background-color:#dc3545;border-radius:15px;padding:10px\">
                         <p><strong>Looks like your book build was not successful.</strong></p>
+                        <center><img style=\"height:250px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/sad_robo.png?raw=true\"></center>
                         <p>Please see attached log files to resolve the problem.</p>
                         </div>
                         """
