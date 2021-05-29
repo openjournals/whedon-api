@@ -189,12 +189,17 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon accept deposit=true/i
       check_eic
       deposit(dry_run=false)
-    when /\A@whedon accept from branch (.\S*)/i
+    when /\A@whedon recommend-accept from branch (.\S*)/i
       check_editor
       deposit(dry_run=true, $1)
-    when /\A@whedon accept/i
+    when /\A@whedon recommend-accept/i
       check_editor
       deposit(dry_run=true)
+    when /\A@whedon accept/i
+      check_editor
+      if editor 
+        respond "To recommend a paper to be accepted use `@whedon recommend-accept`"
+      end
     when /\A@whedon reject/i
       check_eic
       reject_paper
