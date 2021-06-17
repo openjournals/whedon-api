@@ -263,10 +263,11 @@ module NeuroLibre
 
     def email_received_request(user_mail,repository_address,sha,commit_sha,jid)
         options_mail = { 
-        :address => "smtp.gmail.com",
+        :address => "smtp.sendgrid.net",
         :port                 => 587,
-        :user_name            => ENV['RN_GMAIL_NAME'],
-        :password             => ENV['RN_GMAIL_PASS'],
+        :user_name            => 'apikey',
+        :domain               => 'neurolibre.org',
+        :password             => ENV['SENDGRID_API_TOKEN'],
         :authentication       => 'plain',
         :enable_starttls_auto => true  }
 
@@ -276,7 +277,7 @@ module NeuroLibre
 
       mail = Mail.deliver do
         to       user_mail
-        from    'RoboNeuro'
+        from    'RoboNeuro <noreply@neurolibre.org>'
         subject "NeuroLibre - Your test request for #{repository_address}"
       
         text_part do
@@ -368,10 +369,11 @@ module NeuroLibre
         end
 
         options_mail = { 
-        :address => "smtp.gmail.com",
+        :address => "smtp.sendgrid.net",
         :port                 => 587,
-        :user_name            => ENV['RN_GMAIL_NAME'],
-        :password             => ENV['RN_GMAIL_PASS'],
+        :user_name            => 'apikey',
+        :domain               => 'neurolibre.org',
+        :password             => ENV['SENDGRID_API_TOKEN'],
         :authentication       => 'plain',
         :enable_starttls_auto => true  }
 
@@ -381,7 +383,7 @@ module NeuroLibre
 
       @mail = Mail.new do
         to       user_mail
-        from    'RoboNeuro'
+        from    'RoboNeuro <noreply@neurolibre.org>'
         subject "NeuroLibre - Finished book build for #{repository_address}"
       
         text_part do
