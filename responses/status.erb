@@ -20,9 +20,9 @@
       <div class="col-lg-8">
         <h3>RoboNeuro preprint preview service </h3>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
-          once RoboNeuro has compiled your NeuroLibre notebooks or accompanying paper.
-          For more information on how to format these files,
-          please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
+          once RoboNeuro has compiled your NeuroLibre notebooks or accompanying PDF.
+          For more information on how to format your files,
+          please <a href="https://docs.neurolibre.org/en/latest/">take a look at our docs</a>.</p>
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
             Preprint compilation complete! <br /><br />
@@ -34,7 +34,11 @@
             <center>
               <img src="30.svg" alt="loading spinner" style="padding: 10px 0px;">
             </center>
-            Your preprint preview is currently being compiled, and should complete shortly...
+            🎉 RoboNeuro has started building your NeuroLibre preprint.
+              <ul>
+              <li> <b>Accompanying PDF builds</b> usually take a few minutes, please stay on this page.</li>
+              <li> <b>Notebook builds</b> may take up to 30-40 minutes. RoboNeuro will email you build logs upon completion, feel free to close this page.</li>
+              </ul>
           </div>
         <% elsif status == 'waiting' %>
           <div class="alert alert-secondary" role="alert">

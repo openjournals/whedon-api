@@ -301,7 +301,7 @@ module NeuroLibre
                 </a>
                 </div>
                 <h3><b>Building book at Git sha <a href=\"https://github.com/#{repository_address}/commit/#{commit_sha}\"><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{commit_sha[0...6]}</code></a></b></h3>
-                <p>For further information, please visit our <a href=\"https://docs.neurolibre.com/en/latest/\">documentation</a>.</p>
+                <p>For further information, please visit our <a href=\"https://docs.neurolibre.org/en/latest/\">documentation</a>.</p>
                 <p>Robotically yours,</p>
                 <p>RoboNeuro</p>
                 </center>
@@ -342,7 +342,7 @@ module NeuroLibre
                         """
         else
             book_html = """
-                        <div style=\"background-color:#dc3545;border-radius:15px;padding:10px\">
+                        <div style=\"background-color:#f0eded;border-radius:15px;padding:10px\">
                         <p><strong>Looks like your book build was not successful.</strong></p>
                         <center><img style=\"height:250px;\" src=\"https://github.com/neurolibre/brand/blob/main/png/sad_robo.png?raw=true\"></center>
                         <p>Please see attached log files to resolve the problem.</p>
