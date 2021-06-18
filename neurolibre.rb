@@ -316,6 +316,8 @@ module NeuroLibre
         
         puts "Sending results email"
         book_url = results_book['book_url']
+        puts "Debug book url"
+        puts book_url
         response = RestClient::Request.new(
             method: :get,
             :url => book_url,
