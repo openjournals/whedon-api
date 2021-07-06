@@ -268,7 +268,8 @@ class WhedonApi < Sinatra::Base
     # Check that the person we're expecting to remind is actually
     # mentioned in the issue body (i.e. is a reviewer or author)
     issue = github_client.issue(@nwo, @issue_id)
-    unless issue.body.match(/#{human}/m)
+    
+    unless issue.body.match(/#{human}/m) || @config.editors.include?(@sender)
       respond "#{human} doesn't seem to be a reviewer or author for this submission."
       halt
     end
