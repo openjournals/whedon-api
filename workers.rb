@@ -345,17 +345,18 @@ class RepoWorker
   # Including this means we can talk to GitHub from the background worker.
   include GitHub
 
-  def perform(nwo, issue_id, config)
+  def perform(nwo, issue_id, config, custom_branch=nil)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
     # Download the paper
-    stdout, stderr, status = download(issue_id)
+    stdout, stderr, status = download(issue_id, custom_branch)
 
     if status.success?
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
       detect_statement_of_need(nwo, issue_id)
+      count_words(nwo, issue_id)
       repo_summary(nwo, issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
       bg_respond(nwo, issue_id, "Failed to discover a valid open source license.") if license.nil?
@@ -385,6 +386,17 @@ class RepoWorker
     bg_respond(nwo, issue_id, message)
   end
 
+  def count_words(nwo, issue_id)
+    paper_paths = find_paper_paths("#{jid}")
+
+    return if paper_paths.empty?
+
+    puts "CHECKING WORD COUNT"
+    
+    word_count = `cat #{paper_paths.first} | wc -w`.to_i
+    bg_respond(nwo, issue_id, "Wordcount for #{paper_paths.first} is #{word_count}")
+  end
+  
   def detect_license(issue_id)
     return Licensee.project("#{jid}").license
   end
