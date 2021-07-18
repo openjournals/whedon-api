@@ -425,9 +425,9 @@ class RepoWorker
   end
 
   def download(issue_id, custom_branch)
-    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
-
     Open3.capture3("whedon download #{issue_id} #{jid}")
+
+    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
   end
 
   def find_paper_paths(search_path=nil)
