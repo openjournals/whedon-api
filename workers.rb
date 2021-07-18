@@ -423,7 +423,9 @@ class RepoWorker
     end
   end
 
-  def download(issue_id)
+  def download(issue_id, custom_branch)
+    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+
     Open3.capture3("whedon download #{issue_id} #{jid}")
   end
 
