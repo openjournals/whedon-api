@@ -394,7 +394,8 @@ class RepoWorker
     puts "CHECKING WORD COUNT"
     
     word_count = `cat #{paper_paths.first} | wc -w`.to_i
-    bg_respond(nwo, issue_id, "Wordcount for #{paper_paths.first} is #{word_count}")
+
+    bg_respond(nwo, issue_id, "Wordcount for #{File.basename(paper_paths.first)} is #{word_count}")
   end
   
   def detect_license(issue_id)
