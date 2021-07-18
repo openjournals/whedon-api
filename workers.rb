@@ -350,9 +350,11 @@ class RepoWorker
     set_env(nwo, issue_id, config)
 
     # Download the paper
-    stdout, stderr, status = download(issue_id, custom_branch)
+    stdout, stderr, status = download(issue_id)
 
     if status.success?
+      `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
       detect_statement_of_need(nwo, issue_id)
@@ -424,10 +426,8 @@ class RepoWorker
     end
   end
 
-  def download(issue_id, custom_branch)
+  def download(issue_id)
     Open3.capture3("whedon download #{issue_id} #{jid}")
-
-    `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
   end
 
   def find_paper_paths(search_path=nil)
