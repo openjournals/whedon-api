@@ -83,11 +83,16 @@ class WhedonApi < Sinatra::Base
     if issue.title.match(/^\[REVIEW\]:/)
       respond erb :reviewer_welcome, :locals => { :reviewer => reviewers, :nwo => @nwo, :reviewers => @config.reviewers }
       reviewers.each {|r| schedule_reminder(r, '2', 'weeks', quiet=true)}
-    # Newly created [PRE REVIEW] issue. Time to say hello
-    elsif assignees.any?
+    # Newly created [PRE REVIEW] issue with assignees. 
+    elsif issue.title.match(/^\[PRE REVIEW\]:/) && assignees.any?
       respond erb :welcome, :locals => { :editor => assignees.first, :reviewers => @config.reviewers }
-    else
+    # Newly created [PRE REVIEW] issue without assignees. 
+    elsif issue.title.match(/^\[PRE REVIEW\]:/)
       respond erb :welcome, :locals => { :editor => nil, :reviewers => @config.reviewers }
+    # Newly created issue, not created by JOSS, probably as a result of the 'convert to issue' feature on GitHub
+    else
+      respond erb :close
+      halt 
     end
     repo_detect(nil)
     check_references(nil)
