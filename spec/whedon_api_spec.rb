@@ -5,6 +5,7 @@ describe WhedonApi do
   let(:review_created_payload) { json_fixture('review-created-with-editor.json') }
   let(:wrong_repo_payload) { json_fixture('pre-review-created-with-editor-for-wrong-repo.json') }
   let(:junk_payload) { json_fixture('junk-payload.json') }
+  let(:issue_created_payload) { json_fixture('issue-created.json') }
   let(:pre_review_closed_payload) { json_fixture('pre-review-issue-closed-936.json') }
   let(:review_closed_payload) { json_fixture('review-issue-closed-937.json') }
   let(:whedon_start_review_from_editor_not_ready) { json_fixture('whedon-start-review-editor-on-pre-review-issue-936.json') }
@@ -73,6 +74,20 @@ describe WhedonApi do
     end
 
     it "should say hello" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context "when opening an issue that isn't a PRE-REVIEW or REVIEW issue" do
+    before do
+      expect(PDFWorker).to receive(:perform_async).never
+      expect(RepoWorker).to receive(:perform_async).never
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 940, /This repository is only for review issues/)
+      post '/dispatch', issue_created_payload, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "close the issue" do
       expect(last_response).to be_ok
     end
   end
@@ -330,7 +345,7 @@ describe WhedonApi do
   context '[PRE-REVIEW] when setting a reminder for someone who is not a reviewer or author' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 936, "@person doesn't seem to be a reviewer or author for this submission.")
+      expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 936, "Sorry, I can't set reminders on PRE-REVIEW issues.")
 
       post '/dispatch', whedon_set_reminder_for_non_reviewer_on_pre_review, {'CONTENT_TYPE' => 'application/json'}
     end
