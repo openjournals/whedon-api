@@ -92,6 +92,7 @@ class WhedonApi < Sinatra::Base
     # Newly created issue, not created by JOSS, probably as a result of the 'convert to issue' feature on GitHub
     else
       respond erb :close
+      close_issue(@nwo, @issue_id)
       halt 
     end
     repo_detect(nil)
