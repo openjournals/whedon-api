@@ -229,7 +229,23 @@ class NLPreviewWorker
       op_binder, op_book = request_book_build(post_params)
       book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
       # Temporary
-      self.payload = book_url
+
+      response = RestClient::Request.new(
+            method: :get,
+            :url => book_url,
+            verify_ssl: false,
+            :headers => { :content_type => :json }
+        ).execute do |response|
+            puts response.code
+        case response.code
+        when 404
+          self.payload = "We run into a problem building your book :( Logs files will soon be sent to your email address."
+          abort("Book url is empty")
+        else
+           self.payload = book_url
+        end
+    end
+      
    end
 
       #data = { "repo_url" => repository_address }
