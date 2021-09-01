@@ -83,7 +83,11 @@ module NeuroLibre
             end
         end
 
-        return sha[0]
+        if sha.kind_of?(Array)
+            return sha[0]
+        else
+            return sha
+        end
 
     end
 
