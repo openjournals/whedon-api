@@ -229,7 +229,7 @@ class NLPreviewWorker
       op_binder, op_book = request_book_build(post_params)
       book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
 
-      if email_address.nil?
+      if book_url.nil?
         self.payload = "We run into a problem building your book :( Logs files will soon be sent to your email address."
         abort("Book url is empty")
       else
