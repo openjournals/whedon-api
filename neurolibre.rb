@@ -295,7 +295,7 @@ module NeuroLibre
                 #{NeuroLibre.header_start}
                 <center>
                 <h3><code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{repository_address}</code></h3>
-                <p>This mail is to confirm that we have successfully received your request to build a NeuroLibre book.</p>
+                <p>We have successfully received your request to build a NeuroLibre preprint.</p>
                 <h3><b>Your submission key is <code style=\"background-color:#d3d3d3;border-radius:6px;padding:2px;\">#{sha}</code></b></h3>
                 <div style=\"background-color:#f0eded;border-radius:15px;padding:10px\">
                 <p>We would like to remind you that the build process may take a while. We will send you the results when it is completed.</p>

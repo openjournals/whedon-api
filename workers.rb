@@ -18,7 +18,7 @@ class PaperPreviewWorker
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
      
      # From NeuroLibre module
-     repository_address = get_repo_name(repository_address,for_pdf=true)
+     repository_address = get_repo_name(repository_address, for_pdf=true)
 
     if custom_branch
       begin
@@ -230,7 +230,7 @@ class NLPreviewWorker
       book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
 
       if book_url.nil?
-        self.payload = "We run into a problem building your book :( Logs files will soon be sent to your email address."
+        self.payload = "We ran into a problem building your book. Log files detailing the error will be sent to your email address."
         abort("Book url is empty")
       else
         self.payload = book_url
