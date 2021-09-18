@@ -3,9 +3,12 @@ class PaperPreviewWorker
   require 'sidekiq'
   require 'sidekiq_status'
   require 'whedon'
+  require 'json'
+  require_relative 'neurolibre'
 
   include Sidekiq::Worker
   include SidekiqStatus::Worker
+  include NeuroLibre
 
   sidekiq_options retry: false
 
@@ -13,11 +16,20 @@ class PaperPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
+     
+     # From NeuroLibre module
+     repository_address = get_repo_name(repository_address, for_pdf=true)
 
     if custom_branch
-      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
+      begin
+        # means that user provided a tag or branch
+        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      rescue
+        # Means that user provided a commit sha
+        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      end
     else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
     end
 
     if !status.success?
@@ -27,10 +39,10 @@ class PaperPreviewWorker
     paper_paths = find_paper_paths("tmp/#{sha}")
 
     journal = "joss"
-    journal_name = "Journal of Open Source Software"
+    journal_name = "NeuroLibre"
 
     if paper_paths.empty?
-      self.payload = "Can't find any papers to compile. Make sure there's a file named <code>paper.md</code> in your repository."
+      self.payload = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
       abort("Can't find any papers to compile.")
     elsif paper_paths.size == 1
       begin
@@ -44,9 +56,10 @@ class PaperPreviewWorker
       latex_template_path = "#{Whedon.resources}/#{journal}/latex.template"
       csl_file = "#{Whedon.resources}/#{journal}/apa.csl"
       directory = File.dirname(paper_paths.first)
+      puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
       # TODO: may eventually want to swap out the latex template
 
-      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/#{journal}.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='#{Whedon.resources}/#{journal}/logo.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Mickey Mouse et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --filter pandoc-citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template #{latex_template_path}")
+      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template")
 
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
@@ -58,8 +71,8 @@ class PaperPreviewWorker
         abort("Looks like we failed to compile the PDF.")
       end
     else
-      self.payload = "There seems to be more than one paper.md present. Aborting..."
-      abort("There seems to be more than one paper.md present. Aborting...")
+      self.payload = "There seems to be more than one preprint.md present. Aborting..."
+      abort("There seems to be more than one preprint.md present. Aborting...")
     end
   end
 
@@ -141,6 +154,98 @@ class JBPreviewWorker
 
     return jb_paths
   end
+end
+
+class NLPreviewWorker
+  require 'rest-client'
+  require 'sidekiq'
+  require 'sidekiq_status'
+  require 'json'
+  require 'uri'
+  require_relative 'github'
+  require_relative 'neurolibre'
+
+  include Sidekiq::Worker
+  include SidekiqStatus::Worker
+  include GitHub
+  include NeuroLibre
+
+  sidekiq_options retry: false
+
+  def perform(repository_address, journal, email_address, custom_branch=nil, sha)
+  
+  if email_address
+    puts email_address
+  end
+  if custom_branch
+    # Get latest sha with --book-build in comments in custom_branch
+    latest_sha = get_latest_book_build_sha(repository_address,custom_branch)
+  else
+    # Get latest sha with --book-build in comments 
+    latest_sha = get_latest_book_build_sha(repository_address)
+  end
+  
+  puts repository_address
+  puts latest_sha
+
+  if latest_sha.nil?
+    # Terminate 
+    self.payload =  "Requested repository (or branch/tag/sha) does not exist: #{in_address}.\nPlease provide a GitHub URL or username/repository that exists (for branch/tag/sha, if provided)."
+    abort("Requested branch/sha does not exist for #{repository_address}")
+  else
+    post_params = {
+      :repo_url => repository_address,
+      :commit_hash => latest_sha
+    }.to_json
+  end
+   
+  content_validation = validate_repository_content("https://github.com/ltetrel/nha2020-nilearn")
+  if content_validation['response'] == false
+    self.payload =  content_validation['reason']
+    abort(content_validation['reason'])
+  end
+   # First, try a get request. If fails, then attempt build.
+   short_address = get_repo_name(repository_address)
+
+   begin
+      op = get_built_books(commit_sha:latest_sha)
+      result = JSON.parse(op)
+      self.payload = result[0]['book_url']
+   rescue 
+
+      if email_address.nil?
+        self.payload =  "Oops! Looks like you did not provide your email address. Your repository is ready for a NeuroLibre build, but we need a valid email address to start one."
+        abort("Please provide an email address.")
+      else
+        if  is_email_valid?(email_address) ? true : false
+          puts 'Mail address looks OK.'
+        else
+          self.payload =  "Oops! Looks like you did not provide a valid email address: #{email_address}. Your repository is ready for a NeuroLibre build, but we need a valid email address to start one."
+          abort("Please provide a valid email address.")
+        end
+      end
+
+      email_received_request(email_address,short_address,sha,latest_sha,self.jid)
+      op_binder, op_book = request_book_build(post_params)
+      book_url = email_processed_request(email_address,short_address,sha,latest_sha,op_binder,op_book)
+
+      if book_url.nil?
+        self.payload = "We ran into a problem building your book. Log files detailing the error will be sent to your email address."
+        abort("Book url is empty")
+      else
+        self.payload = book_url
+      end
+      
+   end
+
+      #data = { "repo_url" => repository_address }
+      #url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
+      #response = RestClient.post(url, data.to_json, {:user => "neurolibre",:password => "#{ENV['NEUROLIBRE_TESTAPI_TOKEN']}"})
+      #puts JSON.parse(response.to_str)
+      #self.payload = JSON.parse(response)
+  end
+
+end
 
 class ReviewReminderWorker
   require_relative 'github'
@@ -366,7 +471,7 @@ class DOIWorker
     paper_paths = []
 
     Find.find(search_path) do |path|
-      paper_paths << path if path =~ /paper\.tex$|paper\.md$/
+      paper_paths << path if path =~ /preprint\.tex$|preprint\.md$/
     end
 
     return paper_paths.first
@@ -711,5 +816,4 @@ class JBWorker
 
     return jb_paths.first
   end
-end
 end

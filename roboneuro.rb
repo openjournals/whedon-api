@@ -523,7 +523,8 @@ class RoboNeuro < Sinatra::Base
     if params[:journal] == 'NeuroLibre paper'
       job_id = PaperPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
     elsif params[:journal] == 'NeuroLibre notebooks'
-      job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+      #job_id = JBPreviewWorker.perform_async(params[:repository], params[:journal], branch, sha)
+      job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
     end
     redirect "/preview?id=#{job_id}"
   end

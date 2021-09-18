@@ -3,6 +3,7 @@
 <head>
   <title>RoboNeuro preview status</title>
   <link rel="stylesheet" media="all" href="application.css" />
+  <link rel="stylesheet" media="all" href="neurolibre.css" />
   <meta http-equiv="refresh" content="5">
 </head>
 <body>
@@ -17,31 +18,35 @@
   <div class="container">
     <div class="row justify-content-lg-center">
       <div class="col-lg-8">
-        <h3>RoboNeuro paper preview service</h3>
+        <h3>RoboNeuro preprint preview service </h3>
         <p>This page auto-refreshes every 5 seconds, and will update automatically
-          once RoboNeuro has compiled your NeuroLibre notebooks and accompanying paper.
-          For more information on how to format these files,
-          please <a href="https://joss.readthedocs.io/en/latest/submitting.html#example-paper-and-bibliography">take a look at our docs</a>.</p>
-
+          once RoboNeuro has compiled your NeuroLibre notebooks or accompanying PDF.
+          For more information on how to format your files,
+          please <a href="https://docs.neurolibre.org/en/latest/">take a look at our docs</a>.</p>
         <% if status == 'complete' %>
           <div class="alert alert-success" role="alert">
-            Paper compilation complete! <br /><br />
-            <a href="<%= payload %>">Click here to download preview &raquo;</a>
+            Preprint compilation complete! <br /><br />
+              <a href="<%= payload %>">Click here to see your results &raquo;</a>
           </div>
+          <center><img style="height:50%;" src="https://github.com/neurolibre/brand/blob/main/png/built.png?raw=true"></center>
         <% elsif status == 'working' %>
           <div class="alert alert-primary" role="alert">
             <center>
               <img src="30.svg" alt="loading spinner" style="padding: 10px 0px;">
             </center>
-            Your paper preview is currently being compiled, and should complete shortly...
+            🎉 RoboNeuro has started building your NeuroLibre preprint.
+              <ul>
+              <li> <b>Accompanying PDF builds</b> usually take a few minutes, please stay on this page.</li>
+              <li> <b>Notebook builds</b> may take up to 30-40 minutes. RoboNeuro will email you build logs upon completion, feel free to close this page.</li>
+              </ul>
           </div>
         <% elsif status == 'waiting' %>
           <div class="alert alert-secondary" role="alert">
-            Your paper preview is queued, and should begin processing shortly...
+            Your preprint preview is queued, and should begin processing shortly...
           </div>
         <% elsif status == 'failed' || status == 'killed' %>
           <div class="alert alert-danger" role="alert">
-            Your paper failed to compile with the following errors: <br /><br />
+            Your preprint build failed to compile with the following errors: <br /><br />
             <%= payload %>
           </div>
         <% elsif status == 'missing' %>
@@ -51,6 +56,9 @@
         <% end %>
 
         <a href="/">Try compiling another paper &rarr;</a>
+
+        <br> 
+
       </div>
     </div>
   </div>
