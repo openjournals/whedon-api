@@ -16,7 +16,7 @@ class PaperPreviewWorker
 
   def perform(repository_address, journal, custom_branch=nil, sha)
      ENV["JOURNAL_LAUNCH_DATE"] = '2020-05-05'
-     
+
      # From NeuroLibre module
      repository_address = get_repo_name(repository_address, for_pdf=true)
 
@@ -53,8 +53,8 @@ class PaperPreviewWorker
         return
       end
 
-      latex_template_path = "#{Whedon.resources}/#{journal}/latex.template"
-      csl_file = "#{Whedon.resources}/#{journal}/apa.csl"
+      latex_template_path = "#{Whedon.resources}/joss/latex.template"
+      csl_file = "#{Whedon.resources}/joss/apa.csl"
       directory = File.dirname(paper_paths.first)
       puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
       # TODO: may eventually want to swap out the latex template
@@ -173,7 +173,7 @@ class NLPreviewWorker
   sidekiq_options retry: false
 
   def perform(repository_address, journal, email_address, custom_branch=nil, sha)
-  
+
   if email_address
     puts email_address
   end
@@ -181,15 +181,15 @@ class NLPreviewWorker
     # Get latest sha with --book-build in comments in custom_branch
     latest_sha = get_latest_book_build_sha(repository_address,custom_branch)
   else
-    # Get latest sha with --book-build in comments 
+    # Get latest sha with --book-build in comments
     latest_sha = get_latest_book_build_sha(repository_address)
   end
-  
+
   puts repository_address
   puts latest_sha
 
   if latest_sha.nil?
-    # Terminate 
+    # Terminate
     self.payload =  "Requested repository (or branch/tag/sha) does not exist: #{in_address}.\nPlease provide a GitHub URL or username/repository that exists (for branch/tag/sha, if provided)."
     abort("Requested branch/sha does not exist for #{repository_address}")
   else
@@ -198,7 +198,7 @@ class NLPreviewWorker
       :commit_hash => latest_sha
     }.to_json
   end
-   
+
   content_validation = validate_repository_content("https://github.com/ltetrel/nha2020-nilearn")
   if content_validation['response'] == false
     self.payload =  content_validation['reason']
@@ -211,7 +211,7 @@ class NLPreviewWorker
       op = get_built_books(commit_sha:latest_sha)
       result = JSON.parse(op)
       self.payload = result[0]['book_url']
-   rescue 
+   rescue
 
       if email_address.nil?
         self.payload =  "Oops! Looks like you did not provide your email address. Your repository is ready for a NeuroLibre build, but we need a valid email address to start one."
@@ -235,7 +235,7 @@ class NLPreviewWorker
       else
         self.payload = book_url
       end
-      
+
    end
 
       #data = { "repo_url" => repository_address }
@@ -604,22 +604,48 @@ class PDFWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
+    if custom_branch
+      begin
+        # means that user provided a tag or branch
+        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      rescue
+        # Means that user provided a commit sha
+        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      end
+    else
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+    end
+
+    if !status.success?
+      return result, stderr, status
+    end
+
+    result, stderr, status = Open3.capture("curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+    csl_file = "#{Whedon.resources}/joss/apa.csl"
+    directory = File.dirname(paper_paths.first)
+    puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
+    # TODO: may eventually want to swap out the latex template
+
+    result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template")
+
     # Compile the paper
-    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
+    # pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
-    # If we've got this far then push a copy of the PDF to the papers repository
-    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
+    if status.success?
+      if File.exists?("#{directory}/#{sha}.pdf")
+        # If we've got this far then push a copy of the PDF to the papers repository
+        create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+        pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
-    pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
+        pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
 
-    # Finally, respond in the review issue with the PDF URL
-    bg_respond(nwo, issue_id, pdf_response)
+        # Finally, respond in the review issue with the PDF URL
+        bg_respond(nwo, issue_id, pdf_response)
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
