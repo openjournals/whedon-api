@@ -587,7 +587,9 @@ end
 class PDFWorker
   require_relative 'github'
   require_relative 'config_helper'
+  require_relative 'neurolibre'
 
+  require 'date'
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
@@ -604,66 +606,129 @@ class PDFWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    if custom_branch
-      begin
-        # means that user provided a tag or branch
-        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
-      rescue
-        # Means that user provided a commit sha
-        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
-      end
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
+
+    # pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
+
+    Whedon::Paper.new(issue_id).download
+    review = Whedon::Review.new(issue_id)
+    processor = Whedon::Processor.new(issue_id, review.issue_body)
+
+    # Set the path to work in
+    path = "tmp/#{issue_id}"
+    # Need to checkout the new branch before looking for the paper.
+    `cd #{path} && git checkout #{custom_branch} --quiet` if custom_branch
+
+    paper_paths = processor.find_paper_paths(path)
+
+    if paper_paths.empty?
+      abort("Can't find any papers to compile :-(")
+    elsif paper_paths.size == 1
+      processor.set_paper(paper_paths.first)
+    end
+
+    # Define useful information for formatting PDF
+    repository_address = processor.repository_address
+    csl_file = "#{Whedon.resources}/joss/apa.csl"
+    directory = File.dirname(paper_paths.first)
+    paper_year ||= processor.current_year
+    paper_issue ||= processor.current_issue
+    paper_volume ||= processor.current_volume
+    if !processor.paper.editor.nil?
+      editor_lookup_url = "#{ENV['JOURNAL_URL']}/editors/lookup/#{processor.paper.editor}"
+      response = RestClient.get(editor_lookup_url)
+      parsed = JSON.parse(response)
+      editor_name = parsed['name']
+      editor_url = parsed['url']
     else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      editor_name = "Pending Editor"
+      editor_url = "http://example.com"
+    end
+
+    metadata = {
+      "repository" => repository_address,
+      "archive_doi" => "PENDING",
+      "paper_url" => processor.paper.pdf_url,
+      "journal_name" => config.journal_name,
+      "review_issue_url" => processor.paper.review_issue_url,
+      "issue" => paper_issue,
+      "volume" => paper_volume,
+      "page" => processor.paper.review_issue_id,
+      "logo_path" => "logo_preprint.png",
+      "aas_logo_path" => "#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/aas-logo.png",
+      "year" => paper_year,
+      "submitted" => "Sep 21",
+      "published" => Time.now.strftime('%d %B %Y'),
+      "formatted_doi" => "10.21105/NeuroLibre.0XXXX",
+      "citation_author" => processor.paper.citation_author,
+      "editor_name" => editor_name,
+      "reviewers" => processor.paper.reviewers_without_handles,
+      "link-citations" => true
+    }
+    metadata.merge!({"draft" => true})
+    File.open("#{directory}/markdown-metadata.yaml", 'w') { |file| file.write(metadata.to_yaml) }
+
+    begin
+      # grab NL specific files for PDF compilation
+      result, stderr, status = Open3.capture3("cd #{directory} && \
+        curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && \
+        curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
     end
 
     if !status.success?
       return result, stderr, status
     end
 
-    result, stderr, status = Open3.capture("curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
-    csl_file = "#{Whedon.resources}/joss/apa.csl"
-    directory = File.dirname(paper_paths.first)
-    puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
-    # TODO: may eventually want to swap out the latex template
-
-    result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.21105/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template")
-
     # Compile the paper
-    # pdf_path, stderr, status = download_and_compile(issue_id, custom_branch, clear_cache)
+    result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V \
+          repository=#{repository_address} \
+          -V archive_doi='PENDING' -V review_issue_url='#{processor.paper.review_issue_url}' \
+          -V editor_url=#{editor_url} \
+          -V graphics='true' -V logo_path='logopreprint.png' \
+          -o #{processor.paper.review_issue_id}.pdf -V geometry:margin=1in \
+          --pdf-engine=xelatex \
+          --citeproc #{File.basename(paper_paths.first)} \
+          --from markdown+autolink_bare_uris \
+          --csl=#{csl_file} \
+          --template latex.template \
+          --metadata-file=markdown-metadata.yaml")
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
     end
 
     if status.success?
-      if File.exists?("#{directory}/#{sha}.pdf")
+      if File.exists?("#{directory}/#{processor.paper.review_issue_id}.pdf")
         # If we've got this far then push a copy of the PDF to the papers repository
         create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-        pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+        pdf_url, pdf_download_url = create_git_pdf("#{directory}/#{processor.paper.review_issue_id}.pdf",
+                                                   issue_id, config.papers_repo, config.journal_alias)
 
         pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
 
         # Finally, respond in the review issue with the PDF URL
         bg_respond(nwo, issue_id, pdf_response)
+      end
+    end
   end
 
   # Use the Whedon gem to download the software to a local tmp directory
-  def download_and_compile(issue_id, custom_branch=nil, clear_cache)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
+  # def download_and_compile(issue_id, custom_branch=nil, clear_cache)
+  #   FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
 
-    result, stderr, status = Open3.capture3("whedon download #{issue_id}")
+  #   result, stderr, status = Open3.capture3("whedon download #{issue_id}")
 
-    if !status.success?
-      return result, stderr, status
-    end
+  #   if !status.success?
+  #     return result, stderr, status
+  #   end
 
-    if custom_branch
-      Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
-    else
-      Open3.capture3("whedon prepare #{issue_id}")
-    end
-  end
+  #   if custom_branch
+  #     Open3.capture3("whedon prepare #{issue_id} #{custom_branch}")
+  #   else
+  #     Open3.capture3("whedon prepare #{issue_id}")
+  #   end
+  # end
 end
 
 # This is the Sidekiq worker that processes PDFs. It leverages the Whedon gem to
