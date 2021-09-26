@@ -146,6 +146,21 @@ module GitHub
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
   # to write the compiled PDF to a named branch.
   # Returns the URL to the PDF on GitHub
+  def create_git_jb(file_path, issue_id, papers_repo, journal_alias)
+    id = "%05d" % issue_id
+    jb_path = "#{journal_alias}.#{id}/#{journal_alias}.#{id}"
+    gh_response = github_client.create_contents(papers_repo,
+                                                jb_path,
+                                                "Creating NeuroLibre notebook for #{journal_alias}.#{id}",
+                                                File.open("#{file_path.strip}").read,
+                                                :branch => "#{journal_alias}.#{id}")
+
+    return gh_response.content.html_url, gh_response.content.download_url
+  end
+
+  # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
+  # to write the compiled PDF to a named branch.
+  # Returns the URL to the PDF on GitHub
   def create_git_xml(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     crossref_xml_path = "#{journal_alias}.#{id}/10.21105.#{journal_alias}.#{id}.crossref.xml"

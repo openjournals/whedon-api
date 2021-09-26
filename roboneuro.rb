@@ -345,6 +345,7 @@ class RoboNeuro < Sinatra::Base
       respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
     end
 
+    # job_id = NLPreviewWorker.perform_async(params[:repository], params[:journal], params[:email], branch, sha)
     JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
