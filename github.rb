@@ -148,11 +148,11 @@ module GitHub
   # Returns the URL to the PDF on GitHub
   def create_git_jb(file_path, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
-    jb_path = "#{journal_alias}.#{id}/#{journal_alias}.#{id}"
+    jb_path = "#{journal_alias}.#{id}/"
     gh_response = github_client.create_contents(papers_repo,
                                                 jb_path,
                                                 "Creating NeuroLibre notebook for #{journal_alias}.#{id}",
-                                                File.open("#{file_path.strip}").read,
+                                                File.read("#{file_path}"),
                                                 :branch => "#{journal_alias}.#{id}")
 
     return gh_response.content.html_url, gh_response.content.download_url

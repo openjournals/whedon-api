@@ -798,9 +798,6 @@ class JBWorker
   def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
-
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
@@ -814,8 +811,7 @@ class JBWorker
 
     if latest_sha.nil?
       # Terminate
-      self.payload = "Requested repository (or branch/tag/SHA) does not exist. \
-                      Please confirm address."
+      self.payload = "Requested repository (or branch/tag/SHA) does not exist."
       abort("Requested branch/SHA does not exist for #{processor.repository_address}")
     else
       post_params = {
@@ -837,7 +833,7 @@ class JBWorker
     rescue
 
     # If we got this far, respond in issue with update
-    build_update = ":seedling: We are currently building your NeuroLibre notebook ! Good things take time :seedling: "
+    build_update = " :seedling: We are currently building your NeuroLibre notebook! Good things take time :seedling: "
     bg_respond(nwo, issue_id, build_update)
 
     op_binder, op_book = request_book_build(post_params)
