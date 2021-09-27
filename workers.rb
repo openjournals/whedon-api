@@ -801,26 +801,28 @@ class JBWorker
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
+    repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
+
     if custom_branch
       # Get latest sha with --book-build in comments in custom_branch
-      latest_sha = get_latest_book_build_sha(processor.repository_address, custom_branch)
+      latest_sha = get_latest_book_build_sha(repository_address, custom_branch)
     else
       # Get latest sha with --book-build in comments
-      latest_sha = get_latest_book_build_sha(processor.repository_address)
+      latest_sha = get_latest_book_build_sha(repository_address)
     end
 
     if latest_sha.nil?
       # Terminate
       self.payload = "Requested repository (or branch/tag/SHA) does not exist."
-      abort("Requested branch/SHA does not exist for #{processor.repository_address}")
+      abort("Requested branch/SHA does not exist for #{repository_address}")
     else
       post_params = {
-        :repo_url => processor.repository_address,
+        :repo_url => repository_address,
         :commit_hash => latest_sha
       }.to_json
     end
 
-    content_validation = validate_repository_content(processor.repository_address)
+    content_validation = validate_repository_content(repository_address)
     if content_validation['response'] == false
       self.payload =  content_validation['reason']
       abort(content_validation['reason'])
