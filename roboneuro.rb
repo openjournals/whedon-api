@@ -343,7 +343,7 @@ class RoboNeuro < Sinatra::Base
   # Download and compile the PDF
   def build_book(custom_branch=nil, clear_cache=false)
     if custom_branch
-      respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
+      respond "```\nAttempting NeuroLibre notebook compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
     end
 
     JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
