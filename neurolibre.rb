@@ -201,20 +201,47 @@ module NeuroLibre
         end
     end
 
-    def validate_repository_content(repository_address)
+    def validate_repository_content(repository_address, custom_branch=nil)
         # Returns a JSON array containing fields:
         # - response
         # - reason
-        # If response is true, then the reposiotry meets minimum file/folder
+        # If response is true, then the repository meets minimum file/folder
         # level requirements. Otherwise, reason indicates why the repo
         # is not valid.
 
         uri = URI(repository_address)
         # Drop first slash
-        target_repo = uri.path[1...]
+        target_repo = uri.path.delete_prefix('/')
 
-        base_folders = github_client.contents(target_repo).map {|c,t| [c.path,c.type]}.select { |e, i| i=='dir' }.flatten(1).select.with_index {|e,i| !i.odd?}
-        folder_level_check = base_folders.include?('binder') && base_folders.include?('content')
+        if custom_branch != nil
+            ref ='heads/#{custom_branch}'
+        else
+            ref = nil
+        end
+
+        # Confirm binder, content folders exist
+        begin
+            binder_folder = github_client.contents(target_repo,
+                                                  :path => 'binder',
+                                                  :ref => ref)
+            content_folder = github_client.contents(target_repo,
+                                                   :path => 'content',
+                                                   :ref => ref)
+        rescue Octokit::NotFound
+            out = {:response => false,
+                   :reason => "Missing 'binder' or 'content' folder for #{repository_address}"}
+            return JSON.parse(out.to_json)
+        end
+
+        # Initialize default reponse
+        out = {:response => true,
+               :reason => "Repository meets mimimum file/folder level requirements."}
+
+        binder_files = [];
+        # Check for BinderHub config files
+        binder_folder.each do |file|
+            binder_files.append(file.name)
+        end
 
         binder_configs = [
             "environment.yml",
@@ -237,28 +264,22 @@ module NeuroLibre
             "start"
             ];
 
-        # List required content. Updates require changing content_required.intersection(content_files).length() < 2 condition
-        content_required = ['_toc.yml','_config.yml']
+        if  (binder_configs & binder_files).length() == 0
+            out = {:response => false,
+                   :reason => "Binder folder does not contain a valid environment configuration file."}
+        end
 
-        # Initialize default reponse
-        out = {:response => true, :reason => "Repository meets mimimum file/folder level requirements."}
+        content_files = [];
+        # Check for _toc.yml and _config.yml
+        content_folder.each do |file|
+            content_files.append(file.name)
+        end
 
-        if folder_level_check
+        content_required = ['_toc.yml','_config.yml'];
 
-            # Check for BinderHub config files
-            binder_files = github_client.contents(target_repo,:path => 'binder/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
-            if  (binder_configs & binder_files).length() == 0
-                out = {:response => false, :reason => "Binder folder does not contain a valid environment configuration file."}
-            end
-
-            # Check for _toc.yml and _config.yml
-            content_files = github_client.contents(target_repo,:path => 'content/').map {|c,t| [c.path,c.type]}.select { |e, i| i=='file' }.flatten(1).select.with_index {|e,i| !i.odd?}.map {|i| i.partition('/').last}
-            if (content_required & content_files).length() < 2
-                out =  {:response => false, :reason => "Missing _toc.yml or _config.yml under the content folder."}
-            end
-
-        else
-            out = {:response => false, :reason => "Missing /binder or /content folder."}
+        if (content_required & content_files).length() < 2
+            out =  {:response => false,
+                    :reason => "Missing _toc.yml or _config.yml under the content folder."}
         end
 
         return JSON.parse(out.to_json)

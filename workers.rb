@@ -131,7 +131,12 @@ class NLPreviewWorker
     }.to_json
   end
 
-  content_validation = validate_repository_content("https://github.com/ltetrel/nha2020-nilearn")
+  if custom_branch
+    content_validation = validate_repository_content(repository_address, custom_branch)
+  else
+    content_validation = validate_repository_content(repository_address)
+  end
+
   if content_validation['response'] == false
     self.payload =  content_validation['reason']
     abort(content_validation['reason'])
@@ -821,10 +826,17 @@ class JBWorker
       }.to_json
     end
 
-    content_validation = validate_repository_content(repository_address)
+    if custom_branch
+      content_validation = validate_repository_content(repository_address, custom_branch)
+    else
+      content_validation = validate_repository_content(repository_address)
+    end
+
     if content_validation['response'] == false
+      bg_respond(nwo, issue_id, content_validation['reason'])
       abort(content_validation['reason'])
     end
+
     # First, try a get request. If fails to return existing book, then attempt build.
     begin
       op = get_built_books(commit_sha:latest_sha)
