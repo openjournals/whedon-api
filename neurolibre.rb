@@ -213,8 +213,8 @@ module NeuroLibre
         # Drop first slash
         target_repo = uri.path.delete_prefix('/')
 
-        if custom_branch != nil
-            ref ='heads/#{custom_branch}'
+        if custom_branch
+            ref ="heads/#{custom_branch}"
         else
             ref = nil
         end
