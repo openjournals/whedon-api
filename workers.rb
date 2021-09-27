@@ -813,7 +813,6 @@ class JBWorker
 
     if latest_sha.nil?
       # Terminate
-      self.payload = "Requested repository (or branch/tag/SHA) does not exist."
       abort("Requested branch/SHA does not exist for #{repository_address}")
     else
       post_params = {
@@ -824,14 +823,16 @@ class JBWorker
 
     content_validation = validate_repository_content(repository_address)
     if content_validation['response'] == false
-      self.payload =  content_validation['reason']
       abort(content_validation['reason'])
     end
-    # First, try a get request. If fails, then attempt build.
+    # First, try a get request. If fails to return existing book, then attempt build.
     begin
       op = get_built_books(commit_sha:latest_sha)
-      result = JSON.parse(op)
-      self.payload = result[0]['book_url']
+      book_url = op[0]['book_url']
+      book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook on GitHub](#{book_url}) :page_facing_up::point_left:"
+
+      # Finally, respond in the review issue with the Jupyter Book URL
+      bg_respond(nwo, issue_id, book_response)
     rescue
 
     # If we got this far, respond in issue with update
@@ -842,15 +843,12 @@ class JBWorker
     book_url = op_book['book_url']
 
     if book_url.nil?
-      self.payload = "We ran into a problem building your book. :("
-        File.open("binder_build_#{latest_sha}.log", "w+") do |f|
-            op_binder.each { |element| f.puts(element) }
-            book_response = op_binder
-            bg_respond(nwo, issue_id, book_response)
-        end
-      abort("Book url is empty")
-    else
-      self.payload = book_url
+      File.open("binder_build_#{latest_sha}.log", "w+") do |f|
+          op_binder.each { |element| f.puts(element) }
+          book_response = op_binder
+          bg_respond(nwo, issue_id, book_response)
+      end
+      abort("We ran into a problem building your book. :(")
     end
 
     # If we've got this far then push a copy of the built site to the papers repository
