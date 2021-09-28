@@ -41,6 +41,7 @@ class WhedonApi < Sinatra::Base
         @message = params['issue']['body']
       elsif @action == 'created'
         @message = params['comment']['body']
+        @comment_id = params['comment']['id']
       end
 
       @sender = params['sender']['login']
@@ -185,6 +186,9 @@ class WhedonApi < Sinatra::Base
       respond erb :editors, :locals => { :editors => @config.editors }
     when /\A@whedon list reviewers/i
       respond all_reviewers
+    when /\A@whedon generate my checklist/i
+      check_reviewer
+      generate_checklist
     when /\A@whedon generate pdf from branch (.\S*)/
       process_pdf($1)
     when /\A@whedon generate pdf/i
@@ -388,6 +392,23 @@ class WhedonApi < Sinatra::Base
     else
       respond "#{version_string} doesn't look like a valid version string."
     end
+  end
+
+  # Update sender's comment with a reviewer checklist
+  def generate_checklist
+    if !review_issue?
+      respond "Reviewer checklists can only be added from the review issue"
+      halt 422
+    end
+
+    # update comment
+    checklist = erb :reviewer_checklist, locals: { reviewer: @sender }
+    github_client.update_comment(@nwo, @comment_id, checklist)
+
+    # link checklist from issue's body
+    text = "[Checklist for @#{sender}](https://github.com/#{@nwo}/issues/#{@issue_id}#issuecomment-#{@comment_id})"
+    new_body = issue_body + "\n" + text
+    github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
   end
 
   # Returns a string response with URL to Gist of reviewers
