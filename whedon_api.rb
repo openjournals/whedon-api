@@ -410,7 +410,6 @@ class WhedonApi < Sinatra::Base
     url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
     response = RestClient.post(url, "")
 
-    reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
     new_editor
   end
@@ -431,14 +430,14 @@ class WhedonApi < Sinatra::Base
   end
 
   def set_reviewers(reviewer_list)
-    reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
+    new_reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
     label = reviewer_list.empty? ? "Pending" : reviewer_list.join(", ")
     new_body = issue.body.gsub(/\*\*Reviewers?:\*\*\s*(.+?)\r?\n/i, "**Reviewers:** #{label}\r\n")
-    reviewer_logins.each do |reviewer_name|
+    new_reviewer_logins.each do |reviewer_name|
       github_client.add_collaborator(@nwo, reviewer_name)
     end
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
-    update_assignees([editor] | reviewer_logins)
+    update_assignees([editor] | new_reviewer_logins)
   end
 
   def editor?
@@ -466,6 +465,10 @@ class WhedonApi < Sinatra::Base
 
   def reviewers
     issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+  end
+
+  def reviewer_logins
+    @reviewer_logins ||= reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "").strip }
   end
 
   # Send an HTTP POST to the GitHub API here due to Octokit problems
@@ -496,7 +499,6 @@ class WhedonApi < Sinatra::Base
       halt 422
     end
 
-    reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewer_logins.join(',')}&secret=#{@config.site_api_key}"
     # TODO let's do some error handling here please
     response = RestClient.post(url, "")
