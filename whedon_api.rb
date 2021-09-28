@@ -511,6 +511,14 @@ class WhedonApi < Sinatra::Base
     @issue ||= github_client.issue(@nwo, @issue_id)
   end
 
+  # Check that the person sending the command is a reviewer
+  def check_reviewer
+    unless reviewer_logins.include?(@sender)
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only the reviewers are allowed to do."
+      halt 403
+    end
+  end
+
   # Check that the person sending the command is an editor
   def check_editor
     unless @config.editors.include?(@sender)
