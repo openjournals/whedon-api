@@ -55,7 +55,7 @@ EDITOR-ONLY TASKS
 
 ## Development
 
-Is it green? [![Build Status](https://travis-ci.org/openjournals/whedon-api.svg?branch=master)](https://travis-ci.org/openjournals/whedon-api)
+Is it green? [![Build Status](https://github.com/openjournals/whedon-api/actions/workflows/tests.yml/badge.svg)](https://github.com/openjournals/whedon-api/actions/workflows/tests.yml)
 
 ## Contributing
 
