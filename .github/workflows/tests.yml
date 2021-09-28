@@ -7,8 +7,11 @@ jobs:
     continue-on-error: ${{ matrix.failure-allowed }}
     strategy:
       matrix:
-        ruby-version: ['2.4.1', '2.6.6', '2.7.4', '3.0.2']
-        failure-allowed: [false]
+        ruby-version: ['2.4.1', '2.7.4', '3.0.2']
+        failure-allowed: [true]
+        include:
+        - ruby-version: '2.6.6'
+          failure-allowed: false
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
