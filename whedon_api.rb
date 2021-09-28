@@ -402,7 +402,9 @@ class WhedonApi < Sinatra::Base
     end
 
     # update comment
-    checklist = erb :reviewer_checklist, locals: { reviewer: @sender }
+    submitting_author = issue.body.match(/\*\*Submitting author:\*\*\s*.(@\S*)/)[1]
+    repository_url = issue.body.match(/\*\*Repository:\*\*\s*<a href="([^"]*)"/)[1]
+    checklist = erb :reviewer_checklist, locals: { reviewer: @sender, submitting_author: submitting_author, repository_url: repository_url }
     github_client.update_comment(@nwo, @comment_id, checklist)
 
     # link checklist from issue's body
