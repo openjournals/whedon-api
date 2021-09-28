@@ -409,7 +409,7 @@ class WhedonApi < Sinatra::Base
 
     # link checklist from issue's body
     text = "[Checklist for @#{@sender}](https://github.com/#{@nwo}/issues/#{@issue_id}#issuecomment-#{@comment_id})"
-    new_body = issue_body + "\n" + text
+    new_body = issue.body + "\n" + text
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
   end
 
