@@ -837,23 +837,14 @@ class JBWorker
       abort(content_validation['reason'])
     end
 
-    # First, try a get request. If fails to return existing book, then attempt build.
-    begin
-      op = get_built_books(commit_sha:latest_sha)
-      book_url = op[0]['book_url']
-      book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook on GitHub](#{book_url}) :page_facing_up::point_left:"
-
-      # Finally, respond in the review issue with the Jupyter Book URL
-      bg_respond(nwo, issue_id, book_response)
-    rescue
-
-    # If we got this far, respond in issue with update
+    # Respond in issue with update that book is building
     build_update = " :seedling: We are currently building your NeuroLibre notebook! Good things take time :seedling: "
     bg_respond(nwo, issue_id, build_update)
 
     op_binder, op_book = request_book_build(post_params)
     book_url = op_book['book_url']
 
+    # if book build failed :(
     if book_url.nil?
       File.open("binder_build_#{latest_sha}.log", "w+") do |f|
           op_binder.each { |element| f.puts(element) }
@@ -863,7 +854,8 @@ class JBWorker
       abort("We ran into a problem building your book. :(")
     end
 
-    # If we've got this far then push a copy of the built site to the papers repository
+    # If we've got this far then, assume success !
+    # Push a copy of the built site to the papers repository
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
     book_url, _ = create_git_jb(book_url, issue_id, config.papers_repo, config.journal_alias)
 
@@ -872,6 +864,5 @@ class JBWorker
     # Finally, respond in the review issue with the Jupyter Book URL
     bg_respond(nwo, issue_id, book_response)
 
-    end
   end
 end
