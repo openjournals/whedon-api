@@ -146,9 +146,14 @@ module GitHub
   # Use the GitHub Contents API (https://developer.github.com/v3/repos/contents/)
   # to write the compiled PDF to a named branch.
   # Returns the URL to the PDF on GitHub
-  def create_git_jb(file_path, issue_id, papers_repo, journal_alias)
+  def create_git_jb(build_dir, issue_id, papers_repo, journal_alias)
     id = "%05d" % issue_id
     jb_path = "#{journal_alias}.#{id}/"
+
+    # Set the path to work in
+    # files.each do |file|
+    # end
+
     gh_response = github_client.create_contents(papers_repo,
                                                 jb_path,
                                                 "Creating NeuroLibre notebook for #{journal_alias}.#{id}",

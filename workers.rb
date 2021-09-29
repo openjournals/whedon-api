@@ -790,6 +790,7 @@ class JBWorker
   require 'ostruct'
   require 'sidekiq'
   require 'whedon'
+  require 'rest-client'
 
   include Sidekiq::Worker
   sidekiq_options retry: false
@@ -857,9 +858,35 @@ class JBWorker
     # If we've got this far then, assume success !
     # Push a copy of the built site to the papers repository
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
-    book_url, _ = create_git_jb(book_url, issue_id, config.papers_repo, config.journal_alias)
 
-    book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook on GitHub](#{book_url}) :page_facing_up::point_left:"
+    # create directory to store temporary files
+    path = "tmp/#{issue_id}"
+    FileUtils.rm_rf("#{path}") if Dir.exist?("#{path}") if clear_cache
+    Dir.mkdir("#{path}") unless Dir.exist?("#{path}")
+    `cd #{path}`
+
+    request = RestClient::Request.new(
+          :method => :get,
+          :url => "#{book_url}",
+          verify_ssl: false,
+          :user => 'neurolibre',
+          :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+          :headers => { :content_type => :json }
+        )
+    response = request.execute
+
+    if response.code != 200
+      abort("Could not successfully fetch built book from server :( Response code was #{response.code}")
+    else
+      puts "Puttering along"
+      # File.open() do |f|
+      #   # Remove ANSI colors
+      #   response.each_line { |element| f.puts(element) }
+      # end
+    end
+
+    book_git_url, _ = create_git_jb(build_dir, issue_id, config.papers_repo, config.journal_alias)
+    book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook on GitHub](#{book_git_url}) :page_facing_up::point_left:"
 
     # Finally, respond in the review issue with the Jupyter Book URL
     bg_respond(nwo, issue_id, book_response)
