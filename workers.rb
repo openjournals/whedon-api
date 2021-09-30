@@ -838,57 +838,31 @@ class JBWorker
       abort(content_validation['reason'])
     end
 
-    # Respond in issue with update that book is building
-    build_update = " :seedling: We are currently building your NeuroLibre notebook! Good things take time :seedling: "
-    bg_respond(nwo, issue_id, build_update)
+    result = get_built_books(commit_sha:latest_sha)
+    if result == nil
+      # Respond in issue with update that book is building
+      build_update = " :seedling: We are currently building your NeuroLibre notebook! Good things take time :seedling: "
+      bg_respond(nwo, issue_id, build_update)
+    end
 
     op_binder, op_book = request_book_build(post_params)
     book_url = op_book['book_url']
 
     # if book build failed :(
     if book_url.nil?
+
       File.open("binder_build_#{latest_sha}.log", "w+") do |f|
-          op_binder.each { |element| f.puts(element) }
-          book_response = op_binder
-          bg_respond(nwo, issue_id, book_response)
+         op_binder.each { |element| f.puts(element) }
       end
-      abort("We ran into a problem building your book. :(")
+
+      # We should serve this log, but for now....
+      book_response = "We ran into a problem building your book. :("
+      bg_respond(nwo, issue_id, book_response)
+      abort(book_response)
     end
-
-    # If we've got this far then, assume success !
-    # Push a copy of the built site to the papers repository
-    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
-
-    # create directory to store temporary files
-    path = "tmp/#{issue_id}"
-    FileUtils.rm_rf("#{path}") if Dir.exist?("#{path}") if clear_cache
-    Dir.mkdir("#{path}") unless Dir.exist?("#{path}")
-    `cd #{path}`
-
-    request = RestClient::Request.new(
-          :method => :get,
-          :url => "#{book_url}",
-          verify_ssl: false,
-          :user => 'neurolibre',
-          :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-          :headers => { :content_type => :json }
-        )
-    response = request.execute
-
-    if response.code != 200
-      abort("Could not successfully fetch built book from server :( Response code was #{response.code}")
-    else
-      puts "Puttering along"
-      # File.open() do |f|
-      #   # Remove ANSI colors
-      #   response.each_line { |element| f.puts(element) }
-      # end
-    end
-
-    book_git_url, _ = create_git_jb(build_dir, issue_id, config.papers_repo, config.journal_alias)
-    book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook on GitHub](#{book_git_url}) :page_facing_up::point_left:"
 
     # Finally, respond in the review issue with the Jupyter Book URL
+    book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook](#{book_url}) :page_facing_up::point_left:"
     bg_respond(nwo, issue_id, book_response)
 
   end

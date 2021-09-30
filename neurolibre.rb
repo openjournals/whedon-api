@@ -139,11 +139,10 @@ module NeuroLibre
             warn "Requested resource does not exist."
             return result
 
+        # We need a way to distinguish these cases.
+        # I'm not sure that this is the place to raise an error, anyway.
         else
-
-            result = nil
-            warn "Returned code #{response.code}"
-
+            abort("Returned code #{response.code}")
         end
         end
     end
@@ -445,6 +444,4 @@ module NeuroLibre
 
       return book_url
     end
-
-
 end
