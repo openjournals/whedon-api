@@ -12,7 +12,7 @@ class FakeGitHub < Sinatra::Base
     json_response 200, 'issue-940.json'
   end
 
-  # Pre-review issue
+  # Pre-review issues
   get '/repos/openjournals/joss-reviews-testing/issues/936' do
     json_response 200, 'pre-review-issue-936.json'
   end
@@ -35,9 +35,17 @@ class FakeGitHub < Sinatra::Base
     json_response 200, 'pre-review-issue-935.json'
   end
 
-  # Review issue
+  get '/repos/openjournals/joss-reviews-testing/issues/122' do
+    json_response 200, 'pre-review-issue-122.json'
+  end
+
+  # Review issues
   get '/repos/openjournals/joss-reviews-testing/issues/937' do
     json_response 200, 'review-issue-937.json'
+  end
+
+  get '/repos/openjournals/joss-reviews-testing/issues/121' do
+    json_response 200, 'review-issue-121.json'
   end
 
   post '/repos/openjournals/joss-reviews-testing/issues/937/comments' do

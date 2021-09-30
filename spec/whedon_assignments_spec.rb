@@ -162,9 +162,8 @@ describe WhedonApi do
   context 'with @whedon generate my checklist as reviewer in a review issue' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).once.with(anything, anything, "Reviewer checklists can only be added from the review issue")
-      expect(github_client).to receive(:update_comment).once.with(anything, anything, /## Checklist for @reviewer1/)
-      expect(github_client).to receive(:update_issue).once.with(anything, anything, /Checklist for @reviewer1/)
+      expect(github_client).to receive(:update_comment).once.with("openjournals/joss-reviews-testing", 420601978, /## Review checklist for @reviewer1/)
+      expect(github_client).to receive(:update_issue).once.with("openjournals/joss-reviews-testing", 121, "[REVIEW]: Testing", /Review checklist for @reviewer1/)
       post '/dispatch', whedon_generate_my_checklist_from_reviewer, {'CONTENT_TYPE' => 'application/json'}
     end
 
