@@ -163,9 +163,6 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon invite (.*) as editor/i
       check_eic
       invite_editor($1)
-    when /\A@whedon re-invite (.*) as reviewer/i
-      check_editor
-      invite_reviewer($1)
     when /\A@whedon set (.*) as archive/
       check_editor
       assign_archive($1)
@@ -456,11 +453,8 @@ class WhedonApi < Sinatra::Base
     new_reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
     label = reviewer_list.empty? ? "Pending" : reviewer_list.join(", ")
     new_body = issue.body.gsub(/\*\*Reviewers?:\*\*\s*(.+?)\r?\n/i, "**Reviewers:** #{label}\r\n")
-    new_reviewer_logins.each do |reviewer_name|
-      github_client.add_collaborator(@nwo, reviewer_name)
-    end
-    github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
-    update_assignees([editor] | new_reviewer_logins)
+
+    github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
   end
 
   def editor?
@@ -469,21 +463,6 @@ class WhedonApi < Sinatra::Base
 
   def editor
     issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
-  end
-
-  def invite_reviewer(reviewer_name)
-    reviewer_name = reviewer_name.sub(/^@/, "").downcase
-    existing_invitees = github_client.repository_invitations(@nwo).collect {|i| i.invitee.login.downcase }
-
-    if existing_invitees.include?(reviewer_name)
-      respond "The reviewer already has a pending invite.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-    elsif github_client.collaborator?(@nwo, reviewer_name)
-      respond "@#{reviewer_name} already has access."
-    else
-      # Ideally we should check if a user exists here... (for another day)
-      github_client.add_collaborator(@nwo, reviewer_name)
-      respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-    end
   end
 
   def reviewers
