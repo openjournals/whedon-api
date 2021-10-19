@@ -850,13 +850,11 @@ class JBWorker
 
     # if book build failed :(
     if book_url.nil?
+      book_response = "We ran into a problem building your book. :(
 
-      File.open("binder_build_#{latest_sha}.log", "w+") do |f|
-         op_binder.each { |element| f.puts(element) }
-      end
-
-      # We should serve this log, but for now....
-      book_response = "We ran into a problem building your book. :("
+                      <details>
+                      #{op_binder}
+                      </details>"
       bg_respond(nwo, issue_id, book_response)
       abort(book_response)
     end
