@@ -173,7 +173,7 @@ module NeuroLibre
         :user => 'neurolibre',
         :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
         :payload => payload_in,
-        :timeout => 1800, # Give 30 minutes
+        :timeout => 3600, # Give 60 minutes
         :headers => { :content_type => :json }
         ).execute do |response|
             case response.code
