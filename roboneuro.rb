@@ -431,7 +431,7 @@ class RoboNeuro < Sinatra::Base
   end
 
   def editor
-    issue.body.match(/\*\*Manager:\*\*\s*.@(\S*)/)[1]
+    issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   end
 
   def invite_reviewer(reviewer_name)
@@ -450,7 +450,7 @@ class RoboNeuro < Sinatra::Base
   end
 
   def reviewers
-    issue.body.match(/Testers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+    issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
   end
 
   # Send an HTTP POST to the GitHub API here due to Octokit problems
