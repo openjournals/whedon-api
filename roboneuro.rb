@@ -327,7 +327,7 @@ class RoboNeuro < Sinatra::Base
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, dry_run=false)
       end
     else
-      respond "I can't accept a paper that hasn't been reviewed!"
+      respond "I can't accept a paper that hasn't been tested!"
     end
   end
 
@@ -472,12 +472,12 @@ class RoboNeuro < Sinatra::Base
     end
 
     if reviewers.empty?
-      respond "Can't start a review without testers"
+      respond "Can't start a test without testers"
       halt 422
     end
 
     if !editor
-      respond "Can't start a review without a manager"
+      respond "Can't start a test without a manager"
       halt 422
     end
 
