@@ -3,11 +3,12 @@ journals:
       editor_team_id: 3408147
       eics:
         - emdupre
+        - pbellec
       eic_team_name: neurolibre/editors
       papers_repo: neurolibre/neurolibre-papers
       reviewers: https://tinyurl.com/y22xx6ux
-      reviewers_signup: https://joss.theoj.org/reviewer-signup.html
-      site_host: https://neurolibre.herokuapp.com
+      reviewers_signup: ''
+      site_host: https://neurolibre.org
       doi_prefix: "10.21105"
       journal_alias: NeuroLibre
       journal_launch_date: '2020-05-05'
@@ -15,7 +16,7 @@ journals:
       current_issue: "1"
       current_volume: "1"
       site_name: NeuroLibre
-      donate_url: https://numfocus.org/donate-to-joss
+      donate_url: ''
       site_api_key: <%= ENV['JOSS_API_KEY'] %>
       crossref_username: <%= ENV['CROSSREF_USERNAME'] %>
       crossref_password: <%= ENV['CROSSREF_PASSWORD'] %>
