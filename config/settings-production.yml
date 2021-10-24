@@ -80,7 +80,7 @@ journals:
       reviewers_signup: https://joss.theoj.org/reviewer-signup.html
       site_host: https://test.joss.theoj.org
       doi_prefix: "10.21105"
-      journal_alias: joss-test
+      journal_alias: joss
       journal_launch_date: '2016-05-05'
       journal_issn: '2475-9066'
       site_name: Journal of Open Source Software
