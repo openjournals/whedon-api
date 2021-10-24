@@ -7,7 +7,6 @@ journals:
         - Kevin-Mattheus-Moerman
         - kthyng
         - kyleniemeyer
-        - labarba
       eic_team_name: openjournals/joss-eics
       papers_repo: openjournals/joss-papers
       reviewers: https://bit.ly/joss-reviewers
@@ -31,7 +30,6 @@ journals:
       editor_team_id: 2414911
       eics:
         - labarba
-        - kyleniemeyer
       eic_team_name: openjournals/jose-eics
       papers_repo: openjournals/jose-papers
       reviewers: https://bit.ly/jose-reviewers
@@ -75,20 +73,21 @@ journals:
       editor_team_id: 2009411
       eics:
         - arfon
+        - xuanxu
       eic_team_name: openjournals/joss-eics-testing
       papers_repo: openjournals/joss-papers-testing
       reviewers: https://bit.ly/joss-reviewers
       reviewers_signup: https://joss.theoj.org/reviewer-signup.html
-      site_host: https://joss.theoj.org
+      site_host: https://test.joss.theoj.org
       doi_prefix: "10.21105"
-      journal_alias: joss
+      journal_alias: joss-test
       journal_launch_date: '2016-05-05'
       journal_issn: '2475-9066'
       site_name: Journal of Open Source Software
       donate_url: https://numfocus.salsalabs.org/donate-to-joss
-      site_api_key:
-      crossref_username:
-      crossref_password:
+      site_api_key: <%= ENV['JOSS_TEST_API_KEY'] %>
+      crossref_username: <%= ENV['CROSSREF_TEST_USERNAME'] %>
+      crossref_password: <%= ENV['CROSSREF_TEST_PASSWORD'] %>
       twitter_consumer_key:
       twitter_consumer_secret:
       twitter_access_token:
