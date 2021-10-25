@@ -851,10 +851,12 @@ class JBWorker
     # if book build failed :(
     if book_url.nil?
       book_response = "We ran into a problem building your book. :(
-
-                      <details>
-                      #{op_binder}
-                      </details>"
+      <details>
+      <summary> Click here to see build log </summary>
+      <pre><code>
+      #{op_binder}
+      </code></pre>
+      </details>"
       bg_respond(nwo, issue_id, book_response)
       abort(book_response)
     end
