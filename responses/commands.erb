@@ -4,26 +4,26 @@ Here are some things you can ask me to do:
 # List all of RoboNeuro's capabilities
 @roboneuro commands
 
-# Assign a GitHub user as the sole tester of this submission
-@roboneuro assign @username as tester
+# Assign a GitHub user as the sole reviewer of this submission
+@roboneuro assign @username as reviewer
 
-# Add a GitHub user to the testers of this submission
-@roboneuro add @username as tester
+# Add a GitHub user to the reviewers of this submission
+@roboneuro add @username as reviewer
 
-# Re-invite a tester (if they can't update checklists)
-@roboneuro re-invite @username as tester
+# Re-invite a reviewer (if they can't update checklists)
+@roboneuro re-invite @username as reviewer
 
-# Remove a GitHub user from the testers of this submission
-@roboneuro remove @username as tester
+# Remove a GitHub user from the reviewers of this submission
+@roboneuro remove @username as reviewer
 
-# List of manager GitHub usernames
-@roboneuro list managers
+# List of editor GitHub usernames
+@roboneuro list editors
 
-# List of current testers
-@roboneuro list testers
+# List of reviewers together with programming language preferences and domain expertise
+@roboneuro list reviewers
 
-# Change manager assignment
-@roboneuro assign @username as manager
+# Change editorial assignment
+@roboneuro assign @username as editor
 
 # Set the software archive DOI at the top of the issue e.g.
 @roboneuro set 10.0000/zenodo.00000 as archive
@@ -34,7 +34,7 @@ Here are some things you can ask me to do:
 # Open the review issue
 @roboneuro start review
 
-MANAGERIAL TASKS
+EDITORIAL TASKS
 
 # All commands can be run on a non-default branch, to do this pass a custom
 # branch name by following the command with `from branch custom-branch-name`.
@@ -52,9 +52,9 @@ MANAGERIAL TASKS
 # Compile the NeuroLibre notebook from alternative branch
 @roboneuro generate nl-notebook from branch custom-branch-name
 
-# Remind an author or tester to return to a review after a
+# Remind an author or reviewer to return to a review after a
 # certain period of time (supported units days and weeks)
-@roboneuro remind @tester in 2 days
+@roboneuro remind @reviewer in 2 days
 
 # Ask RoboNeuro to do a dry run of accepting the paper and depositing with Crossref
 @roboneuro accept
@@ -65,10 +65,10 @@ MANAGERIAL TASKS
 # Ask RoboNeuro to check repository statistics for the submitted software
 @roboneuro check repository
 
-MANAGER-IN-CHIEF TASKS
+EiC TASKS
 
-# Invite an manager to edit a submission (sending them an email)
-@roboneuro invite @manager as manager
+# Invite an editor to edit a submission (sending them an email)
+@roboneuro invite @editor as editor
 
 # Reject a paper
 @roboneuro reject

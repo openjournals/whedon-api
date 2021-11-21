@@ -128,26 +128,26 @@ class RoboNeuro < Sinatra::Base
       else
         respond erb :commands_public
       end
-    when /\A@roboneuro assign (.*) as tester/i
+    when /\A@roboneuro assign (.*) as reviewer/i
       check_editor
       assign_reviewer($1)
-      respond "OK, #{$1} is now a tester"
-    when /\A@roboneuro add (.*) as tester/i
+      respond "OK, #{$1} is now a reviewer"
+    when /\A@roboneuro add (.*) as reviewer/i
       check_editor
       add_reviewer($1)
-      respond "OK, #{$1} is now a tester"
-    when /\A@roboneuro remove (.*) as tester/i
+      respond "OK, #{$1} is now a reviewer"
+    when /\A@roboneuro remove (.*) as reviewer/i
       check_editor
       remove_reviewer($1)
-      respond "OK, #{$1} is no longer a tester"
-    when /\A@roboneuro assign (.*) as manager/i
+      respond "OK, #{$1} is no longer a reviewer"
+    when /\A@roboneuro assign (.*) as editor/i
       check_editor
       new_editor = assign_editor($1)
-      respond "OK, the manager is @#{new_editor}"
-    when /\A@roboneuro invite (.*) as manager/i
+      respond "OK, the editor is @#{new_editor}"
+    when /\A@roboneuro invite (.*) as editor/i
       check_eic
       invite_editor($1)
-    when /\A@roboneuro re-invite (.*) as tester/i
+    when /\A@roboneuro re-invite (.*) as reviewer/i
       check_editor
       invite_reviewer($1)
     when /\A@roboneuro set (.*) as archive/
@@ -166,9 +166,9 @@ class RoboNeuro < Sinatra::Base
         respond erb :missing_editor_reviewer
         halt
       end
-    when /\A@roboneuro list managers/i
+    when /\A@roboneuro list editors/i
       respond erb :editors, :locals => { :editors => @config.editors }
-    when /\A@roboneuro list testers/i
+    when /\A@roboneuro list reviewers/i
       respond all_reviewers
     when /\A@roboneuro generate pdf from branch (.\S*)/
       process_pdf($1, clear_cache=true)
@@ -209,7 +209,7 @@ class RoboNeuro < Sinatra::Base
     when /\A@roboneuro query scope/
       check_editor
       label_issue(@nwo, @issue_id, ['query-scope'])
-      respond "Submission flagged for scope review."
+      respond "Submission flagged for editorial review."
     # We don't understand the command so say as much...
     when /\A@roboneuro/i
       respond erb :sorry unless @sender == "roboneuro"
@@ -222,9 +222,9 @@ class RoboNeuro < Sinatra::Base
     response = RestClient.post(url, "")
 
     if response.code == 204
-      respond "@#{editor_handle} has been invited to manage this submission."
+      respond "@#{editor_handle} has been invited to edit this submission."
     else
-      respond "There was a problem inviting `@#{editor_handle}` to manage this submission."
+      respond "There was a problem inviting `@#{editor_handle}` to edit this submission."
     end
   end
 
@@ -259,7 +259,7 @@ class RoboNeuro < Sinatra::Base
     # mentioned in the issue body (i.e. is a reviewer or author)
     issue = github_client.issue(@nwo, @issue_id)
     unless issue.body.match(/#{human}/m)
-      respond "#{human} doesn't seem to be a tester or author for this submission."
+      respond "#{human} doesn't seem to be a reviewer or author for this submission."
       halt
     end
 
@@ -381,7 +381,7 @@ class RoboNeuro < Sinatra::Base
 
   # Returns a string response with URL to Gist of reviewers
   def all_reviewers
-    "Here's the current list of testers: #{@config.reviewers}"
+    "Here's the current list of reviewers: #{@config.reviewers}"
   end
 
   # Change the editor on an issue. This is a two-step process:
@@ -392,7 +392,7 @@ class RoboNeuro < Sinatra::Base
   def assign_editor(new_editor)
     new_editor = @sender if new_editor == "me"
     new_editor = new_editor.gsub(/^\@/, "").strip
-    new_body = issue.body.gsub(/\*\*Manager:\*\*\s*(@\S*|Pending)/i, "**Manager:** @#{new_editor}")
+    new_body = issue.body.gsub(/\*\*Editor:\*\*\s*(@\S*|Pending)/i, "**Editor:** @#{new_editor}")
     # This line updates the GitHub issue with the new editor
     github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
 
@@ -422,7 +422,7 @@ class RoboNeuro < Sinatra::Base
   def set_reviewers(reviewer_list)
     reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
     label = reviewer_list.empty? ? "Pending" : reviewer_list.join(", ")
-    new_body = issue.body.gsub(/\*\*Testers?:\*\*\s*(.+?)\r?\n/i, "**Testers:** #{label}\r\n")
+    new_body = issue.body.gsub(/\*\*Reviewers?:\*\*\s*(.+?)\r?\n/i, "**Reviewers:** #{label}\r\n")
     reviewer_logins.each do |reviewer_name|
       github_client.add_collaborator(@nwo, reviewer_name)
     end
@@ -439,13 +439,13 @@ class RoboNeuro < Sinatra::Base
     existing_invitees = github_client.repository_invitations(@nwo).collect {|i| i.invitee.login.downcase }
 
     if existing_invitees.include?(reviewer_name)
-      respond "The tester already has a pending invite.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
+      respond "The reviewer already has a pending invite.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
     elsif github_client.collaborator?(@nwo, reviewer_name)
       respond "@#{reviewer_name} already has access."
     else
       # Ideally we should check if a user exists here... (for another day)
       github_client.add_collaborator(@nwo, reviewer_name)
-      respond "OK, the tester has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
+      respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
     end
   end
 
@@ -472,12 +472,12 @@ class RoboNeuro < Sinatra::Base
     end
 
     if reviewers.empty?
-      respond "Can't start a test without testers"
+      respond "Can't start a review without reviewers"
       halt 422
     end
 
     if !editor
-      respond "Can't start a test without a manager"
+      respond "Can't start a review without an editor"
       halt 422
     end
 
@@ -497,7 +497,7 @@ class RoboNeuro < Sinatra::Base
   # Check that the person sending the command is an editor
   def check_editor
     unless @config.editors.include?(@sender)
-      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only managers are allowed to do."
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editors are allowed to do."
       halt 403
     end
   end
@@ -505,7 +505,7 @@ class RoboNeuro < Sinatra::Base
   # Check that the person sending the command is an editor-in-chief
   def check_eic
     unless @config.eics.include?(@sender)
-      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only managers-in-chiefs are allowed to do."
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do."
       halt 403
     end
   end
