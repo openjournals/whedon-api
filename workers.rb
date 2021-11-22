@@ -889,7 +889,7 @@ class ProdInitWorker
   include GitHub
   include NeuroLibre
 
-  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
+  def perform(nwo, issue_id, config)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
     review = Whedon::Review.new(issue_id)
@@ -960,6 +960,7 @@ class ProdInitWorker
 
     if resp.nil?
       build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
+      You can visit the book, but Binder is not ready yet for execution.
       This will look better:
       ```
       #{resp}
