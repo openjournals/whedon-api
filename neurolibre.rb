@@ -448,12 +448,16 @@ module NeuroLibre
     def fork_for_production(papers_repo)
         target_repo = get_repo_name(papers_repo)
         r = github_client.fork(target_repo, {:organization => 'roboneurolibre'})
+        puts(r)
+        puts(r['html_url'])
         return r['html_url']
     end
 
     def get_config_for_prod(repository_address)
         # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
+        puts(repository_address)
         target_repo = get_repo_name(repository_address)
+        puts("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
         new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
 
         if new_config.nil?
