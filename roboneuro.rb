@@ -92,6 +92,7 @@ class RoboNeuro < Sinatra::Base
     end
     check_references(nil, clear_cache=false)
     process_pdf(nil, clear_cache=false)
+    build_book(nil, clear_cache=false)
   end
 
   # When an issue is closed we want to encourage authors to add the NeuroLibre
@@ -173,7 +174,9 @@ class RoboNeuro < Sinatra::Base
       process_pdf($1, clear_cache=true)
     when /\A@roboneuro generate pdf/i
       process_pdf(nil, clear_cache=true)
-    when /\A@roboneuro build jupyter-book/i
+    when /\A@roboneuro generate nl-notebook from branch (.\S*)/
+      build_book($1, clear_cache=true)
+    when /\A@roboneuro generate nl-notebook/i
       build_book(nil, clear_cache=true)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
@@ -324,7 +327,7 @@ class RoboNeuro < Sinatra::Base
         DepositWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, dry_run=false)
       end
     else
-      respond "I can't accept a paper that hasn't been reviewed!"
+      respond "I can't accept a paper that hasn't been tested!"
     end
   end
 
@@ -340,9 +343,8 @@ class RoboNeuro < Sinatra::Base
 
   # Download and compile the PDF
   def build_book(custom_branch=nil, clear_cache=false)
-    # TODO refactor this so we're not passing so many arguments to the method
     if custom_branch
-      respond "```\nAttempting PDF compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
+      respond "```\nAttempting NeuroLibre notebook compilation from custom branch #{custom_branch}. Reticulating splines etc...\n```"
     end
 
     JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)

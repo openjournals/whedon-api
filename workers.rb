@@ -23,13 +23,13 @@ class PaperPreviewWorker
     if custom_branch
       begin
         # means that user provided a tag or branch
-        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+        result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/latex.template > latex.template")
       rescue
         # Means that user provided a commit sha
-        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+        result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && git checkout #{custom_branch} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/latex.template > latex.template")
       end
     else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha} && cd #{sha} && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/logo_preprint.png > logopreprint.png && curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/latex.template > latex.template")
     end
 
     if !status.success?
@@ -88,74 +88,6 @@ class PaperPreviewWorker
   end
 end
 
-class JBPreviewWorker
-  require 'pathname'
-  require 'sidekiq'
-  require 'sidekiq_status'
-  require 'whedon'
-
-  include Sidekiq::Worker
-  include SidekiqStatus::Worker
-
-  sidekiq_options retry: false
-
-  SidekiqStatus::Container.ttl = 600
-
-  def perform(repository_address, journal, custom_branch=nil, sha)
-    if custom_branch
-      result, stderr, status = Open3.capture3("cd tmp && git clone --single-branch --branch #{custom_branch} #{repository_address} #{sha}")
-    else
-      result, stderr, status = Open3.capture3("cd tmp && git clone #{repository_address} #{sha}")
-    end
-
-    if !status.success?
-      return result, stderr, status
-    end
-
-    jb_paths = find_jb("tmp/#{sha}")
-
-    if jb_paths.empty?
-      self.payload = "Can't find a Jupyter Book to build. Make sure there's a file named <code>_toc.yml</code> in your repository."
-      abort("Can't find a Jupyter Book to build.")
-    elsif jb_paths.size == 1
-      begin
-        original_path = Pathname(jb_paths.first)
-        target_path = original_path.parent.parent
-        result, stderr, status = Open3.capture3("pip install -r #{target_path}/requirements.txt && jupyter-book build #{target_path}/content/")
-      rescue RuntimeError => e
-        self.payload = e.message
-        abort("Can't find a Jupyter Book to build.")
-        return
-      end
-
-      directory = File.dirname(jb_paths.first)
-
-      if status.success?
-        if File.exists?("#{directory}/#{sha}/_build/html/index.html")
-          self.payload = "https://www.ismercuryinretrograde.com/"
-        end
-      else
-        self.payload = "Looks like we failed to build the Jupyter Book with the following error: \n\n #{stderr}"
-        abort("Looks like we failed to build the Jupyter Book.")
-      end
-    else
-      self.payload = "There seems to be more than one _toc.yml present. Aborting..."
-      abort("There seems to be more than one _toc.yml present. Aborting...")
-    end
-  end
-
-  def find_jb(search_path=nil)
-    search_path ||= "tmp/#{review_issue_id}"
-    jb_paths = []
-
-    Find.find(search_path) do |path|
-      jb_paths << path if path =~ /_toc\.yml/
-    end
-
-    return jb_paths
-  end
-end
-
 class NLPreviewWorker
   require 'rest-client'
   require 'sidekiq'
@@ -199,7 +131,12 @@ class NLPreviewWorker
     }.to_json
   end
 
-  content_validation = validate_repository_content("https://github.com/ltetrel/nha2020-nilearn")
+  if custom_branch
+    content_validation = validate_repository_content(repository_address, custom_branch)
+  else
+    content_validation = validate_repository_content(repository_address)
+  end
+
   if content_validation['response'] == false
     self.payload =  content_validation['reason']
     abort(content_validation['reason'])
@@ -587,7 +524,6 @@ end
 class PDFWorker
   require_relative 'github'
   require_relative 'config_helper'
-  require_relative 'neurolibre'
 
   require 'date'
   require 'open3'
@@ -657,7 +593,7 @@ class PDFWorker
       "logo_path" => "logo_preprint.png",
       "aas_logo_path" => "#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/aas-logo.png",
       "year" => paper_year,
-      "submitted" => "Sep 21",
+      "submitted" => "Unavailable",
       "published" => Time.now.strftime('%d %B %Y'),
       "formatted_doi" => "10.21105/NeuroLibre.0XXXX",
       "citation_author" => processor.paper.citation_author,
@@ -671,8 +607,8 @@ class PDFWorker
     begin
       # grab NL specific files for PDF compilation
       result, stderr, status = Open3.capture3("cd #{directory} && \
-        curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/logo_preprint.png > logopreprint.png && \
-        curl https://raw.githubusercontent.com/neurolibre/roboneuro/nl-api/resources/neurolibre/latex.template > latex.template")
+        curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/logo_preprint.png > logopreprint.png && \
+        curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/latex.template > latex.template")
     end
 
     if !status.success?
@@ -848,11 +784,13 @@ end
 class JBWorker
   require_relative 'github'
   require_relative 'config_helper'
+  require_relative 'neurolibre'
 
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
   require 'whedon'
+  require 'rest-client'
 
   include Sidekiq::Worker
   sidekiq_options retry: false
@@ -861,50 +799,71 @@ class JBWorker
   include ConfigHelper
   # Include to communicate from background worker to GitHub
   include GitHub
+  include NeuroLibre
 
   def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
+    review = Whedon::Review.new(issue_id)
+    processor = Whedon::Processor.new(issue_id, review.issue_body)
 
-    # Trying to debug a race condition on Heroku, following PDFWorker
-    sleep(10)
-    # Download the notebooks
-    stdout, stderr, status = download(issue_id, clear_cache)
+    repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
 
-    if status.success?
-      # Need to checkout the new branch before looking for the Jupyter Book.
-      `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
-
-      jb_path = find_jb(issue_id)
-      result, stderr, status = Open3.capture3("pip install -r #{jb_path}/requirements.txt && jupyter-book build #{jb_path}")
+    if custom_branch
+      # Get latest sha with --book-build in comments in custom_branch
+      latest_sha = get_latest_book_build_sha(repository_address, custom_branch)
     else
-      bg_respond(nwo, issue_id, "Jupyter Book failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+      # Get latest sha with --book-build in comments
+      latest_sha = get_latest_book_build_sha(repository_address)
     end
 
-    # If we've got this far then push a copy of the built site to the papers repository
-    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
+    if latest_sha.nil?
+      # Terminate
+      abort("Requested branch/SHA does not exist for #{repository_address}")
+    else
+      post_params = {
+        :repo_url => repository_address,
+        :commit_hash => latest_sha
+      }.to_json
+    end
 
-    book_url, book_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+    if custom_branch
+      content_validation = validate_repository_content(repository_address, custom_branch)
+    else
+      content_validation = validate_repository_content(repository_address)
+    end
 
-    book_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
+    if content_validation['response'] == false
+      bg_respond(nwo, issue_id, content_validation['reason'])
+      abort(content_validation['reason'])
+    end
+
+    result = get_built_books(commit_sha:latest_sha)
+    if result == nil
+      # Respond in issue with update that book is building
+      build_update = " :seedling: We are currently building your NeuroLibre notebook! Good things take time :seedling: "
+      bg_respond(nwo, issue_id, build_update)
+    end
+
+    op_binder, op_book = request_book_build(post_params)
+    book_url = op_book['book_url']
+
+    # if book build failed :(
+    if book_url.nil?
+      book_response = "We ran into a problem building your book. :(
+      <details>
+      <summary> Click here to see build log </summary>
+      <pre><code>
+      #{op_binder}
+      </code></pre>
+      </details>"
+      bg_respond(nwo, issue_id, book_response)
+      abort(book_response)
+    end
 
     # Finally, respond in the review issue with the Jupyter Book URL
+    book_response = ":point_right::page_facing_up: [View built NeuroLibre Notebook](#{book_url}) :page_facing_up::point_left:"
     bg_respond(nwo, issue_id, book_response)
-  end
 
-  def download(issue_id, clear_cache)
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-    Open3.capture3("whedon download #{issue_id}")
-  end
-
-  def find_jb(issue_id)
-    search_path ||= "tmp/#{issue_id}"
-    jb_paths = []
-
-    Find.find(search_path) do |path|
-      jb_paths << path if path =~ /_toc\.yml$|_config\.yml$/
-    end
-
-    return jb_paths.first
   end
 end

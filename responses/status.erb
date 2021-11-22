@@ -37,7 +37,7 @@
             🎉 RoboNeuro has started building your NeuroLibre preprint.
               <ul>
               <li> <b>Accompanying PDF builds</b> usually take a few minutes, please stay on this page.</li>
-              <li> <b>Notebook builds</b> may take up to 30-40 minutes. RoboNeuro will email you build logs upon completion, feel free to close this page.</li>
+              <li> <b>Notebook builds</b> may take up to 1 hour. RoboNeuro will email you build logs upon completion, feel free to close this page.</li>
               </ul>
           </div>
         <% elsif status == 'waiting' %>
@@ -51,13 +51,13 @@
           </div>
         <% elsif status == 'missing' %>
           <div class="alert alert-dark" role="alert">
-            No paper or notebooks found for that repository. Please try compiling again.
+            No preview found with that ID. If you do not receive an email from RoboNeuro in the next 10 minutes, please try compiling again.
           </div>
         <% end %>
 
         <a href="/">Try compiling another paper &rarr;</a>
 
-        <br> 
+        <br>
 
       </div>
     </div>
