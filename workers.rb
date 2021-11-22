@@ -928,8 +928,9 @@ class ProdInitWorker
 
     # 3) Build book for prod on test server, then sync book to the prod.
     latest_sha = get_latest_book_build_sha(forked_address)
-    
-    build_update = " :zap: We are currently building your NeuroLibre notebook for production! (:twisted_rightwards_arrows:  [fork](#{forked_address}))"
+    puts(latest_sha)
+
+    build_update = " :zap: We are currently building your NeuroLibre notebook for production! :twisted_rightwards_arrows: ([fork](#{forked_address}))"
     bg_respond(nwo, issue_id, build_update)
 
     post_params = {
@@ -937,6 +938,7 @@ class ProdInitWorker
       :commit_hash => latest_sha
     }.to_json
     
+    puts(post_params)
     op_binder, op_book = request_book_build(post_params)
     book_url = op_book['book_url']
 

@@ -448,7 +448,6 @@ module NeuroLibre
     def fork_for_production(papers_repo)
         target_repo = get_repo_name(papers_repo)
         r = github_client.fork(target_repo, {:organization => 'roboneurolibre'})
-        puts(r)
         puts(r['html_url'])
         return r['html_url']
     end

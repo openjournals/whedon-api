@@ -353,7 +353,7 @@ class RoboNeuro < Sinatra::Base
   end
 
   def init_production
-    respond "```\n:zap: Starting NeuroLibre production process. \n- Fork and config repository\n-Book build for production\n-Sync built book\n-BinderHub build for production ```"
+    respond ":zap: :zap: :zap: \n```\nStarting NeuroLibre production process. \n- Fork and config repository\n- Book build for production\n- Sync built book\n- BinderHub build for production ```"
     ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
