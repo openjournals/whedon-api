@@ -905,6 +905,8 @@ class ProdInitWorker
       abort("Running into a problem forking")
     end
 
+    # Wait briefly before reading content from fork
+    sleep(20)
     # 2) Update _config.yml & _toc.yml on the forked repo for production server.
     new_config = get_config_for_prod(forked_address)
     if new_config.nil?
