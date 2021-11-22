@@ -444,4 +444,129 @@ module NeuroLibre
 
       return book_url
     end
+
+    def fork_for_production(papers_repo)
+        target_repo = get_repo_name(papers_repo)
+        r = github_client.fork(target_repo, {:organization => 'roboneurolibre'})
+        return r['html_url']
+    end
+
+    def get_config_for_prod(repository_address)
+        # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
+        target_repo = get_repo_name(repository_address)
+        new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
+
+        if new_config.nil?
+            warn "Target repository does not have content/_config.yml"
+            return nil
+        end
+
+        pattern = Regexp.new(/binderhub_url:.*/).freeze
+        if pattern.match?(new_config)
+            # A line that mathces binderhub_url: (unique occurence in the _config template), then update the target.
+            new_config = new_config.gsub(/binderhub_url:.*/, "binderhub_url: \"https://binder-mcgill.conp.cloud\"")
+        else
+            
+            pattern_lb = Regexp.new(/launch_buttons:.*/).freeze
+            if pattern_lb.match?(new_config)
+                # Launch_buttons parent field exists, binderhub_url missing insert it under the parent field.
+                new_config = new_config.gsub(/launch_buttons:.*/, "launch_buttons: \n  binderhub_url: \"https://binder-mcgill.conp.cloud\"")
+            else
+                # Both parent and child fields are missing, append them to the end.
+                new_config = new_config + "\nlaunch_buttons: \n  binderhub_url: \"https://binder-mcgill.conp.cloud\""
+            end
+        end
+
+        pattern_url = Regexp.new(/^\s*url\s*:.*/).freeze
+        if pattern_url.match?(new_config)
+            # A line that begins with url: (empty spaces allowed), then update url address.
+            new_config = new_config.gsub(/^\s*url\s*:.*/, "  url: #{repository_address}")
+        else
+            pattern_rep = Regexp.new(/repository:.*/).freeze
+            if pattern_rep.match?(new_config)
+                # Repository parent field exists, url missing, add url.
+                new_config = new_config.gsub(/repository.*/, "repository: \n  url: #{repository_address}")
+            else
+                # Both url and repository parent field are missing, append them to the end.
+                new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: main"
+            end
+        end
+
+        # return modified _config.yml content
+        return new_config
+    end
+
+    def get_toc_for_prod(repository_address, author_repository, review_id)
+        
+        # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
+        target_repo = get_repo_name(repository_address)
+        new_toc = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_toc.yml")
+    
+        if new_toc.nil?
+            warn "Target repository does not have content/_config.yml"
+            return nil
+        end
+    
+        # Please do not modify empty spaces
+        add = "\n- caption: NeuroLibre\n  chapters:\n  - url: #{author_repository}\n    title: Author\'s repository \n  - url: https://github.com/neurolibre/neurolibre-reviews/issues/#{review_id}\n    title: Technical screening record"
+        
+        return new_toc + add
+    
+    end
+
+    def update_github_content(repository_address,content_path,new_content,commit_message,branch="main")
+
+        # A repo for which roboneuro has write access (neurolibre or roboneurolibre orgs.)
+        target_repo = get_repo_name(repository_address)
+        
+        # Get blob sha of the target file 
+        blob = JSON.parse(RestClient.get("https://api.github.com/repos/#{target_repo}/contents/#{content_path}"))
+        
+        # Update the content
+        r = github_client.update_contents(target_repo,
+                                  content_path,
+                                  commit_message,
+                                  blob['sha'],
+                                  new_content,
+                                  :branch => branch)
+        # Let caller infer in case this fails 
+        if r.nil?
+            return nil
+        else
+            return true
+        end
+    end
+
+    def request_book_sync(payload_in)
+        
+        response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/books/sync',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => payload_in,
+            :timeout => 1200, # Give 20 minutes
+            :headers => { :content_type => :json }
+            ).execute
+
+        return response
+    end
+
+    def request_production_binderhub(payload_in)
+        
+        response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/binder/build',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => payload_in,
+            :timeout => 1800, # Give 30 minutes
+            :headers => { :content_type => :json }
+            ).execute
+
+        return response
+    end
+
 end

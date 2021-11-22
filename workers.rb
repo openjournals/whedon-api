@@ -867,3 +867,126 @@ class JBWorker
 
   end
 end
+
+class ProdInitWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+  require_relative 'neurolibre'
+
+  require 'open3'
+  require 'ostruct'
+  require 'sidekiq'
+  require 'whedon'
+  require 'rest-client'
+  require 'uri'
+
+  include Sidekiq::Worker
+  sidekiq_options retry: false
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Include to communicate from background worker to GitHub
+  include GitHub
+  include NeuroLibre
+
+  def perform(nwo, issue_id, config, custom_branch, clear_cache=false)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+    review = Whedon::Review.new(issue_id)
+    processor = Whedon::Processor.new(issue_id, review.issue_body)
+
+    repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
+    
+    # 1) Fork author repo into roboneurolibre organization. 
+    forked_address = fork_for_production(repository_address)
+          
+    if forked_address.nil?
+      bg_respond(nwo, issue_id, "🍴🚫 I could not fork the repository.")
+      abort("Running into a problem forking")
+    end
+
+    # 2) Update _config.yml & _toc.yml on the forked repo for production server.
+    new_config = get_config_for_prod(forked_address)
+    if new_config.nil?
+      bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+      abort("Cannot find _config.yml in the forked repository.")
+    end
+    # Commit new config file to the forked repository
+    if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production").nil?
+        warn "Cannot update _config.yml"
+    end
+
+    new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
+    if new_toc.nil?
+      bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+      abort("Cannot find _config.yml in the forked repository.")
+    end
+    # Commit new toc file to the forked repository
+    if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production").nil?
+      warn "Cannot update _toc.yml"
+    end
+
+    # 3) Build book for prod on test server, then sync book to the prod.
+    latest_sha = get_latest_book_build_sha(forked_address)
+    
+    build_update = " :zap: We are currently building your NeuroLibre notebook for production! (:twisted_rightwards_arrows:  [fork](#{forked_address}))"
+    bg_respond(nwo, issue_id, build_update)
+
+    post_params = {
+      :repo_url => forked_address,
+      :commit_hash => latest_sha
+    }.to_json
+    
+    op_binder, op_book = request_book_build(post_params)
+    book_url = op_book['book_url']
+
+    # if book build failed :(
+    if book_url.nil?
+      book_response = "We ran into a problem building your book. :(
+      <details>
+      <summary> Click here to see build log </summary>
+      <pre><code>
+      #{op_binder}
+      </code></pre>
+      </details>"
+      bg_respond(nwo, issue_id, book_response)
+      abort(book_response)
+    else
+      build_update = " :repeat: Book build was successful! Syncing to production..."
+      bg_respond(nwo, issue_id, build_update)
+    end
+    
+    resp = request_book_sync(post_params)
+
+    if resp.nil?
+      build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
+      This will look better:
+      ```
+      #{resp}
+      ```
+      Now we are building a BinderHub instance, may be the :zap: with your preprint!
+      "
+      bg_respond(nwo, issue_id, build_update)
+    else
+      build_update = "DEBUG: Problem with sync API."
+      bg_respond(nwo, issue_id, build_update)
+    end
+
+    resp = request_production_binderhub(payload_in)
+
+    if resp.nil?
+      build_update = " :hibiscus: Your Binder is ready!
+      This will look better:
+      ```
+      #{resp}
+      ```
+      Congrats!
+      "
+      bg_respond(nwo, issue_id, build_update)
+    else
+      build_update = "DEBUG: Problem with Binder API."
+      bg_respond(nwo, issue_id, build_update)
+    end
+
+  end
+end

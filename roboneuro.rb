@@ -178,6 +178,8 @@ class RoboNeuro < Sinatra::Base
       build_book($1, clear_cache=true)
     when /\A@roboneuro generate nl-notebook/i
       build_book(nil, clear_cache=true)
+    when /\A@roboneuro initiate production/i
+      init_production
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -348,6 +350,11 @@ class RoboNeuro < Sinatra::Base
     end
 
     JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
+  end
+
+  def init_production
+    respond "```\nInitiating NeuroLibre production process.```"
+    ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   # Detect the languages and license of the review repository
