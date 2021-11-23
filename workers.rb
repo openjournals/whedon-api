@@ -963,6 +963,9 @@ class ProdInitWorker
     resp = request_book_sync(post_params)
 
     if resp.nil?
+      build_update = "DEBUG: Problem with sync API."
+      bg_respond(nwo, issue_id, build_update)
+    else
       build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
       You can visit the book, but Binder is not ready yet for execution.
       This will look better:
@@ -972,14 +975,14 @@ class ProdInitWorker
       Now we are building a BinderHub instance, may be the :zap: with your preprint!
       "
       bg_respond(nwo, issue_id, build_update)
-    else
-      build_update = "DEBUG: Problem with sync API."
-      bg_respond(nwo, issue_id, build_update)
     end
 
-    resp = request_production_binderhub(payload_in)
+    resp = request_production_binderhub(post_params)
 
     if resp.nil?
+      build_update = "DEBUG: Problem with Binder API."
+      bg_respond(nwo, issue_id, build_update)
+    else
       build_update = " :hibiscus: Your Binder is ready!
       This will look better:
       ```
@@ -987,9 +990,6 @@ class ProdInitWorker
       ```
       Congrats!
       "
-      bg_respond(nwo, issue_id, build_update)
-    else
-      build_update = "DEBUG: Problem with Binder API."
       bg_respond(nwo, issue_id, build_update)
     end
 
