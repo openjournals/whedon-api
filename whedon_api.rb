@@ -37,9 +37,7 @@ class WhedonApi < Sinatra::Base
       @action = params['action']
       @payload = params
 
-      if @action == 'opened' || @action == 'closed'
-        @message = params['issue']['body']
-      elsif @action == 'created'
+      if @action == 'created'
         @message = params['comment']['body']
       end
 
@@ -129,108 +127,8 @@ class WhedonApi < Sinatra::Base
   # One giant case statement to decide how to handle an incoming message...
   def robawt_respond
     case @message
-    when /\A@whedon commands/i
-      if @config.editors.include?(@sender)
-        respond erb :commands
-      else
-        respond erb :commands_public
-      end
-    when /\A@whedon assign (.*) as reviewer/i
-      check_editor
-      if editor?
-        assign_reviewer($1)
-        respond "OK, #{$1} is now a reviewer"
-      else
-        respond "You need to assign an editor first."
-      end
-    when /\A@whedon add (.*) as reviewer/i
-      check_editor
-      if editor?
-        add_reviewer($1)
-        respond "OK, #{$1} is now a reviewer"
-      else
-        respond "You need to assign an editor first."
-      end
-    when /\A@whedon remove (.*) as reviewer/i
-      check_editor
-      remove_reviewer($1)
-      respond "OK, #{$1} is no longer a reviewer"
-    when /\A@whedon assign (.*) as editor/i
-      check_editor
-      new_editor = assign_editor($1)
-      respond "OK, the editor is @#{new_editor}"
-    when /\A@whedon invite (.*) as editor/i
-      check_eic
-      invite_editor($1)
-    when /\A@whedon re-invite (.*) as reviewer/i
-      check_editor
-      invite_reviewer($1)
-    when /\A@whedon set (.*) as archive/
-      check_editor
-      assign_archive($1)
-    when /\A@whedon set (.*) as version/
-      check_editor
-      assign_version($1)
-    when /\A@whedon start review/i
-      check_editor
-      if editor && reviewers.any?
-        review_issue_id = start_review
-        respond erb :start_review, :locals => { :review_issue_id => review_issue_id, :nwo => @nwo }
-        close_issue(@nwo, @issue_id)
-      else
-        respond erb :missing_editor_reviewer
-        halt
-      end
-    when /\A@whedon list editors/i
-      respond erb :editors, :locals => { :editors => @config.editors }
-    when /\A@whedon list reviewers/i
-      respond all_reviewers
-    when /\A@whedon generate pdf from branch (.\S*)/
-      process_pdf($1)
-    when /\A@whedon generate pdf/i
-      process_pdf(nil)
-    when /\A@whedon accept deposit=true from branch (.\S*)/i
-      check_eic
-      deposit(dry_run=false, $1)
-    when /\A@whedon accept deposit=true/i
-      check_eic
-      deposit(dry_run=false)
-    when /\A@whedon recommend-accept from branch (.\S*)/i
-      check_editor
-      deposit(dry_run=true, $1)
-    when /\A@whedon recommend-accept/i
-      check_editor
-      deposit(dry_run=true)
-    when /\A@whedon accept/i
-      check_editor
-      if editor 
-        respond "To recommend a paper to be accepted use `@whedon recommend-accept`"
-      end
-    when /\A@whedon reject/i
-      check_eic
-      reject_paper
-    when /\A@whedon withdraw/i
-      check_eic
-      withdraw_paper
-    when /\A@whedon check references from branch (.\S*)/
-      check_references($1)
-    when /\A@whedon check references/i
-      check_references(nil)
-    when /\A@whedon check repository from branch (.\S*)/i
-      repo_detect($1)
-    when /\A@whedon check repository/i
-      repo_detect(nil)
-    # Detect strings like '@whedon remind @arfon in 2 weeks'
-    when /\A@whedon remind (.*) in (.*) (.*)/i
-      check_editor
-      schedule_reminder($1, $2, $3)
-    when /\A@whedon query scope/
-      check_editor
-      label_issue(@nwo, @issue_id, ['query-scope'])
-      respond "Submission flagged for editorial review."
-    # We don't understand the command so say as much...
     when /\A@whedon/i
-      respond erb :sorry unless @sender == "whedon"
+      respond "I'm a deprecated robot, my succesor @editorialbot will help you. \n\nPlease use `@editorialbot help` to list available options." unless @sender == "whedon"
     end
   end
 
@@ -551,16 +449,6 @@ class WhedonApi < Sinatra::Base
   end
 
   post '/dispatch' do
-    if @action == "opened"
-      say_hello
-      halt
-    end
-
-    if @action == "closed"
-      say_goodbye
-      halt
-    end
-
     robawt_respond if @message
   end
 end
