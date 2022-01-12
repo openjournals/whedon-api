@@ -60,7 +60,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting a PRE-REVIEW issue with a payload from an known repository' do
+  xcontext 'when starting a PRE-REVIEW issue with a payload from an known repository' do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
@@ -78,7 +78,7 @@ describe WhedonApi do
     end
   end
 
-  context "when opening an issue that isn't a PRE-REVIEW or REVIEW issue" do
+  xcontext "when opening an issue that isn't a PRE-REVIEW or REVIEW issue" do
     before do
       expect(PDFWorker).to receive(:perform_async).never
       expect(RepoWorker).to receive(:perform_async).never
@@ -92,7 +92,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting a REVIEW issue with a payload from an known repository' do
+  xcontext 'when starting a REVIEW issue with a payload from an known repository' do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       expect(RepoWorker).to receive(:perform_async).once
@@ -110,7 +110,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when closing a REVIEW issue' do
+  xcontext 'when closing a REVIEW issue' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once
@@ -122,7 +122,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when closing a PRE-REVIEW issue' do
+  xcontext 'when closing a PRE-REVIEW issue' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).never
@@ -134,7 +134,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when rejecting a paper as a regular user' do
+  xcontext 'when rejecting a paper as a regular user' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry/)
@@ -146,7 +146,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when rejecting a paper as an EIC' do
+  xcontext 'when rejecting a paper as an EIC' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Paper rejected/)
@@ -158,7 +158,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when withdrawing a paper as a regular user' do
+  xcontext 'when withdrawing a paper as a regular user' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry/)
@@ -170,7 +170,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when withdrawing a paper as an EIC' do
+  xcontext 'when withdrawing a paper as an EIC' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Paper withdrawn/)
@@ -182,7 +182,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when inviting an editor as a regular user' do
+  xcontext 'when inviting an editor as a regular user' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry/)
@@ -194,7 +194,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when inviting an editor as an EiC' do
+  xcontext 'when inviting an editor as an EiC' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /@mickey has been invited to edit this submission/)
@@ -206,7 +206,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting review WITHOUT reviewer and editor assignments' do
+  xcontext 'when starting review WITHOUT reviewer and editor assignments' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /It looks like you don't have an editor and reviewer assigned yet so I can't start the review./)
@@ -218,7 +218,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting review on a REVIEW issue' do
+  xcontext 'when starting review on a REVIEW issue' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Can't start a review when the review has already started/)
@@ -230,7 +230,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting review WITH reviewer and editor assignments as editor' do
+  xcontext 'when starting review WITH reviewer and editor assignments as editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, I've started the review over in https:\/\/github.com\/openjournals\/joss-reviews-testing\/issues\/1234./)
@@ -242,7 +242,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when starting review WITH reviewer and editor assignments as non editor' do
+  xcontext 'when starting review WITH reviewer and editor assignments as non editor' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry @barfon, I'm afraid I can't do that. That's something only editors are allowed to do./)
@@ -254,7 +254,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when accepting a paper as an editor without an archive DOI' do
+  xcontext 'when accepting a paper as an editor without an archive DOI' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /No archive DOI set. Exiting.../)
@@ -266,7 +266,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when accepting a paper as an editor with an archive DOI' do
+  xcontext 'when accepting a paper as an editor with an archive DOI' do
     before do
       expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
@@ -280,7 +280,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when accepting a paper (for reals) as an (EiC) editor with an archive DOI' do
+  xcontext 'when accepting a paper (for reals) as an (EiC) editor with an archive DOI' do
     before do
       expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
@@ -293,7 +293,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when accepting a paper (for reals) as an editor with an archive DOI' do
+  xcontext 'when accepting a paper (for reals) as an editor with an archive DOI' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry @barf, I'm afraid I can't do that. That's something only editor-in-chiefs are allowed to do./)
@@ -305,7 +305,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when generating a pdf' do
+  xcontext 'when generating a pdf' do
     before do
       expect(PDFWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
@@ -318,7 +318,22 @@ describe WhedonApi do
     end
   end
 
-  context 'when @whedon is addressed speaking nonsense' do
+  context 'when @whedon is addressed' do
+    before do
+      expect(PDFWorker).to_not receive(:perform_async)
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+
+      expected_response = "I have been decommissioned, my succesor @editorialbot will help you. \n\nPlease use `@editorialbot help` to list available options."
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, expected_response)
+      post '/dispatch', whedon_generate_pdf, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should reply it has been decommissioned" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  xcontext 'when @whedon is addressed speaking nonsense' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm sorry human, I don't understand that/)
@@ -330,7 +345,7 @@ describe WhedonApi do
     end
   end
 
-  context 'when @whedon is NOT addressed speaking nonsense' do
+  xcontext 'when @whedon is NOT addressed speaking nonsense' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).never
@@ -342,7 +357,7 @@ describe WhedonApi do
     end
   end
 
-  context '[PRE-REVIEW] when setting a reminder for someone who is not a reviewer or author' do
+  xcontext '[PRE-REVIEW] when setting a reminder for someone who is not a reviewer or author' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 936, "Sorry, I can't set reminders on PRE-REVIEW issues.")
@@ -359,7 +374,7 @@ describe WhedonApi do
     end
   end
 
-  context '[PRE-REVIEW] when setting a reminder for an author' do
+  xcontext '[PRE-REVIEW] when setting a reminder for an author' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 936, "Sorry, I can't set reminders on PRE-REVIEW issues.")
@@ -376,7 +391,7 @@ describe WhedonApi do
     end
   end
 
-  context "[REVIEW] when setting a reminder for an author with string units" do
+  xcontext "[REVIEW] when setting a reminder for an author with string units" do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "Reminder set for @mpascariu in two weeks")
@@ -389,7 +404,7 @@ describe WhedonApi do
     end
   end
 
-  context "[REVIEW] when setting a reminder for an author with integer units" do
+  xcontext "[REVIEW] when setting a reminder for an author with integer units" do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with("openjournals/joss-reviews-testing", 937, "Reminder set for @mpascariu in 2 weeks")

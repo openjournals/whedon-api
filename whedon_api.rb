@@ -128,7 +128,7 @@ class WhedonApi < Sinatra::Base
   def robawt_respond
     case @message
     when /\A@whedon/i
-      respond "I'm a deprecated robot, my succesor @editorialbot will help you. \n\nPlease use `@editorialbot help` to list available options." unless @sender == "whedon"
+      respond "I have been decommissioned, my succesor @editorialbot will help you. \n\nPlease use `@editorialbot help` to list available options." unless @sender == "whedon"
     end
   end
 

@@ -1,6 +1,6 @@
 require File.expand_path '../spec_helper.rb', __FILE__
 
-describe WhedonApi do
+xdescribe WhedonApi do
   let(:whedon_commands_from_editor) { json_fixture('whedon-commands-editor-on-pre-review-issue-936.json') }
   let(:whedon_commands_from_non_editor) { json_fixture('whedon-commands-non-editor-on-pre-review-issue-936.json') }
   let(:whedon_assign_editor_from_editor) { json_fixture('whedon-assign-editor-on-pre-review-issue-936.json') }
