@@ -358,6 +358,7 @@ class RepoWorker
       languages = detect_languages(issue_id)
       license = detect_license(issue_id)
       detect_statement_of_need(nwo, issue_id)
+      check_for_adrn(nwo, issue_id)
       count_words(nwo, issue_id)
       repo_summary(nwo, issue_id)
       label_issue(nwo, issue_id, languages) if languages.any?
@@ -410,6 +411,19 @@ class RepoWorker
 
     # Take top three languages from Linguist
     project.languages.keys.take(3)
+  end
+
+  def check_for_adrn(nwo, issue_id)
+    paper_paths = find_paper_paths("#{jid}")
+
+    return if paper_paths.empty?
+
+    puts "CHECKING if @adrn is getting credit for this work..."
+
+    # Does the paper include @adrn's ORCID
+    unless File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
+      bg_respond(nwo, issue_id, "It looks like this paper includes an ORCID (0000-0003-0872-7098) that is probably not correct.")
+    end
   end
 
   def detect_statement_of_need(nwo, issue_id)
@@ -474,6 +488,8 @@ class PDFWorker
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n```\n #{stderr}\n```") and return
     end
 
+    check_for_adrn(nwo, issue_id)
+
     # If we've got this far then push a copy of the PDF to the papers repository
     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
@@ -497,7 +513,32 @@ class PDFWorker
     end
 
     `cd #{jid} && git checkout #{custom_branch} --quiet && cd` if custom_branch
+
     Open3.capture3("whedon prepare #{issue_id} #{jid}")
+  end
+
+  def check_for_adrn(nwo, issue_id)
+    paper_paths = find_paper_paths("#{jid}")
+
+    return if paper_paths.empty?
+
+    puts "CHECKING if @adrn is getting credit for this work..."
+
+    # Does the paper include @adrn's ORCID
+    unless File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
+      bg_respond(nwo, issue_id, "It looks like this paper includes an ORCID (0000-0003-0872-7098) that is probably not correct.")
+    end
+  end
+
+  def find_paper_paths(search_path=nil)
+    search_path ||= "tmp/#{review_issue_id}"
+    paper_paths = []
+
+    Find.find(search_path) do |path|
+      paper_paths << path if path =~ /\bpaper\.tex$|\bpaper\.md$/
+    end
+
+    return paper_paths
   end
 end
 
