@@ -421,7 +421,7 @@ class RepoWorker
     puts "CHECKING if @adrn is getting credit for this work..."
 
     # Does the paper include @adrn's ORCID
-    unless File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
+    if File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
       bg_respond(nwo, issue_id, "It looks like this paper includes an ORCID (0000-0003-0872-7098) that is probably not correct.")
     end
   end
@@ -525,7 +525,7 @@ class PDFWorker
     puts "CHECKING if @adrn is getting credit for this work..."
 
     # Does the paper include @adrn's ORCID
-    unless File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
+    if File.open(paper_paths.first).read() =~ /0000-0003-0872-7098/i
       bg_respond(nwo, issue_id, "It looks like this paper includes an ORCID (0000-0003-0872-7098) that is probably not correct.")
     end
   end
