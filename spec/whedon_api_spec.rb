@@ -257,7 +257,7 @@ describe WhedonApi do
   context 'when accepting a paper as an editor without an archive DOI' do
     before do
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
-      expect(github_client).to receive(:add_comment).once.with(anything, anything, /No archive DOI set. Exiting.../)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /No archive DOI set, provide the Zenodo DOI of the repository. Exiting.../)
       post '/dispatch', whedon_accept_no_doi, {'CONTENT_TYPE' => 'application/json'}
     end
 

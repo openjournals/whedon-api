@@ -331,7 +331,7 @@ class WhedonApi < Sinatra::Base
   def deposit(dry_run, custom_branch=nil)
     if review_issue?
       if !archive_doi?
-        respond "No archive DOI set. Exiting..."
+        respond "No archive DOI set, provide the Zenodo DOI of the repository. Exiting..."
         return
       end
 
