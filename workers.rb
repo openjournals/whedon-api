@@ -1024,6 +1024,18 @@ class ZenodoWorker
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
+    path = "tmp/#{issue_id}"
+    # Need to checkout the new branch before looking for the paper.
+    `cd #{path} && git checkout #{custom_branch} --quiet` if custom_branch
+
+    paper_paths = processor.find_paper_paths(path)
+
+    if paper_paths.empty?
+      abort("Can't find any papers to compile :-(")
+    elsif paper_paths.size == 1
+      processor.set_paper(paper_paths.first)
+    end
+
     repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
     # We will archive this version.
     forked_address = fork_for_production(repository_address)
