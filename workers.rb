@@ -1063,8 +1063,13 @@ class ZenodoWorker
       :title => processor.paper.title
     }.to_json
 
-    puts(processor.paper.authors)
-    resp = zenodo_deposit_book(post_params)
+    resp = zenodo_create_buckets(post_params)
+
+    processor.paper.authors.each do |author|
+      puts(author.name)
+      puts(author.affiliation)
+      puts(author.orcid)
+    end
 
     File.open("/tmp/#{issue_id}_zenodo.json","w") do |f|
       f.write(resp)
