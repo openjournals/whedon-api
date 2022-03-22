@@ -181,7 +181,7 @@ class RoboNeuro < Sinatra::Base
     when /\A@roboneuro initiate production/i
       init_production
     when /\A@roboneuro generate buckets/i
-      init_zenodo
+      init_zenodo(clear_cache=true)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -359,7 +359,7 @@ class RoboNeuro < Sinatra::Base
     ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
-  def init_zenodo
+  def init_zenodo(clear_cache=false)
     respond ":gift: :gift: :gift: \n```\nCreating Zenodo buckets. ```"
     ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config, clear_cache)
   end
