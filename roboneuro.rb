@@ -361,7 +361,7 @@ class RoboNeuro < Sinatra::Base
 
   def init_zenodo
     respond ":gift: :gift: :gift: \n```\nCreating Zenodo buckets. ```"
-    ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config)
+    ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config, clear_cache)
   end
 
   # Detect the languages and license of the review repository

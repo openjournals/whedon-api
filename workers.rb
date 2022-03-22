@@ -1018,7 +1018,7 @@ class ZenodoWorker
   include GitHub
   include NeuroLibre
 
-  def perform(nwo, issue_id, config)
+  def perform(nwo, issue_id, config,  clear_cache=false)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
     
