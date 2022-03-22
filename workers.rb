@@ -1021,6 +1021,10 @@ class ZenodoWorker
   def perform(nwo, issue_id, config)
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
+    
+    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
+    
+    Whedon::Paper.new(issue_id).download
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
@@ -1040,7 +1044,7 @@ class ZenodoWorker
     # We will archive this version.
     forked_address = fork_for_production(repository_address)
     latest_sha = get_latest_book_build_sha(forked_address)
-    
+    puts(forked_address)
      # Download and compile the paper
      #pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
