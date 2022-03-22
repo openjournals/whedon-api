@@ -180,6 +180,8 @@ class RoboNeuro < Sinatra::Base
       build_book(nil, clear_cache=true)
     when /\A@roboneuro initiate production/i
       init_production
+    when /\A@roboneuro generate buckets/i
+      init_zenodo
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -355,6 +357,11 @@ class RoboNeuro < Sinatra::Base
   def init_production
     respond ":zap: :zap: :zap: \n```\nStarting NeuroLibre production process. \n- Fork and config repository\n- Book build for production\n- Sync built book\n- BinderHub build for production ```"
     ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
+  end
+
+  def init_zenodo
+    respond ":gift: :gift: :gift: \n```\nCreating Zenodo buckets. ```"
+    ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
   # Detect the languages and license of the review repository

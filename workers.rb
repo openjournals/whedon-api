@@ -994,4 +994,71 @@ class ProdInitWorker
     end
 
   end
+
+end
+
+class ZenodoWorker
+  require_relative 'github'
+  require_relative 'config_helper'
+  require_relative 'neurolibre'
+
+  require 'open3'
+  require 'ostruct'
+  require 'sidekiq'
+  require 'whedon'
+  require 'rest-client'
+  require 'uri'
+
+  include Sidekiq::Worker
+  sidekiq_options retry: false
+
+  # Sets the Whedon environment
+  include ConfigHelper
+  # Include to communicate from background worker to GitHub
+  include GitHub
+  include NeuroLibre
+
+  def perform(nwo, issue_id, config)
+    config = OpenStruct.new(config)
+    set_env(nwo, issue_id, config)
+    review = Whedon::Review.new(issue_id)
+    processor = Whedon::Processor.new(issue_id, review.issue_body)
+
+    repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
+    # We will archive this version.
+    forked_address = fork_for_production(repository_address)
+    latest_sha = get_latest_book_build_sha(forked_address)
+    
+     # Download and compile the paper
+     #pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
+
+     #if !status.success?
+      # bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+     #end
+ 
+     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
+     #crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
+     #crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
+
+    # bg_respond(nwo, issue_id, "#{crossref_url}")
+    #response = zenodo_deposit_book(payload_in)
+
+    post_params = {
+      :repo_url => forked_address,
+      :commit_hash => latest_sha,
+      :title => processor.paper.title
+    }.to_json
+
+    puts(processor.paper.authors)
+    resp = zenodo_deposit_book(post_params)
+
+    File.open("/tmp/#{issue_id}_zenodo.json","w") do |f|
+      f.write(resp)
+    end
+
+    json_url = create_git_json("/tmp/#{issue_id}_zenodo.json", issue_id, config.papers_repo, config.journal_alias)
+
+    bg_respond(nwo, issue_id, "#{json_url}")
+  end
+
 end

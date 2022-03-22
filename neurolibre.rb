@@ -4,6 +4,7 @@ require 'rest-client'
 require 'time'
 require_relative 'github'
 require 'mail'
+require 'whedon'
 
 include GitHub
 
@@ -570,6 +571,51 @@ module NeuroLibre
             ).execute
 
         return response
+    end
+
+    def zenodo_create_buckets(payload_in)
+
+        response = RestClient::Request.new(
+        method: :post,
+        :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/buckets',
+        verify_ssl: false,
+        :user => 'neurolibre',
+        :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+        :payload => payload_in,
+        :headers => { :content_type => :json }
+        ).execute
+
+        
+    end
+
+    def zenodo_deposit_book(payload_in)
+
+        response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/books/deposit',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => payload_in,
+            :timeout => 1800, # Give 30 minutes
+            :headers => { :content_type => :json }
+            ).execute
+
+        return response
+
+    end
+
+    def create_git_json(file_path, issue_id, papers_repo, journal_alias)
+        id = "%05d" % issue_id
+        crossref_xml_path = "#{journal_alias}.#{id}/10.55458.#{journal_alias}.#{id}.json"
+    
+        gh_response = github_client.create_contents(papers_repo,
+                                                    crossref_xml_path,
+                                                    "Creating 10.55458.#{journal_alias}.#{id}.json",
+                                                    File.open("#{file_path.strip}").read,
+                                                    :branch => "#{journal_alias}.#{id}")
+    
+        return gh_response.content.html_url
     end
 
 end
