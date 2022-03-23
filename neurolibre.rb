@@ -627,7 +627,7 @@ module NeuroLibre
 
     def zenodo_archive_items(payload_in,items)
 
-        for (it in items)
+        for it in items
             
             payload_in["item"] = it
             payload_call = payload_in.to_json
