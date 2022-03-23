@@ -625,18 +625,25 @@ module NeuroLibre
 
     end
 
-    def zenodo_archive_items(payload_in)
+    def zenodo_archive_items(payload_in,items)
 
-        response = RestClient::Request.new(
-            method: :post,
-            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/upload',
-            verify_ssl: false,
-            :user => 'neurolibre',
-            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-            :payload => payload_in,
-            :timeout => 1800, # Give 30 minutes
-            :headers => { :content_type => :json }
-            ).execute
+        for (it in items)
+            
+            payload_in["item"] = it
+            payload_call = payload_in.to_json
+            response = RestClient::Request.new(
+                method: :post,
+                :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/upload',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_call,
+                :timeout => 1800, # Give 30 minutes
+                :headers => { :content_type => :json }
+                ).execute
+            
+            puts(response)
+        end
 
         return response
 

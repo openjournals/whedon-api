@@ -1132,13 +1132,28 @@ class ZenodoWorker
 
       end
 
+      # DO NOT PARSE THIS INTO JSON BEFORE CALLING zenodo_archive_items
       post_params = {
         :repository_address => repository_address,
         :issue_id => issue_id,
-        :upload_items => items
-      }.to_json
+        :commit_fork => latest_sha_fork,
+        :fork_url => forked_address,
+      }
 
-      resp = zenodo_archive_items(post_params)
+      resp = zenodo_archive_items(post_params,items)
+
+      upload_response = ":ballot_box: Upload has been completed for #{action_type}. <br><br> Please see the response below :point_down:
+      <details>
+      <summary> Upload response from Zenodo </summary>
+      <pre>
+      <code class=\"language-json\">
+      #{resp}
+      </code>
+      </pre>
+      </details>
+      "
+
+      bg_respond(nwo, issue_id, upload_response)
 
     end
 
