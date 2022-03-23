@@ -180,8 +180,8 @@ class RoboNeuro < Sinatra::Base
       build_book(nil, clear_cache=true)
     when /\A@roboneuro initiate production/i
       init_production
-    when /\A@roboneuro request deposits/i
-      init_zenodo(clear_cache=true)
+    when /\A@roboneuro zenodo (.\S*)/
+      perform_zenodo(clear_cache=true, $1)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
       deposit(dry_run=false, $1)
@@ -359,9 +359,15 @@ class RoboNeuro < Sinatra::Base
     ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
-  def init_zenodo(clear_cache=false)
-    respond ":ballot_box: Requesting Zenodo archive records for: <ul><li> :closed_book: NeuroLibre (built) book</li><li>:octocat: Book repository</li><li>:minidisc: Data (conditional)</li><li>:whale: Docker image (from BinderHub)</li>"
-    ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config, clear_cache)
+  def perform_zenodo(clear_cache=false, action_type="deposit")
+    
+    if (action_type="deposit")
+      respond ":ballot_box: Requesting Zenodo deposits for: <ul><li> :closed_book: NeuroLibre (built) book</li><li>:octocat: Book repository</li><li>:minidisc: Data (conditional)</li><li>:whale: Docker image (from BinderHub)</li>"
+    else
+      respond ":package: Requesting file upload to Zenodo buckets to #{action_type}."
+    end
+
+    ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config, clear_cache, action_type)
   end
 
   # Detect the languages and license of the review repository

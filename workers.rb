@@ -1018,68 +1018,130 @@ class ZenodoWorker
   include GitHub
   include NeuroLibre
 
-  def perform(nwo, issue_id, config, clear_cache=false)
+  def perform(nwo, issue_id, config, clear_cache=false, action_type="deposit")
+    
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
-    
-    FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
-    
-    Whedon::Paper.new(issue_id).download
+
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
-
-    path = "tmp/#{issue_id}"
-
-    paper_paths = processor.find_paper_paths(path)
-
-    if paper_paths.empty?
-      abort("Can't find any papers to compile :-(")
-    elsif paper_paths.size == 1
-      processor.set_paper(paper_paths.first)
-    end
-
     repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
-    # We will archive this version.
-    forked_address = fork_for_production(repository_address)
+    forked_address = fork_for_production(repository_address) # It will return the fork address only.
     latest_sha_fork = get_latest_book_build_sha(forked_address)
     latest_sha_user = get_latest_upstream_sha(forked_address)
 
-    creators = []
-    processor.paper.authors.each do |author|
-      creators.push({'name' => author.name,'affiliation' => author.affiliation,'orcid' => author.orcid})
+    # INFER DEPOSIT DATA STATUS HERE 
+    lut = get_resource_lookup(repository_address)
+     
+    if(lut.nil?)
+      
+      bg_respond(nwo, issue_id, ":no_entry: Cannot find resources for this submission on NeuroLibre servers.")
+      abort("LUT does not exist for #{repository_address}")
+    
+    else
+      
+      if (lut["data_doi"].nil?)
+        # If there's not a DOI, then NeuroLibre will deposit data. 
+        deposit_data = true
+      else
+        # If there's a DOI, then NeuroLibre will NOT deposit data.
+        deposit_data = false
+      end
+
+    end
+    
+
+    if (action_type=="deposit")
+      
+      FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
+      Whedon::Paper.new(issue_id).download
+      path = "tmp/#{issue_id}"
+      
+      paper_paths = processor.find_paper_paths(path)
+
+      if paper_paths.empty?
+        abort("Can't find any papers to compile :-(")
+      elsif paper_paths.size == 1
+        processor.set_paper(paper_paths.first)
+      end
+
+      creators = []
+      processor.paper.authors.each do |author|
+        creators.push({'name' => author.name,'affiliation' => author.affiliation,'orcid' => author.orcid})
+      end
+
+      
+      post_params = {
+        :fork_url => forked_address,
+        :user_url => repository_address,
+        :commit_fork => latest_sha_fork,
+        :commit_user => latest_sha_user,
+        :title => processor.paper.title,
+        :issue_id => issue_id,
+        :deposit_data => deposit_data,
+        :creators => creators
+      }.to_json
+
+      resp = zenodo_create_buckets(post_params)
+
+      bucket_response = ":wastebasket: Request for creating bucket links has been completed. <br><br> Please see the response below to confirm successful deposit records for each resource :point_down:
+      <details>
+      <summary> Response from Zenodo </summary>
+      <pre>
+      <code class=\"language-json\">
+      #{resp}
+      </code>
+      </pre>
+      </details>
+      <p> Note: No files have been uploaded or published yet. If successful, these records are hosted on NeuroLibre servers to upload and publish respective resources.</p>
+      "
+
+      bg_respond(nwo, issue_id, bucket_response)
+    
     end
 
-    post_params = {
-      :fork_url => forked_address,
-      :user_url => repository_address,
-      :commit_fork => latest_sha_fork,
-      :commit_user => latest_sha_user,
-      :title => processor.paper.title,
-      :issue_id => issue_id,
-      :creators => creators
-    }.to_json
+    if (action_type!="deposit")
 
-    resp = zenodo_create_buckets(post_params)
+      if (action_type!="archive-all")
+        
+        if (deposit_data)
+          items = ["book","repository","data","docker"]
+        else
+          items = ["book","repository","docker"]
+        end
+      
+      elsif (action_type!="archive-data")
 
-    bucket_response = ":wastebasket: Request for creating bucket links has been completed. <br><br> Please see the response below to confirm successful deposit records for each resource :point_down:
-    <ul>
-    <li>NeuroLibre (built) book</li>
-    <li>Book repository</li>
-    <li>Docker image (from BinderHub)</li>
-    <li>Data (if does not exist elsewhere)</li>
-    </ul>
-    <details>
-    <summary> Response from Zenodo </summary>
-    <pre>
-    <code class=\"language-json\">
-    #{resp}
-    </code>
-    </pre>
-    </details>
-    <p> Note: No files have been uploaded or published yet. If successful, these records are hosted on NeuroLibre servers to upload and publish respective resources.</p>
-    "
+        if (deposit_data)
+          items = ["data"]
+        else
+          bg_respond(nwo, issue_id, ":no_entry: Looks like a DOI already exists for the data of this submisison.")
+        end
+      
+      elsif (action_type!="archive-repository")
+      
+        items = ["repository"]
 
-    bg_respond(nwo, issue_id, bucket_response)
+      elsif (action_type!="archive-book")
+
+        items = ["book"]
+
+      elsif (action_type!="archive-docker")
+
+        items = ["docker"]
+
+      end
+
+      post_params = {
+        :repository_address => repository_address,
+        :issue_id => issue_id,
+        :upload_items => items
+      }.to_json
+
+      resp = zenodo_archive_items(post_params)
+
+    end
+
   end
 
 end

@@ -56,7 +56,25 @@ EDITORIAL TASKS
 @roboneuro initiate production
 
 # Create Zenodo records for archiving resources
-@roboneuro request deposits
+@roboneuro zenodo deposit
+
+# Uploads all resources to respective Zenodo deposits for archival
+@roboneuro zenodo archive-all
+
+# Uploads Docker image to its Zenodo deposit for archival
+@roboneuro zenodo archive-docker
+
+# Uploads built book to its Zenodo deposit for archival
+@roboneuro zenodo archive-book
+
+# Uploads repository to its Zenodo deposit for archival
+@roboneuro zenodo archive-repository
+
+# Uploads dataset to its Zenodo deposit for archival
+@roboneuro zenodo archive-data
+
+# Publishes all Zenodo archives created for the submisison
+@roboneuro zenodo publish archives
 
 # Remind an author or reviewer to return to a review after a
 # certain period of time (supported units days and weeks)

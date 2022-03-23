@@ -596,11 +596,40 @@ module NeuroLibre
         
     end
 
-    def zenodo_deposit_book(payload_in)
+    def get_resource_lookup(repository_address)
+        
+        response = RestClient::Request.new(
+            method: :get,
+            :url => 'http://neurolibre-data.conp.cloud/book-artifacts/lookup_table.tsv',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :headers => { :content_type => :json }
+        ).execute
+        
+        # The second entry in the tsv file is the repository address, if found, then proceed.
+        found= response.split("\n").map {|c| [c]}.select{ |e| e[0].split(",")[1] == repository_address }.join(', ')
+
+        if (found.nil? || found.empty?)
+            puts('Cannot find a lookup table.')
+            lut = nil
+        else
+            cur_date,cur_url,cur_docker, cur_tag, cur_data_url, cur_data_doi = found.split(",")
+            lut = {'repo' => cur_tag,
+                   'docker' => cur_docker,
+                   'data_url' => cur_data_url,
+                   'data_doi' => cur_data_doi}
+        end
+
+        return lut
+
+    end
+
+    def zenodo_archive_items(payload_in)
 
         response = RestClient::Request.new(
             method: :post,
-            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/books/deposit',
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/upload',
             verify_ssl: false,
             :user => 'neurolibre',
             :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
