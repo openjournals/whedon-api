@@ -1055,7 +1055,7 @@ class ZenodoWorker
       :commit_fork => latest_sha_fork,
       :commit_user => latest_sha_user,
       :title => processor.paper.title,
-      :issue_id => issue_id
+      :issue_id => issue_id,
       :creators => creators
     }.to_json
 
