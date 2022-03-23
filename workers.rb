@@ -1071,7 +1071,7 @@ class ZenodoWorker
     <details>
     <summary> Response from Zenodo </summary>
     <pre>
-    <code class="language-json">
+    <code class=\"language-json\">
     #{resp}
     </code>
     </pre>

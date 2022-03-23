@@ -180,7 +180,7 @@ class RoboNeuro < Sinatra::Base
       build_book(nil, clear_cache=true)
     when /\A@roboneuro initiate production/i
       init_production
-    when /\A@roboneuro generate buckets/i
+    when /\A@roboneuro request deposits/i
       init_zenodo(clear_cache=true)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic
