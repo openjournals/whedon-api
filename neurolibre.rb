@@ -95,7 +95,7 @@ module NeuroLibre
         # This does not take custom_branch as it is intended to find the
         # latest commit pushed by the user from its roboneurolibre fork. 
         target_repo = get_repo_name(forked_repo)
-        sha = github_client.commits(nm).map {|c,a| [c.commit.author.name,c.sha]}.select{ |e, i| e != 'roboneuro' }.first[1]
+        sha = github_client.commits(target_repo).map {|c,a| [c.commit.author.name,c.sha]}.select{ |e, i| e != 'roboneuro' }.first[1]
         return sha
     end
 

@@ -360,7 +360,7 @@ class RoboNeuro < Sinatra::Base
   end
 
   def init_zenodo(clear_cache=false)
-    respond ":gift: :gift: :gift: \n```\nCreating Zenodo buckets. ```"
+    respond ":ballot_box: Requesting Zenodo archive records for: <ul><li> :closed_book: NeuroLibre (built) book</li><li>:octocat: Book repository</li><li>:minidisc: Data (conditional)</li><li>:whale: Docker image (from BinderHub)</li>"
     ZenodoWorker.perform_async(@nwo, @issue_id, serialized_config, clear_cache)
   end
 
