@@ -361,7 +361,7 @@ class RoboNeuro < Sinatra::Base
 
   def perform_zenodo(clear_cache=false, action_type="deposit")
     
-    if (action_type="deposit")
+    if (action_type=="deposit")
       respond ":ballot_box: Requesting Zenodo deposits for: <ul><li> :closed_book: NeuroLibre (built) book</li><li>:octocat: Book repository</li><li>:minidisc: Data (conditional)</li><li>:whale: Docker image (from BinderHub)</li>"
     else
       respond ":package: Requesting file upload to Zenodo buckets to #{action_type}."
