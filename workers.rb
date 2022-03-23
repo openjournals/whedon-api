@@ -1041,43 +1041,45 @@ class ZenodoWorker
     repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
     # We will archive this version.
     forked_address = fork_for_production(repository_address)
-    latest_sha = get_latest_book_build_sha(forked_address)
-    puts(forked_address)
-     # Download and compile the paper
-     #pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
+    latest_sha_fork = get_latest_book_build_sha(forked_address)
+    latest_sha_user = get_latest_upstream_sha(forked_address)
 
-     #if !status.success?
-      # bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
-     #end
- 
-     create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
-     #crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
-     #crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
-
-    # bg_respond(nwo, issue_id, "#{crossref_url}")
-    #response = zenodo_deposit_book(payload_in)
+    creators = []
+    processor.paper.authors.each do |author|
+      creators.push({'name' => author.name,'affiliation' => author.affiliation,'orcid' => author.orcid})
+    end
 
     post_params = {
-      :repo_url => forked_address,
-      :commit_hash => latest_sha,
-      :title => processor.paper.title
+      :fork_url => forked_address,
+      :user_url => repository_address,
+      :commit_fork => latest_sha_fork,
+      :commit_user => latest_sha_user,
+      :title => processor.paper.title,
+      :issue_id => issue_id
+      :creators => creators
     }.to_json
 
     resp = zenodo_create_buckets(post_params)
 
-    processor.paper.authors.each do |author|
-      puts(author.name)
-      puts(author.affiliation)
-      puts(author.orcid)
-    end
+    bucket_response = ":wastebasket: Request for creating bucket links has been completed. <br><br> Please see the response below to confirm successful deposit records for each resource :point_down:
+    <ul>
+    <li>NeuroLibre (built) book</li>
+    <li>Book repository</li>
+    <li>Docker image (from BinderHub)</li>
+    <li>Data (if does not exist elsewhere)</li>
+    </ul>
+    <details>
+    <summary> Response from Zenodo </summary>
+    <pre>
+    <code class="language-json">
+    #{resp}
+    </code>
+    </pre>
+    </details>
+    <p> Note: No files have been uploaded or published yet. If successful, these records are hosted on NeuroLibre servers to upload and publish respective resources.</p>
+    "
 
-    File.open("/tmp/#{issue_id}_zenodo.json","w") do |f|
-      f.write(resp)
-    end
-
-    json_url = create_git_json("/tmp/#{issue_id}_zenodo.json", issue_id, config.papers_repo, config.journal_alias)
-
-    bg_respond(nwo, issue_id, "#{json_url}")
+    bg_respond(nwo, issue_id, bucket_response)
   end
 
 end

@@ -91,6 +91,14 @@ module NeuroLibre
 
     end
 
+    def get_latest_upstream_sha(forked_repo)
+        # This does not take custom_branch as it is intended to find the
+        # latest commit pushed by the user from its roboneurolibre fork. 
+        target_repo = get_repo_name(forked_repo)
+        sha = github_client.commits(nm).map {|c,a| [c.commit.author.name,c.sha]}.select{ |e, i| e != 'roboneuro' }.first[1]
+        return sha
+    end
+
     def get_built_books(commit_sha: nil,user_name: nil,repo_name: nil)
         # Returns a JSON array containing fields:
         # - time_added
