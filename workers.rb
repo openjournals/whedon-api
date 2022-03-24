@@ -1110,7 +1110,7 @@ class ZenodoWorker
 
     if (action_type!="deposit")
 
-      if (action_type!="archive-all")
+      if (action_type=="archive-all")
         
         if (deposit_data)
           items = ["book","repository","data","docker"]
@@ -1120,7 +1120,7 @@ class ZenodoWorker
           item_args = ["","",lut["docker"]]
         end
       
-      elsif (action_type!="archive-data")
+      elsif (action_type=="archive-data")
 
         if (deposit_data)
           items = ["data"]
@@ -1129,19 +1129,19 @@ class ZenodoWorker
           bg_respond(nwo, issue_id, ":no_entry: Looks like a DOI already exists for the data of this submisison.")
         end
       
-      elsif (action_type!="archive-repository")
+      elsif (action_type=="archive-repository")
         
         # We have this information, no arg needed.
         items = ["repository"]
         item_args = ""
 
-      elsif (action_type!="archive-book")
+      elsif (action_type=="archive-book")
 
         # We have this information, no arg needed.
         items = ["book"]
         item_args = ""
 
-      elsif (action_type!="archive-docker")
+      elsif (action_type=="archive-docker")
 
         items = ["docker"]
         item_args = lut["docker"]
