@@ -1026,15 +1026,25 @@ class ZenodoWorker
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
     repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
-    forked_address = fork_for_production(repository_address) # It will return the fork address only.
+     # This will return the fork address only, at this point, it should have been already forked.
+    forked_address = fork_for_production(repository_address)
+    # TODO: remove _book_build from the function name, it was an old convention.
     latest_sha_fork = get_latest_book_build_sha(forked_address)
+    # Fork is at least 2 commits ahead of user repo. 
     latest_sha_user = get_latest_upstream_sha(forked_address)
+
+    # Important: repository_address vs forked_address
+    # repository_address is fetched from the GitHub REVIEW issue. Therefore, corresponds to the user repo.
+    # forked_address is the forked (to roboneurolibre organization) and slightly modified version of the user repo
+    # get_resource_lookup has the repository address for the fork. TODO: confirm with Loic! 
 
     # INFER DEPOSIT DATA STATUS HERE 
     lut = get_resource_lookup(repository_address)
-     
+    
+    # We need to clarify the conditions when a lookup table (LUT) becomes available on 
+    # neurolibre-data.conp.cloud (test server)
     if(lut.nil?)
-      
+
       bg_respond(nwo, issue_id, ":no_entry: Cannot find resources for this submission on NeuroLibre servers.")
       abort("LUT does not exist for #{repository_address}")
     
@@ -1050,7 +1060,6 @@ class ZenodoWorker
 
     end
     
-
     if (action_type=="deposit")
       
       FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
@@ -1070,11 +1079,10 @@ class ZenodoWorker
         creators.push({'name' => author.name,'affiliation' => author.affiliation,'orcid' => author.orcid})
       end
 
-      
       post_params = {
         :fork_url => forked_address,
-        :user_url => repository_address,
         :commit_fork => latest_sha_fork,
+        :user_url => repository_address,
         :commit_user => latest_sha_user,
         :title => processor.paper.title,
         :issue_id => issue_id,
@@ -1084,16 +1092,16 @@ class ZenodoWorker
 
       resp = zenodo_create_buckets(post_params)
 
-      bucket_response = ":wastebasket: Request for creating bucket links has been completed. <br><br> Please see the response below to confirm successful deposit records for each resource :point_down:
+      bucket_response = ":card_index: Request for creating Zenodo deposit records has been completed. <br><br> Please see the response below to confirm successful deposit records for each resource :point_down:
       <details>
-      <summary> Response from Zenodo </summary>
+      <summary> Deposit response from Zenodo </summary>
       <pre>
-      <code class=\"language-json\">
-      #{resp}
+      <code>
+      #{resp.to_str}
       </code>
       </pre>
       </details>
-      <p> Note: No files have been uploaded or published yet. If successful, these records are hosted on NeuroLibre servers to upload and publish respective resources.</p>
+      :information_source: No files have been uploaded yet. If successful, you can start archiving NeuroLibre artifacts to Zenodo. For example ,`roboneuro zenodo archive-all` to upload all resources or `roboneuro zenodo archive-book` just to upload Jupyter Book for archival.
       "
 
       bg_respond(nwo, issue_id, bucket_response)
@@ -1106,30 +1114,37 @@ class ZenodoWorker
         
         if (deposit_data)
           items = ["book","repository","data","docker"]
+          item_args = ["","",lut["data_url"],lut["docker"]]
         else
           items = ["book","repository","docker"]
+          item_args = ["","",lut["docker"]]
         end
       
       elsif (action_type!="archive-data")
 
         if (deposit_data)
           items = ["data"]
+          item_args = lut["data_url"]
         else
           bg_respond(nwo, issue_id, ":no_entry: Looks like a DOI already exists for the data of this submisison.")
         end
       
       elsif (action_type!="archive-repository")
-      
+        
+        # We have this information, no arg needed.
         items = ["repository"]
+        item_args = ""
 
       elsif (action_type!="archive-book")
 
+        # We have this information, no arg needed.
         items = ["book"]
+        item_args = ""
 
       elsif (action_type!="archive-docker")
 
         items = ["docker"]
-
+        item_args = lut["docker"]
       end
 
       # DO NOT PARSE THIS INTO JSON BEFORE CALLING zenodo_archive_items
@@ -1140,17 +1155,21 @@ class ZenodoWorker
         :fork_url => forked_address,
       }
 
-      resp = zenodo_archive_items(post_params,items)
+      # This function is designed to make multiple requests, so the response is
+      # string, no need to to_str
+      resp = zenodo_archive_items(post_params,items,item_args)
 
-      upload_response = ":ballot_box: Upload has been completed for #{action_type}. <br><br> Please see the response below :point_down:
+      upload_response = ":package: Upload has been completed for #{action_type}. <br><br> Please see the response below :point_down:
       <details>
       <summary> Upload response from Zenodo </summary>
       <pre>
-      <code class=\"language-json\">
+      <code>
       #{resp}
       </code>
       </pre>
       </details>
+      :information_source: Please make sure that all the NeuroLibre artifacts have been uploaded before publishing Zenodo records. You can ask `roboneuro zenodo list-uploaded` to see the list of artifacts uploaded to zenodo.<br>
+      :ice_cube: If everything looks good, you can ask `roboneuro zenodo publish` to publish the records. Note that once published, Zenodo will mint DOIs for these records. After that, you can no longer modify/remove uploaded artifacts!
       "
 
       bg_respond(nwo, issue_id, upload_response)

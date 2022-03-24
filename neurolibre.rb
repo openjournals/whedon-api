@@ -593,7 +593,7 @@ module NeuroLibre
         :headers => { :content_type => :json }
         ).execute
 
-        
+        return response
     end
 
     def get_resource_lookup(repository_address)
@@ -625,13 +625,17 @@ module NeuroLibre
 
     end
 
-    def zenodo_archive_items(payload_in,items)
+    def zenodo_archive_items(payload_in,items,item_args)
+        # Requests will be sent to NeuroLibre server one by one
+        # Otherwise, it may time-out, also not elegant.
 
-        for it in items
+        response = []
+        items.each_with_index do |it, idx|
             
             payload_in["item"] = it
+            payload_in["item_arg"] = item_args[idx]
             payload_call = payload_in.to_json
-            response = RestClient::Request.new(
+            r = RestClient::Request.new(
                 method: :post,
                 :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/upload',
                 verify_ssl: false,
@@ -641,8 +645,8 @@ module NeuroLibre
                 :timeout => 1800, # Give 30 minutes
                 :headers => { :content_type => :json }
                 ).execute
-            
-            puts(response)
+
+            response.push(r.to_str)
         end
 
         return response
