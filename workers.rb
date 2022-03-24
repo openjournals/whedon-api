@@ -1108,7 +1108,7 @@ class ZenodoWorker
     
     end
 
-    if (action_type!="deposit")
+    if (action_type!="deposit" && action_type!="list-uploaded")
 
       if (action_type=="archive-all")
         
@@ -1173,6 +1173,13 @@ class ZenodoWorker
       "
 
       bg_respond(nwo, issue_id, upload_response)
+
+    end
+
+    if (action_type=="list-uploaded")
+    
+      resp = zenodo_list_uploads(issue_id)
+      bg_respond(nwo, issue_id, resp)
 
     end
 

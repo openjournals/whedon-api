@@ -625,6 +625,24 @@ module NeuroLibre
 
     end
 
+    def zenodo_list_uploads(issue_id)
+
+        post_params = {:issue_id => issue_id}.to_json
+        
+        response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/list',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => post_params,
+            :headers => { :content_type => :json }
+            ).execute
+    
+        return response.to_str
+
+    end
+
     def zenodo_archive_items(payload_in,items,item_args)
         # Requests will be sent to NeuroLibre server one by one
         # Otherwise, it may time-out, also not elegant.
