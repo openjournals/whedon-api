@@ -1,8 +1,13 @@
+# Note: roboneuro gem is a fork of the whedon gem 
+# All the instances of `require whedon` have been switched to `require roboneuro`:
+#   - Exec calls are kept the same e.g., whedon compile 
+#   - Roboneuro-gem has modifications to deal with NeuroLibre specific tasks (PDF, XML metadata etc.)
+
 class PaperPreviewWorker
   require 'cloudinary'
   require 'sidekiq'
   require 'sidekiq_status'
-  require 'whedon'
+  require 'roboneuro'
   require 'json'
   require_relative 'neurolibre'
 
@@ -229,7 +234,7 @@ class DOIWorker
   require 'serrano'
   require 'sidekiq'
   require 'uri'
-  require 'whedon'
+  require 'roboneuro'
   require 'yaml'
 
   include Sidekiq::Worker
@@ -789,7 +794,7 @@ class JBWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'whedon'
+  require 'roboneuro'
   require 'rest-client'
 
   include Sidekiq::Worker
@@ -876,7 +881,7 @@ class ProdInitWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'whedon'
+  require 'roboneuro'
   require 'rest-client'
   require 'uri'
 
@@ -1005,7 +1010,7 @@ class ZenodoWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'whedon'
+  require 'roboneuro'
   require 'rest-client'
   require 'uri'
 

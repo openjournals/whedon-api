@@ -9,7 +9,7 @@ require 'octokit'
 require 'rest-client'
 require 'securerandom'
 require 'sinatra/config_file'
-require 'whedon'
+require 'roboneuro'
 require 'yaml'
 require 'pry'
 

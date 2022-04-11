@@ -4,7 +4,7 @@ require 'rest-client'
 require 'time'
 require_relative 'github'
 require 'mail'
-require 'whedon'
+require 'roboneuro'
 
 include GitHub
 
