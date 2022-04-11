@@ -9,7 +9,7 @@ journals:
       reviewers: https://tinyurl.com/y22xx6ux
       reviewers_signup: ''
       site_host: https://neurolibre.org
-      doi_prefix: "10.21105"
+      doi_prefix: "10.55458"
       journal_alias: NeuroLibre
       journal_launch_date: '2020-05-05'
       journal_issn: '2475-9066'
