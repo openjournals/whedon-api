@@ -7,7 +7,7 @@ class PaperPreviewWorker
   require 'cloudinary'
   require 'sidekiq'
   require 'sidekiq_status'
-  require 'roboneuro'
+  require 'whedon'
   require 'json'
   require_relative 'neurolibre'
 
@@ -234,7 +234,7 @@ class DOIWorker
   require 'serrano'
   require 'sidekiq'
   require 'uri'
-  require 'roboneuro'
+  require 'whedon'
   require 'yaml'
 
   include Sidekiq::Worker
@@ -794,7 +794,7 @@ class JBWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'roboneuro'
+  require 'whedon'
   require 'rest-client'
 
   include Sidekiq::Worker
@@ -881,7 +881,7 @@ class ProdInitWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'roboneuro'
+  require 'whedon'
   require 'rest-client'
   require 'uri'
 
@@ -1010,7 +1010,7 @@ class ZenodoWorker
   require 'open3'
   require 'ostruct'
   require 'sidekiq'
-  require 'roboneuro'
+  require 'whedon'
   require 'rest-client'
   require 'uri'
 
