@@ -94,8 +94,7 @@ class PaperPreviewWorker
       --citeproc #{File.basename(paper_paths.first)} \
       --from markdown+autolink_bare_uris \
       --csl='#{csl_file}' \
-      --template '#{latex_template_path}' \
-      --metadata-file=markdown-metadata.yaml")
+      --template '#{latex_template_path}'")
 
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
