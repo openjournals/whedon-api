@@ -387,6 +387,7 @@ class RoboNeuro < Sinatra::Base
     types = ['Repository','Data','Book','Docker']
     
     rsp = []
+    new_body = ''
     dois.each_with_index do |cur_doi,idx|
     
       doi = cur_doi[doi_regex]
@@ -397,13 +398,14 @@ class RoboNeuro < Sinatra::Base
         else
           new_body = new_body.gsub(/\*\*#{types[idx]} archive:\*\*\s*(.*|Pending)/i, "**#{types[idx]} archive:** #{doi_with_url}")
         end
-        github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
+        
         rsp.push("OK. #{doi_with_url} is the archive.<br>")
       else
         rsp.push("* #{cur_doi} doesn't look like an archive DOI for #{types[idx]}.<br>")
       end
     end
 
+    github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
     respond rsp.join('')
 
   end
