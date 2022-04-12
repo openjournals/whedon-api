@@ -588,14 +588,19 @@ class PDFWorker
 
     metadata = {
       "repository" => repository_address,
-      "archive_doi" => "PENDING",
+      "repository_doi" => "PENDING",
+      "data_doi" => "PENDING",
+      "book_doi" => "PENDING",
+      "docker_doi" => "PENDING",
+      "book_exec_url" => "PENDING",
+      "book_exec_icon" => "#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/logo_link.png",
       "paper_url" => processor.paper.pdf_url,
       "journal_name" => config.journal_name,
       "review_issue_url" => processor.paper.review_issue_url,
       "issue" => paper_issue,
       "volume" => paper_volume,
       "page" => processor.paper.review_issue_id,
-      "logo_path" => "logo_preprint.png",
+      "logo_path" => "#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/logo.png",
       "aas_logo_path" => "#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/aas-logo.png",
       "year" => paper_year,
       "submitted" => "Unavailable",
@@ -609,30 +614,24 @@ class PDFWorker
     metadata.merge!({"draft" => true})
     File.open("#{directory}/markdown-metadata.yaml", 'w') { |file| file.write(metadata.to_yaml) }
 
-    begin
-      # grab NL specific files for PDF compilation
-      result, stderr, status = Open3.capture3("cd #{directory} && \
-        curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/logo_preprint.png > logopreprint.png && \
-        curl https://raw.githubusercontent.com/neurolibre/roboneuro/master/resources/neurolibre/latex.template > latex.template")
-    end
-
-    if !status.success?
-      return result, stderr, status
-    end
-
-    # Compile the paper
-    result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V \
-          repository=#{repository_address} \
-          -V archive_doi='PENDING' -V review_issue_url='#{processor.paper.review_issue_url}' \
-          -V editor_url=#{editor_url} \
-          -V graphics='true' -V logo_path='logopreprint.png' \
-          -o #{processor.paper.review_issue_id}.pdf -V geometry:margin=1in \
-          --pdf-engine=xelatex \
-          --citeproc #{File.basename(paper_paths.first)} \
-          --from markdown+autolink_bare_uris \
-          --csl=#{csl_file} \
-          --template latex.template \
-          --metadata-file=markdown-metadata.yaml")
+    result, stderr, status = Open3.capture3("cd #{directory} && pandoc \
+                          -V repository=#{repository_address} \
+                          -V repository_doi='PENDING' \
+                          -V data_doi='PENDING' \
+                          -V book_doi='PENDING' \
+                          -V docker_doi='PENDING' \
+                          -V book_exec_url='PENDING' \
+                          -V book_exec_icon=#{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/logo_link.png \
+                          -V review_issue_url=#{processor.paper.review_issue_url} \
+                          -V editor_url=#{editor_url} \
+                          -V graphics='true' \
+                          -o #{processor.paper.review_issue_id}.pdf -V geometry:margin=1in \
+                          --pdf-engine=xelatex \
+                          --citeproc #{File.basename(paper_paths.first)} \
+                          --from markdown+autolink_bare_uris \
+                          --csl=#{csl_file} \
+                          --template #{Whedon.resources}/#{ENV['JOURNAL_ALIAS']}/latex.template \
+                          --metadata-file=markdown-metadata.yaml")
 
     if !status.success?
       bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
