@@ -43,8 +43,8 @@ class PaperPreviewWorker
 
     paper_paths = find_paper_paths("tmp/#{sha}")
 
-    journal = "joss"
-    journal_name = "NeuroLibre"
+    journal = "NeuroLibre"
+    journal_name = "NeuroLibre Executable Preprint Server"
 
     if paper_paths.empty?
       self.payload = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
@@ -58,13 +58,44 @@ class PaperPreviewWorker
         return
       end
 
-      latex_template_path = "#{Whedon.resources}/joss/latex.template"
+      latex_template_path = "#{Whedon.resources}/#{journal}/latex.template"
+      book_exec_logo = "#{Whedon.resources}/#{journal}/logo_link.png"
+      journal_logo = "#{Whedon.resources}/#{journal}/logo.png"
       csl_file = "#{Whedon.resources}/joss/apa.csl"
       directory = File.dirname(paper_paths.first)
-      puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.55458/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
+      #puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.55458/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
       # TODO: may eventually want to swap out the latex template
 
-      result, stderr, status = Open3.capture3("cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.55458/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V aas_logo_path='#{Whedon.resources}/#{journal}/aas-logo.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template")
+      result, stderr, status = Open3.capture3("cd #{directory} && pandoc \
+      -V repository='#{repository_address}' \
+      -V repository_doi='PENDING' \
+      -V data_doi='PENDING' \
+      -V book_doi='PENDING' \
+      -V docker_doi='PENDING' \
+      -V book_exec_url='PENDING' \
+      -V paper_url='PENDING' \
+      -V formatted_doi='10.55458/NeuroLibre.0XXXX' \
+      -V journal_name='#{journal_name}' \
+      -V book_exec_icon='#{book_exec_logo}' \
+      -V logo_path='#{journal_logo}' \
+      -V review_issue_url='XXX' \
+      -V issue='X' \
+      -V volume='X' \
+      -V page='X' \
+      -V year='XXXX' \
+      -V submitted='01 January XXXX' \
+      -V published='01 January XXXX' \
+      -V editor_name='Editor Name' \
+      -V editor_url='https://neurolibre.org' \
+      -V citation_author='Neuro Libre et al.' \
+      -V graphics='true' \
+      -o #{sha}.pdf -V geometry:margin=1in \
+      --pdf-engine=xelatex \
+      --citeproc #{File.basename(paper_paths.first)} \
+      --from markdown+autolink_bare_uris \
+      --csl='#{csl_file}' \
+      --template '#{latex_template_path}' \
+      --metadata-file=markdown-metadata.yaml")
 
       if status.success?
         if File.exists?("#{directory}/#{sha}.pdf")
