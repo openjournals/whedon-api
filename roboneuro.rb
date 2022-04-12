@@ -150,9 +150,10 @@ class RoboNeuro < Sinatra::Base
     when /\A@roboneuro re-invite (.*) as reviewer/i
       check_editor
       invite_reviewer($1)
-    when /\A@roboneuro set (.*) as archive/
-      check_editor
-      assign_archive($1)
+    when /\A@roboneuro set archives/
+      # TEMPORARY FOR TESTING
+      #check_editor
+      assign_archives('10.5281/zenodo.4012104','10.5281/zenodo.4012104','10.5281/zenodo.4012104','10.5281/zenodo.4012104')
     when /\A@roboneuro set (.*) as version/
       check_editor
       assign_version($1)
@@ -375,17 +376,32 @@ class RoboNeuro < Sinatra::Base
     RepoWorker.perform_async(@nwo, @issue_id, serialized_config)
   end
 
-  # Update the archive on the review issue
-  def assign_archive(doi_string)
-    doi = doi_string[/\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/]
-    if doi
-      doi_with_url = "<a href=\"https://doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
-      new_body = issue.body.gsub(/\*\*Archive:\*\*\s*(.*|Pending)/i, "**Archive:** #{doi_with_url}")
-      github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
-      respond "OK. #{doi_with_url} is the archive."
-    else
-      respond "#{doi_string} doesn't look like an archive DOI."
+  ## MODIFIED FOR NEUROLIBRE (previously assign_archive)
+  # JOSS has only one archive that is set manually. In Neurolibre case, there are 
+  # multiple DOIs associated with the publication and they are generated/published 
+  # in a more automated fashion.
+  def assign_archives(repository_doi, data_doi, book_doi, docker_doi)
+    
+    doi_regex = /\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/
+    dois = [repository_doi, data_doi, book_doi, docker_doi]
+    types = ['Repository','Data','Book','Docker']
+    
+    rsp = []
+    dois.each_with_index do |cur_doi,idx|
+    
+      doi = cur_doi[doi_regex]
+      if doi
+        doi_with_url = "<a href=\"https://doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
+        new_body = issue.body.gsub(/\*\*#{types[idx]} archive:\*\*\s*(.*|Pending)/i, "#{types[idx]} archive: #{doi_with_url}")
+        github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
+        rsp.push("* OK. #{doi_with_url} is the archive.")
+      else
+        rsp.push("* #{cur_doi} doesn't look like an archive DOI for #{types[idx]}.")
+      end
     end
+
+    respond rsp.join('')
+
   end
 
   # Update the version on the review issue
