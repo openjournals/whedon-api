@@ -392,11 +392,15 @@ class RoboNeuro < Sinatra::Base
       doi = cur_doi[doi_regex]
       if doi
         doi_with_url = "<a href=\"https://doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
-        new_body = issue.body.gsub(/\*\*#{types[idx]} archive:\*\*\s*(.*|Pending)/i, "#{types[idx]} archive: #{doi_with_url}")
+        if idx == 0
+          new_body = issue.body.gsub(/\*\*#{types[idx]} archive:\*\*\s*(.*|Pending)/i, "**#{types[idx]} archive:** #{doi_with_url}")
+        else
+          new_body = new_body.gsub(/\*\*#{types[idx]} archive:\*\*\s*(.*|Pending)/i, "**#{types[idx]} archive:** #{doi_with_url}")
+        end
         github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
-        rsp.push("* OK. #{doi_with_url} is the archive.")
+        rsp.push("OK. #{doi_with_url} is the archive.<br>")
       else
-        rsp.push("* #{cur_doi} doesn't look like an archive DOI for #{types[idx]}.")
+        rsp.push("* #{cur_doi} doesn't look like an archive DOI for #{types[idx]}.<br>")
       end
     end
 
