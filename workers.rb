@@ -675,8 +675,9 @@ class PDFWorker
         pdf_url, pdf_download_url = create_git_pdf("#{directory}/#{processor.paper.review_issue_id}.pdf",
                                                    issue_id, config.papers_repo, config.journal_alias)
 
-        pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
-
+        #pdf_response = ":point_right::page_facing_up: [Download article proof](#{pdf_download_url}) :page_facing_up: [View article proof on GitHub](#{pdf_url}) :page_facing_up: :point_left:"
+        # NeuroLibre styled response
+        pdf_response = ":seedling: &nbsp;The PDF has been compiled!<br><ul><li>:inbox_tray:&nbsp; [Download article proof](#{pdf_download_url})</li><li> :octocat:&nbsp; [View article proof on GitHub](#{pdf_url}) </li><ul>"
         # Finally, respond in the review issue with the PDF URL
         bg_respond(nwo, issue_id, pdf_response)
       end
@@ -1142,7 +1143,7 @@ class ZenodoWorker
     
     end
 
-    if (action_type!="deposit" && action_type!="list-uploaded")
+    if (action_type!="deposit" && action_type!="status")
 
       if (action_type=="archive-all")
         
@@ -1210,9 +1211,9 @@ class ZenodoWorker
 
     end
 
-    if (action_type=="list-uploaded")
+    if (action_type=="status")
     
-      resp = zenodo_list_uploads(issue_id)
+      resp = zenodo_get_status(issue_id)
       bg_respond(nwo, issue_id, resp)
 
     end

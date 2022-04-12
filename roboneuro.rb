@@ -363,7 +363,7 @@ class RoboNeuro < Sinatra::Base
     
     if (action_type=="deposit")
       respond ":card_index: Requesting Zenodo deposits for: <ul><li> :closed_book: NeuroLibre (built) book</li><li>:octocat: Book repository</li><li>:minidisc: Data (conditional)</li><li>:whale: Docker image (from BinderHub)</li>"
-    elsif (action_type!="deposit" && action_type!="list-uploaded")
+    elsif (action_type!="deposit" && action_type!="status")
       respond ":package: Requesting Zenodo file upload to #{action_type}."
     end
 

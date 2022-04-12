@@ -625,7 +625,7 @@ module NeuroLibre
 
     end
 
-    def zenodo_list_uploads(issue_id)
+    def zenodo_get_status(issue_id)
 
         post_params = {:issue_id => issue_id}.to_json
         
@@ -638,8 +638,46 @@ module NeuroLibre
             :payload => post_params,
             :headers => { :content_type => :json }
             ).execute
-    
-        return response.to_str
+        
+        res = response.to_str
+
+        regex_repository_upload = /(<li>zenodo_uploaded_repository)(.*?)(?=.json)/
+        regex_data_upload = /(<li>zenodo_uploaded_data)(.*?)(?=.json)/
+        regex_book_upload = /(<li>zenodo_uploaded_book)(.*?)(?=.json)/
+        regex_docker_upload = /(<li>zenodo_uploaded_docker)(.*?)(?=.json)/
+        regex_deposit = /(<li>zenodo_deposit)(.*?)(?=.json)/
+        regex_publish = /(<li>zenodo_published)(.*?)(?=.json)/
+        hash_regex = /_(?!.*_)(.*)/
+        
+        zenodo_regexs = [regex_repository_upload,regex_data_upload,regex_book_upload,regex_docker_upload]
+        types = ['Repository', 'Data', 'Book','Docker']
+                
+        rsp = []
+        
+        if res[regex_deposit].nil? || res[regex_deposit].empty?
+            rsp.push("<h3>Deposit</h3>:red_square: <b>Zenodo deposit records have not been created yet.</b>")
+        else
+            rsp.push("<h3>Deposit</h3>:green_square: Zenodo deposit records are found.")
+        end
+        
+        rsp.push("<h3>Upload</h3><ul>")
+        zenodo_regexs.each_with_index do |cur_regex,idx|
+        if res[cur_regex].nil? || res[cur_regex].empty?
+            rsp.push("<li>:red_circle: <b>#{types[idx]} archive is missing</b></li>")
+        else
+            tmp = res[cur_regex][hash_regex][1..-1]
+            rsp.push("<li>:green_circle: #{types[idx]} archive (<code>#{tmp}</code>)</li>")
+        end
+        end
+        rsp.push("</ul><h3>Publish</h3>")
+        
+        if res[regex_publish].nil? || res[regex_publish].empty?
+            rsp.push(":small_red_triangle_down: <b>Zenodo DOIs have not been published yet.</b>")
+        else
+            rsp.push(":white_check_mark: Zenodo DOIs are published.")
+        end
+            
+        return rsp.join('')
 
     end
 
