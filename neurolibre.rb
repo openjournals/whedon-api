@@ -162,11 +162,11 @@ module NeuroLibre
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
         binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,"<br>")}
-        puts binder_messages.class
-        #binder_messages = binder_messages.to_a
+        # Here, it is an Array
+        puts binder_messages
         binder_messages = binder_messages.join(',')
-        puts binder_messages.class
-
+        # Here, it is String
+        puts binder_messages
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
         book_json  = JSON.parse(tmp_chomped[-1])
@@ -235,7 +235,7 @@ module NeuroLibre
         # Add the main book build log
         book_log = "<details><summary> Jupyter Book build log </summary><pre><code>#{response.to_str}</code></pre></details>"
         jblogs.push(book_log)
-        jblogs.push("<br>")
+        #jblogs.push("<br>")
 
         # Now look into reports (if exists)
         response = RestClient::Request.new(
@@ -263,14 +263,14 @@ module NeuroLibre
                     :headers => { :content_type => :json }
                 ).execute
 
-                cur_log= "<details><summary> Execution log from <code>#{log_file.gsub('.log','')}</code></summary><pre><code>#{log.to_str}</code></pre></details>"
+                cur_log= "<details><summary> Execution error log for <code>#{log_file.gsub('.log','')} notebook (or MyST).</code></summary><pre><code>#{log.to_str}</code></pre></details>"
 
                 jblogs.push(cur_log)
-                jblogs.push("<br>")
+                #jblogs.push("<br>")
             end
         end
         
-        msg = "<p>:lady_beetle: Based on these logs, you can interactively debug your notebooks on our <a href=\"https://binder.conp.cloud\">BinderHub server</a>. For guidelines, please see <a href=\"https://docs.neurolibre.org/en/latest/TEST_SUBMISSION.html#debugging-for-long-neurolibre-submission\">the relevant documentation.</a></p>"
+        msg = "<p>:lady_beetle: After inspecting the logs above, you can interactively debug your notebooks on our <a href=\"https://binder.conp.cloud\">BinderHub server</a>. For guidelines, please see <a href=\"https://docs.neurolibre.org/en/latest/TEST_SUBMISSION.html#debugging-for-long-neurolibre-submission\">the relevant documentation.</a></p>"
         jblogs.push(msg)
         # Return logs 
         return jblogs.join('')
