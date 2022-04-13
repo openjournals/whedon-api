@@ -161,9 +161,10 @@ module NeuroLibre
 
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
-        binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,'')}
+        puts binder_messages
+        #binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,'')}
 
-        binder_messages = binder_messages.join('\n')
+        #binder_messages = binder_messages.join('\n')
         
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
