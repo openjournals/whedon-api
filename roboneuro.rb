@@ -179,8 +179,8 @@ class RoboNeuro < Sinatra::Base
       build_book($1, clear_cache=true)
     when /\A@roboneuro generate nl-notebook/i
       build_book(nil, clear_cache=true)
-    when /\A@roboneuro initiate production/i
-      init_production
+    when /\A@roboneuro production (.\S*)/
+      init_production($1)
     when /\A@roboneuro zenodo (.\S*)/
       perform_zenodo(clear_cache=true, $1)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
@@ -355,9 +355,9 @@ class RoboNeuro < Sinatra::Base
     JBWorker.perform_async(@nwo, @issue_id, serialized_config, custom_branch, clear_cache)
   end
 
-  def init_production
+  def init_production(action_type='start')
     respond ":zap: :zap: :zap: \n```\nStarting NeuroLibre production process. \n- Fork and config repository\n- Book build for production\n- Sync built book\n- BinderHub build for production ```"
-    ProdInitWorker.perform_async(@nwo, @issue_id, serialized_config)
+    ProdWorker.perform_async(@nwo, @issue_id, serialized_config,action_type)
   end
 
   def perform_zenodo(clear_cache=false, action_type="deposit")

@@ -899,7 +899,7 @@ class JBWorker
   end
 end
 
-class ProdInitWorker
+class ProdWorker
   require_relative 'github'
   require_relative 'config_helper'
   require_relative 'neurolibre'
@@ -920,115 +920,138 @@ class ProdInitWorker
   include GitHub
   include NeuroLibre
 
-  def perform(nwo, issue_id, config)
+  def perform(nwo, issue_id, config, action_type="start")
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
-    repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
-    
-    # 1) Fork author repo into roboneurolibre organization. 
-    forked_address = fork_for_production(repository_address)
-          
-    if forked_address.nil?
-      bg_respond(nwo, issue_id, "🍴🚫 I could not fork the repository.")
-      abort("Running into a problem forking")
-    end
+    if action_type == start
+      repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
+      
+      # 1) Fork author repo into roboneurolibre organization. 
+      forked_address = fork_for_production(repository_address)
+            
+      if forked_address.nil?
+        bg_respond(nwo, issue_id, "🍴🚫 I could not fork the repository.")
+        abort("Running into a problem forking")
+      end
 
-    # Wait briefly before reading content from fork
-    sleep(20)
-    # 2) Update _config.yml & _toc.yml on the forked repo for production server.
-    new_config = get_config_for_prod(forked_address)
-    if new_config.nil?
-      bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-      abort("Cannot find _config.yml in the forked repository.")
-    end
-    # Commit new config file to the forked repository
-    if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production").nil?
-        warn "Cannot update _config.yml"
-    end
+      # Wait briefly before reading content from fork
+      sleep(20)
+      # 2) Update _config.yml & _toc.yml on the forked repo for production server.
+      new_config = get_config_for_prod(forked_address)
+      if new_config.nil?
+        bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+        abort("Cannot find _config.yml in the forked repository.")
+      end
+      # Commit new config file to the forked repository
+      if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production").nil?
+          warn "Cannot update _config.yml"
+      end
 
-    new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
-    if new_toc.nil?
-      bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-      abort("Cannot find _config.yml in the forked repository.")
-    end
-    # Commit new toc file to the forked repository
-    if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production").nil?
-      warn "Cannot update _toc.yml"
-    end
+      new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
+      if new_toc.nil?
+        bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+        abort("Cannot find _config.yml in the forked repository.")
+      end
+      # Commit new toc file to the forked repository
+      if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production").nil?
+        warn "Cannot update _toc.yml"
+      end
 
-    # 3) Build book for prod on test server, then sync book to the prod.
-    latest_sha = get_latest_book_build_sha(forked_address)
-    puts(latest_sha)
+      # 3) Build book for prod on test server, then sync book to the prod.
+      latest_sha = get_latest_book_build_sha(forked_address)
+      puts(latest_sha)
 
-    build_update = " :zap: We are currently building your NeuroLibre notebook for production! :twisted_rightwards_arrows: ([fork](#{forked_address}))"
-    bg_respond(nwo, issue_id, build_update)
+      build_update = " :zap: We are currently building your NeuroLibre notebook for production! :twisted_rightwards_arrows: ([fork](#{forked_address}))"
+      bg_respond(nwo, issue_id, build_update)
 
-    post_params = {
-      :repo_url => forked_address,
-      :commit_hash => latest_sha
-    }.to_json
-    
-    puts(post_params)
-    op_binder, op_book = request_book_build(post_params)
-    book_url = op_book['book_url']
+      post_params = {
+        :repo_url => forked_address,
+        :commit_hash => latest_sha
+      }.to_json
+      
+      puts(post_params)
+      op_binder, op_book = request_book_build(post_params)
+      book_url = op_book['book_url']
 
-    # if book build failed :(
-      if book_url.nil?
-        book_response = get_book_build_log(op_binder,repository_address,latest_sha)
-        bg_respond(nwo, issue_id, book_response)
-        abort("FORKED REPO BUILD ERROR: Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.")
+      # if book build failed :(
+        if book_url.nil?
+          book_response = get_book_build_log(op_binder,repository_address,latest_sha)
+          bg_respond(nwo, issue_id, book_response)
+          abort("FORKED REPO BUILD ERROR: Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.")
+        else
+          build_update = " :repeat: Book build was successful! Sending the book to our production server..."
+          bg_respond(nwo, issue_id, build_update)
+        end
+      
+      # SYNC BOOK HERE
+      resp = request_book_sync(post_params)
+
+      if resp.nil?
+        build_update = "DEBUG: Problem with book sync API."
+        bg_respond(nwo, issue_id, build_update)
       else
-        build_update = " :repeat: Book build was successful! Sending the book to our production server..."
+        build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
+        You can visit the book, but Binder is not ready yet for execution.
+        <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+        <p> :luggage: Now I will move the data from the test to the production server...</p>"
+        bg_respond(nwo, issue_id, build_update)
+      end
+
+      lut = get_resource_lookup(repository_address)
+      post_params = {
+        :project_name => lut["project_name"]
+      }.to_json
+
+      ## SYNC DATA HERE
+      resp = request_data_sync(post_params)
+
+      if resp.nil?
+        build_update = "DEBUG: Problem with data sync API."
+        bg_respond(nwo, issue_id, build_update)
+      else
+        build_update = " :maple_leaf: I have successfully moved your data to the production server!
+        <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+        <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
+        bg_respond(nwo, issue_id, build_update)
+      end
+
+      # BINDERHUB REQUEST
+      resp = request_production_binderhub(post_params)
+
+      if resp.nil?
+        build_update = "DEBUG: Problem with Binder API."
+        bg_respond(nwo, issue_id, build_update)
+      else
+        build_update = " :hibiscus: Your Binder is ready!
+        <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>
+        <p>:confetti_ball:Production workflow has been completed, congrats!</p>"
         bg_respond(nwo, issue_id, build_update)
       end
     
-    # SYNC BOOK HERE
-    resp = request_book_sync(post_params)
+    elsif action_type == "sync-data"
+      
+      lut = get_resource_lookup(repository_address)
+      post_params = {
+        :project_name => lut["project_name"]
+      }.to_json
 
-    if resp.nil?
-      build_update = "DEBUG: Problem with book sync API."
-      bg_respond(nwo, issue_id, build_update)
-    else
-      build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
-      You can visit the book, but Binder is not ready yet for execution.
-      <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-      <p> :luggage: Now I will move the data from the test to the production server...</p>"
-      bg_respond(nwo, issue_id, build_update)
-    end
+      ## SYNC DATA HERE
+      resp = request_data_sync(post_params)
 
-    lut = get_resource_lookup(repository_address)
-    post_params = {
-      :project_name => lut["project_name"]
-    }.to_json
-
-    ## SYNC DATA HERE
-    resp = request_data_sync(post_params)
-
-    if resp.nil?
-      build_update = "DEBUG: Problem with data sync API."
-      bg_respond(nwo, issue_id, build_update)
-    else
-      build_update = " :maple_leaf: I have successfully moved your data to the production server!
-      <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-      <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
-      bg_respond(nwo, issue_id, build_update)
-    end
-
-    # BINDERHUB REQUEST
-    resp = request_production_binderhub(post_params)
-
-    if resp.nil?
-      build_update = "DEBUG: Problem with Binder API."
-      bg_respond(nwo, issue_id, build_update)
-    else
-      build_update = " :hibiscus: Your Binder is ready!
-      <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>
-      <p>:confetti_ball:Production workflow has been completed, congrats!</p>"
-      bg_respond(nwo, issue_id, build_update)
-    end
+      if resp.nil?
+        build_update = "DEBUG: Problem with data sync API."
+        bg_respond(nwo, issue_id, build_update)
+      else
+        build_update = " :maple_leaf: I have successfully moved your data to the production server!
+        <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+        <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
+        bg_respond(nwo, issue_id, build_update)
+      end
+    
+    
 
   end
 

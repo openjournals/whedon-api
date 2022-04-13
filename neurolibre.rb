@@ -618,6 +618,7 @@ def parse_neurolibre_response(response)
 
     def request_book_sync(payload_in)
         
+        begin 
         response = RestClient::Request.new(
             method: :post,
             :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/books/sync',
@@ -628,22 +629,31 @@ def parse_neurolibre_response(response)
             :timeout => 1200, # Give 20 minutes
             :headers => { :content_type => :json }
             ).execute
+        rescue
+            # Somtething unexpected happened.
+            response = nil
+        
+        end
 
         return response
     end
 
     def request_data_sync(payload_in)
         
-        response = RestClient::Request.new(
-            method: :post,
-            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/data/sync',
-            verify_ssl: false,
-            :user => 'neurolibre',
-            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-            :payload => payload_in,
-            :timeout => 1200, # Give 20 minutes
-            :headers => { :content_type => :json }
-            ).execute
+        begin
+            response = RestClient::Request.new(
+                method: :post,
+                :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/data/sync',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_in,
+                :timeout => 1200, # Give 20 minutes
+                :headers => { :content_type => :json }
+                ).execute
+        rescue
+            response = nil
+        end
 
         return response
     end
