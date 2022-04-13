@@ -145,7 +145,7 @@ module NeuroLibre
         when 404
 
             result = nil
-            warn "Requested resource does not exist."
+            warn "There is not a book built at #{commit_sha} for #{user_name}/#{repo_name} on NeuroLibre test server."
             return result
 
         # We need a way to distinguish these cases.
@@ -213,7 +213,7 @@ module NeuroLibre
     def get_book_build_log(op_binder,repository_address,hash)
         
         jblogs = []
-        jblogs.push(binder_log)
+
         binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.
                     <details>
                     <summary> BinderHub build log </summary>
@@ -222,6 +222,7 @@ module NeuroLibre
                     </code></pre>
                     </details>
                     <p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
+        jblogs.push(binder_log)
 
         target_repo = get_repo_name(repository_address)
         uname = target_repo.split("/")[0]
