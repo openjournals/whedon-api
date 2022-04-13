@@ -161,12 +161,11 @@ module NeuroLibre
 
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
-        binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,"<br>")}
-        # Here, it is an Array
-        puts binder_messages
+        binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,'')}
+
         binder_messages = binder_messages.join(',')
-        # Here, it is String
-        puts binder_messages
+        binder_messages = binder_messages.split(',')
+        
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
         book_json  = JSON.parse(tmp_chomped[-1])
@@ -263,7 +262,7 @@ module NeuroLibre
                     :headers => { :content_type => :json }
                 ).execute
 
-                cur_log= "<details><summary> <b>Execution error log</b> for <code>#{log_file.gsub('.log','')}</code>notebook (or MyST).</summary><pre><code>#{log.to_str}</code></pre></details>"
+                cur_log= "<details><summary> <b>Execution error log</b> for <code>#{log_file.gsub('.log','')}</code> notebook (or MyST).</summary><pre><code>#{log.to_str}</code></pre></details>"
 
                 jblogs.push(cur_log)
                 #jblogs.push("<br>")
