@@ -145,7 +145,7 @@ module NeuroLibre
         when 404
 
             result = nil
-            warn "There is not a book built at #{commit_sha} for #{user_name}/#{repo_name} on NeuroLibre test server."
+            warn "There is not a book built at #{commit_sha} on the NeuroLibre test server."
             return result
 
         # We need a way to distinguish these cases.
@@ -163,8 +163,7 @@ module NeuroLibre
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
         binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,'')}
 
-        binder_messages = binder_messages.join(',')
-        binder_messages = binder_messages.split(',')
+        binder_messages = binder_messages.join('\n')
         
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
