@@ -691,6 +691,7 @@ def parse_neurolibre_response(response)
 
     def get_resource_lookup(repository_address)
         
+        puts(" Requested lookup table for #{repository_address}")
         response = RestClient::Request.new(
             method: :get,
             :url => 'http://neurolibre-data.conp.cloud/book-artifacts/lookup_table.tsv',
