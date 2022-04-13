@@ -926,7 +926,7 @@ class ProdWorker
     review = Whedon::Review.new(issue_id)
     processor = Whedon::Processor.new(issue_id, review.issue_body)
 
-    if action_type == start
+    if action_type == "start"
       repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
       
       # 1) Fork author repo into roboneurolibre organization. 
