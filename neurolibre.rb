@@ -162,6 +162,7 @@ module NeuroLibre
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
         binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,"<br>")}
+        binder_messages = binder_messages.to_a
         binder_messages = binder_messages.join(',')
 
         # Fetch book build response into a hash
@@ -214,14 +215,7 @@ module NeuroLibre
         
         jblogs = []
 
-        binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.
-                    <details>
-                    <summary> BinderHub build log </summary>
-                    <pre><code>
-                    #{op_binder}
-                    </code></pre>
-                    </details>
-                    <p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
+        binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.<details><summary> BinderHub build log </summary><pre><code>#{op_binder}</code></pre></details><p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
         jblogs.push(binder_log)
 
         target_repo = get_repo_name(repository_address)
@@ -237,14 +231,7 @@ module NeuroLibre
         ).execute
         
         # Add the main book build log
-        
-        book_log = "<details>
-                    <summary> Jupyter Book build log </summary>
-                    <pre><code>
-                    #{response.to_str}
-                    </code></pre>
-                    </details>
-                    <br><br>"
+        book_log = "<details><summary> Jupyter Book build log </summary><pre><code>#{response.to_str}</code></pre></details>"
         jblogs.push(book_log)
 
         # Now look into reports (if exists)
@@ -273,13 +260,7 @@ module NeuroLibre
                     :headers => { :content_type => :json }
                 ).execute
 
-                cur_log= "<details>
-                        <summary> Execution log from <code>#{log_file.gsub('.log','')}</code></summary>
-                        <pre><code>
-                        #{log.to_str}
-                        </code></pre>
-                        </details>
-                        <br><br>"
+                cur_log= "<details><summary> Execution log from <code>#{log_file.gsub('.log','')}</code></summary><pre><code>#{log.to_str}</code></pre></details>"
 
                 jblogs.push(cur_log)
             end
@@ -288,7 +269,7 @@ module NeuroLibre
         msg = "<p>:lady_beetle: Based on these logs, you can interactively debug your notebooks on our <a href=\"https://binder.conp.cloud\">BinderHub server</a>. For guidelines, please see <a href=\"https://docs.neurolibre.org/en/latest/TEST_SUBMISSION.html#debugging-for-long-neurolibre-submission\">the relevant documentation.</a></p>"
         jblogs.push(msg)
         # Return logs 
-        return jblogs.join('')
+        return jblogs
     end
 
     def validate_repository_content(repository_address, custom_branch=nil)
