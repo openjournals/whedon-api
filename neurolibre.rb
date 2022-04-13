@@ -156,13 +156,15 @@ module NeuroLibre
         end
     end
 
-    def parse_neurolibre_response(response)
+    
+def parse_neurolibre_response(response)
         tmp =  response.to_str
 
         # Get string between message": and , which is the message
-        binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
-        puts binder_messages
-        #binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,'')}
+        #binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
+        #binder_messages = binder_messages.map{|string| string.gsub!(/^\"|\"?$/, '')}
+        binder_messages = response.body
+
 
         #binder_messages = binder_messages.join('\n')
         
@@ -174,7 +176,6 @@ module NeuroLibre
 
         return binder_messages, book_json
     end
-
     def request_book_build(payload_in)
         # Payload contains repo_url and commit_hash
 
