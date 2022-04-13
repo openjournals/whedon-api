@@ -885,20 +885,9 @@ class JBWorker
 
     # if book build failed :(
     if book_url.nil?
-
-      binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.
-                  <details>
-                  <summary> BinderHub build log </summary>
-                  <pre><code>
-                  #{op_binder}
-                  </code></pre>
-                  </details>
-                  <p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
       
-      book_logs = get_book_build_log(repository_address,latest_sha)
+      book_response = get_book_build_log(op_binder,repository_address,latest_sha)
 
-      msg = "<p>:lady_beetle: Based on these logs, you can interactively debug your notebooks on our <a href=\"https://binder.conp.cloud\">BinderHub server</a>. For guidelines, please see <a href=\"https://docs.neurolibre.org/en/latest/TEST_SUBMISSION.html#debugging-for-long-neurolibre-submission\">the relevant documentation.</a></p>"
-      book_response = binder_log + book_logs + msg
       bg_respond(nwo, issue_id, book_response)
       abort(book_response)
     end

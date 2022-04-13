@@ -162,6 +162,7 @@ module NeuroLibre
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
         binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,"<br>")}
+        binder_messages = binder_messages.join(',')
 
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
@@ -209,8 +210,19 @@ module NeuroLibre
         end
     end
 
-    def get_book_build_log(repository_address,hash)
-    
+    def get_book_build_log(op_binder,repository_address,hash)
+        
+        jblogs = []
+        jblogs.push(binder_log)
+        binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.
+                    <details>
+                    <summary> BinderHub build log </summary>
+                    <pre><code>
+                    #{op_binder}
+                    </code></pre>
+                    </details>
+                    <p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
+
         target_repo = get_repo_name(repository_address)
         uname = target_repo.split("/")[0]
         repo = target_repo.split("/")[1]
@@ -224,13 +236,14 @@ module NeuroLibre
         ).execute
         
         # Add the main book build log
-        jblogs = []
+        
         book_log = "<details>
                     <summary> Jupyter Book build log </summary>
                     <pre><code>
                     #{response.to_str}
                     </code></pre>
-                    </details>"
+                    </details>
+                    <br><br>"
         jblogs.push(book_log)
 
         # Now look into reports (if exists)
@@ -260,16 +273,19 @@ module NeuroLibre
                 ).execute
 
                 cur_log= "<details>
-                        <summary> Execution log from <code>#{log_file.gsub('.log','')}</code> </summary>
+                        <summary> Execution log from <code>#{log_file.gsub('.log','')}</code></summary>
                         <pre><code>
                         #{log.to_str}
                         </code></pre>
-                        </details>"
+                        </details>
+                        <br><br>"
 
                 jblogs.push(cur_log)
             end
         end
-
+        
+        msg = "<p>:lady_beetle: Based on these logs, you can interactively debug your notebooks on our <a href=\"https://binder.conp.cloud\">BinderHub server</a>. For guidelines, please see <a href=\"https://docs.neurolibre.org/en/latest/TEST_SUBMISSION.html#debugging-for-long-neurolibre-submission\">the relevant documentation.</a></p>"
+        jblogs.push(msg)
         # Return logs 
         return jblogs.join('')
     end
