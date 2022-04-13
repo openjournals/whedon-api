@@ -161,7 +161,7 @@ module NeuroLibre
 
         # Get string between message": and , which is the message
         binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
-        binder_messages = binder_messages.map{|string| string.strip[1...-1]}
+        binder_messages = binder_messages.map{|string| string.strip[1...-1].gsub(/\r?\n/,"<br>")}
 
         # Fetch book build response into a hash
         tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
@@ -207,6 +207,71 @@ module NeuroLibre
                 end
             end
         end
+    end
+
+    def get_book_build_log(repository_address,hash)
+    
+        target_repo = get_repo_name(repository_address)
+        uname = target_repo.split("/")[0]
+        repo = target_repo.split("/")[1]
+        response = RestClient::Request.new(
+            method: :get,
+            :url => "http://neurolibre-data.conp.cloud/book-artifacts/#{uname}/github.com/#{repo}/#{hash}/book-build.log",
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :headers => { :content_type => :json }
+        ).execute
+        
+        # Add the main book build log
+        jblogs = []
+        book_log = "<details>
+                    <summary> Jupyter Book build log </summary>
+                    <pre><code>
+                    #{response.to_str}
+                    </code></pre>
+                    </details>"
+        jblogs.push(book_log)
+
+        # Now look into reports (if exists)
+        response = RestClient::Request.new(
+            method: :get,
+            :url => "http://neurolibre-data.conp.cloud/book-artifacts/#{uname}/github.com/#{repo}/#{hash}/_build/html/reports",
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :headers => { :content_type => :json }
+        ).execute
+        
+        # If returns something, then check for the pattern for execution log files
+        # Create one dropdown per execution log
+        if response.code == 200
+            txt = response.to_str
+            rgx = /href=['"]\K[^'"]+.log/
+            logs = txt.scan(rgx)
+            logs.each do |log_file|
+                log = RestClient::Request.new(
+                    method: :get,
+                    :url => "http://neurolibre-data.conp.cloud/book-artifacts/#{uname}/github.com/#{repo}/#{hash}/_build/html/reports/#{log_file}",
+                    verify_ssl: false,
+                    :user => 'neurolibre',
+                    :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                    :headers => { :content_type => :json }
+                ).execute
+
+                cur_log= "<details>
+                        <summary> Execution log from <code>#{log_file.gsub('.log','')}</code> </summary>
+                        <pre><code>
+                        #{log.to_str}
+                        </code></pre>
+                        </details>"
+
+                jblogs.push(cur_log)
+            end
+        end
+
+        # Return logs 
+        return jblogs.join('')
     end
 
     def validate_repository_content(repository_address, custom_branch=nil)
