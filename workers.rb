@@ -1051,6 +1051,7 @@ class ProdWorker
         bg_respond(nwo, issue_id, build_update)
       end
     
+    end
     
 
   end
