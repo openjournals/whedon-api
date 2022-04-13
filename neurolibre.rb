@@ -632,6 +632,22 @@ def parse_neurolibre_response(response)
         return response
     end
 
+    def request_data_sync(payload_in)
+        
+        response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/data/sync',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => payload_in,
+            :timeout => 1200, # Give 20 minutes
+            :headers => { :content_type => :json }
+            ).execute
+
+        return response
+    end
+
     def request_production_binderhub(payload_in)
         
         response = RestClient::Request.new(
@@ -682,7 +698,7 @@ def parse_neurolibre_response(response)
             lut = nil
         else
             cur_date,cur_url,cur_docker, cur_tag, cur_data_url, cur_data_doi = found.split(",")
-            lut = {'repo' => cur_tag,
+            lut = {'project_name' => cur_tag,
                    'docker' => cur_docker,
                    'data_url' => cur_data_url,
                    'data_doi' => cur_data_doi}

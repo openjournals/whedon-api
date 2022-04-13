@@ -976,38 +976,48 @@ class ProdInitWorker
     book_url = op_book['book_url']
 
     # if book build failed :(
-    if book_url.nil?
-      book_response = "We ran into a problem building your book. :(
-      <details>
-      <summary> Click here to see build log </summary>
-      <pre><code>
-      #{op_binder}
-      </code></pre>
-      </details>"
-      bg_respond(nwo, issue_id, book_response)
-      abort(book_response)
-    else
-      build_update = " :repeat: Book build was successful! Syncing to production..."
-      bg_respond(nwo, issue_id, build_update)
-    end
+      if book_url.nil?
+        book_response = get_book_build_log(op_binder,repository_address,latest_sha)
+        bg_respond(nwo, issue_id, book_response)
+        abort("FORKED REPO BUILD ERROR: Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.")
+      else
+        build_update = " :repeat: Book build was successful! Sending the book to our production server..."
+        bg_respond(nwo, issue_id, build_update)
+      end
     
+    # SYNC BOOK HERE
     resp = request_book_sync(post_params)
 
     if resp.nil?
-      build_update = "DEBUG: Problem with sync API."
+      build_update = "DEBUG: Problem with book sync API."
       bg_respond(nwo, issue_id, build_update)
     else
       build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
       You can visit the book, but Binder is not ready yet for execution.
-      This will look better:
-      ```
-      #{resp}
-      ```
-      Now we are building a BinderHub instance, may be the :zap: with your preprint!
-      "
+      <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+      <p> :luggage: Now I will move the data from the test to the production server...</p>"
       bg_respond(nwo, issue_id, build_update)
     end
 
+    lut = get_resource_lookup(repository_address)
+    post_params = {
+      :project_name => lut["project_name"]
+    }.to_json
+
+    ## SYNC DATA HERE
+    resp = request_data_sync(post_params)
+
+    if resp.nil?
+      build_update = "DEBUG: Problem with data sync API."
+      bg_respond(nwo, issue_id, build_update)
+    else
+      build_update = " :maple_leaf: I have successfully moved your data to the production server!
+      <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+      <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
+      bg_respond(nwo, issue_id, build_update)
+    end
+
+    # BINDERHUB REQUEST
     resp = request_production_binderhub(post_params)
 
     if resp.nil?
@@ -1015,12 +1025,8 @@ class ProdInitWorker
       bg_respond(nwo, issue_id, build_update)
     else
       build_update = " :hibiscus: Your Binder is ready!
-      This will look better:
-      ```
-      #{resp}
-      ```
-      Congrats!
-      "
+      <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>
+      <p>:confetti_ball:Production workflow has been completed, congrats!</p>"
       bg_respond(nwo, issue_id, build_update)
     end
 
@@ -1145,7 +1151,7 @@ class ZenodoWorker
         
         if (deposit_data)
           items = ["book","repository","data","docker"]
-          item_args = ["","",lut["data_url"],lut["docker"]]
+          item_args = ["","",lut["project_name"],lut["docker"]]
         else
           items = ["book","repository","docker"]
           item_args = ["","",lut["docker"]]
@@ -1155,7 +1161,7 @@ class ZenodoWorker
 
         if (deposit_data)
           items = ["data"]
-          item_args = lut["data_url"]
+          item_args = lut["project_name"]
         else
           bg_respond(nwo, issue_id, ":no_entry: Looks like a DOI already exists for the data of this submisison.")
         end
