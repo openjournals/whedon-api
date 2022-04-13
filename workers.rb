@@ -1034,12 +1034,12 @@ class ProdWorker
     
     elsif action_type == "sync-data"
       
+      # SYNC DATA HERE
       lut = get_resource_lookup(repository_address)
       post_params = {
         :project_name => lut["project_name"]
       }.to_json
-
-      ## SYNC DATA HERE
+      
       resp = request_data_sync(post_params)
 
       if resp.nil?
@@ -1051,6 +1051,51 @@ class ProdWorker
         <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
         bg_respond(nwo, issue_id, build_update)
       end
+    
+    elsif action_type == "sync-book"
+
+      forked_address = fork_for_production(repository_address)
+      latest_sha = get_latest_book_build_sha(forked_address)
+
+      post_params = {
+        :repo_url => forked_address,
+        :commit_hash => latest_sha
+      }.to_json
+
+      resp = request_book_sync(post_params)
+
+      if resp.nil?
+        build_update = "DEBUG: Problem with book sync API."
+        bg_respond(nwo, issue_id, build_update)
+      else
+        build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
+        You can visit the book, but Binder is not ready yet for execution.
+        <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
+        <p> :luggage: Now I will move the data from the test to the production server...</p>"
+        bg_respond(nwo, issue_id, build_update)
+      end
+
+    elsif action_type == "build-binder"
+
+      # BINDERHUB REQUEST
+      forked_address = fork_for_production(repository_address)
+      latest_sha = get_latest_book_build_sha(forked_address)
+
+      post_params = {
+        :repo_url => forked_address,
+        :commit_hash => latest_sha
+      }.to_json
+      resp = request_production_binderhub(post_params)
+
+      if resp.nil?
+        build_update = "DEBUG: Problem with Binder API."
+        bg_respond(nwo, issue_id, build_update)
+      else
+        build_update = " :hibiscus: Your Binder is ready!
+        <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>"
+        bg_respond(nwo, issue_id, build_update)
+      end
+
     
     end
     
