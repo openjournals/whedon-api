@@ -217,7 +217,7 @@ module NeuroLibre
         
         jblogs = []
 
-        binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.<details><summary> BinderHub build log </summary><pre><code>#{op_binder}</code></pre></details><p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
+        binder_log = ":wilted_flower: We ran into a problem building your book. Please see the log files below.<details><summary> <b>BinderHub build log</b> </summary><pre><code>#{op_binder}</code></pre></details><p>If the BinderHub build looks OK, please see the Jupyter Book build log(s) below.</p>"
         jblogs.push(binder_log)
 
         target_repo = get_repo_name(repository_address)
@@ -233,7 +233,7 @@ module NeuroLibre
         ).execute
         
         # Add the main book build log
-        book_log = "<details><summary> Jupyter Book build log </summary><pre><code>#{response.to_str}</code></pre></details>"
+        book_log = "<details><summary> <b>Jupyter Book build log</b> </summary><pre><code>#{response.to_str}</code></pre></details>"
         jblogs.push(book_log)
         #jblogs.push("<br>")
 
@@ -263,7 +263,7 @@ module NeuroLibre
                     :headers => { :content_type => :json }
                 ).execute
 
-                cur_log= "<details><summary> Execution error log for <code>#{log_file.gsub('.log','')} notebook (or MyST).</code></summary><pre><code>#{log.to_str}</code></pre></details>"
+                cur_log= "<details><summary> <b>Execution error log</b> for <code>#{log_file.gsub('.log','')}</code>notebook (or MyST).</summary><pre><code>#{log.to_str}</code></pre></details>"
 
                 jblogs.push(cur_log)
                 #jblogs.push("<br>")

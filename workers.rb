@@ -889,7 +889,7 @@ class JBWorker
       book_response = get_book_build_log(op_binder,repository_address,latest_sha)
 
       bg_respond(nwo, issue_id, book_response)
-      abort(book_response)
+      abort("Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.ß")
     end
 
     # Finally, respond in the review issue with the Jupyter Book URL
