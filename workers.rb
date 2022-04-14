@@ -1023,7 +1023,7 @@ class ProdWorker
 
       # Send BinderHub build request
       binderhub_build_resp = request_production_binderhub(post_params)
-      bg_respond(nwo, issue_id, data_sync_resp)
+      bg_respond(nwo, issue_id, binderhub_build_resp)
 
       if binderhub_build_resp.include? "Your Binder is ready!"
         fin_msg = ":confetti_ball: :tada: Production workflow has been completed successfully!
