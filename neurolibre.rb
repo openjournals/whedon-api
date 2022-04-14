@@ -99,7 +99,7 @@ module NeuroLibre
         return sha
     end
 
-    def get_built_books(commit_sha: nil,user_name: nil,repo_name: nil)
+    def get_built_books(commit_sha: nil,user_name: nil,repo_name: nil, server_type: "test")
         # Returns a JSON array containing fields:
         # - time_added
         # - book_url
@@ -108,7 +108,11 @@ module NeuroLibre
         # elements will be returned in reverse chronological order so that
         # result[0] corresponds to the latest.
 
-        api_url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
+        if server_type == "test"
+            api_url = "http://neurolibre-data.conp.cloud:8081/api/v1/resources/books"
+        elsif server_type == "prod"
+            api_url = "http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/books"
+        end
 
         if !commit_sha.nil?
             api_url += "?commit_hash=#{commit_sha}"
@@ -145,13 +149,11 @@ module NeuroLibre
         when 404
 
             result = nil
-            warn "There is not a book built at #{commit_sha} on the NeuroLibre test server."
+            warn "There is not a book built at #{commit_sha} on the NeuroLibre #{server_type} server."
             return result
 
-        # We need a way to distinguish these cases.
-        # I'm not sure that this is the place to raise an error, anyway.
         else
-            abort("Returned code #{response.code}")
+            return nil
         end
         end
     end
@@ -635,7 +637,16 @@ def parse_neurolibre_response(response)
         
         end
 
-        return response
+        if response.nil?
+            res = "Run into a problem during book sync."
+        else
+            res = " :maple_leaf: Your book is now on the NeuroLibre production server!
+            You may take a look at the the book (link below). 
+            <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{response}</code></pre></details>
+            <p>:warning: Please do not execute this book, unless a (production) BinderHub image has been requested and completed by this technical screening.</p>"
+        end
+
+        return res
     end
 
     def request_data_sync(payload_in)
@@ -655,11 +666,19 @@ def parse_neurolibre_response(response)
             response = nil
         end
 
-        return response
+        if response.nil?
+            res = "Run into a problem during book sync."
+        else
+            res = " :maple_leaf: I have successfully moved your data to the production server!
+            <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{response}</code></pre></details>"
+        end
+
+        return res
     end
 
     def request_production_binderhub(payload_in)
         
+        begin
         response = RestClient::Request.new(
             method: :post,
             :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/binder/build',
@@ -670,8 +689,18 @@ def parse_neurolibre_response(response)
             :timeout => 1800, # Give 30 minutes
             :headers => { :content_type => :json }
             ).execute
+        rescue
+            response = nil
+        end
 
-        return response
+        if response.nil?
+                res = "Run into problem during production BinderHub build request for #{payload_in['repo_url']}"
+        else
+                res = ":hibiscus: Your Binder is ready!
+                <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>"
+        end
+
+        return res
     end
 
     def zenodo_create_buckets(payload_in)

@@ -359,8 +359,6 @@ class RoboNeuro < Sinatra::Base
     
     if (action_type=="start")
       respond ":zap: :zap: :zap: Starting NeuroLibre production process. These are the steps I'll try to complete: <ul><li>Fork and config repository</li><li> Book build for production</li><li> Sync built book</li><li>Sync built data</li><li>BinderHub build for production</li></ul>"
-    elsif (action_type=="sync-data")
-      respond ":luggage: Alright! Attempting to sync data to the production server."
     end
 
     ProdWorker.perform_async(@nwo, @issue_id, serialized_config,action_type)

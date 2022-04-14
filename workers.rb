@@ -974,6 +974,7 @@ class ProdWorker
       }.to_json
       
       puts(post_params)
+      # If successful roboneruo/repository info will be available in the test server LUT. 
       op_binder, op_book = request_book_build(post_params)
       book_url = op_book['book_url']
 
@@ -983,75 +984,66 @@ class ProdWorker
           bg_respond(nwo, issue_id, book_response)
           abort("FORKED REPO BUILD ERROR: Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.")
         else
-          build_update = " :repeat: Book build was successful! Sending the book to our production server..."
+          build_update = " :repeat: Build was successful! <p> :luggage: Next: Sending the book to our production server. </p>"
           bg_respond(nwo, issue_id, build_update)
         end
       
-      # SYNC BOOK HERE
-      resp = request_book_sync(post_params)
+      # SYNC BOOK HERE --------------------------
+      # Uses forked repository and latest hash from the fork.
+      book_sync_resp = request_book_sync(post_params)
+      bg_respond(nwo, issue_id, book_sync_resp)
 
-      if resp.nil?
-        build_update = "DEBUG: Problem with book sync API."
-        bg_respond(nwo, issue_id, build_update)
-      else
-        build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
-        You can visit the book, but Binder is not ready yet for execution.
-        <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-        <p> :luggage: Now I will move the data from the test to the production server...</p>"
-        bg_respond(nwo, issue_id, build_update)
+      if book_sync_resp.include? "Your book is now on the NeuroLibre production server!"
+        bg_respond(nwo, issue_id, "<p>:luggage: Next: Sending the data to our production server.</p>")
       end
-
-      lut = get_resource_lookup(repository_address)
+      
+      # SYNC DATA HERE --------------------------
+      # First get the LUT for the forked repo.
+      # For project_name this does not really matter, they are identical.
+      lut = get_resource_lookup(forked_address)
+      
       post_params = {
         :project_name => lut["project_name"]
       }.to_json
 
-      ## SYNC DATA HERE
-      resp = request_data_sync(post_params)
+      # Sending the data to the production server
+      data_sync_resp = request_data_sync(post_params)
+      bg_respond(nwo, issue_id, data_sync_resp)
 
-      if resp.nil?
-        build_update = "DEBUG: Problem with data sync API."
-        bg_respond(nwo, issue_id, build_update)
-      else
-        build_update = " :maple_leaf: I have successfully moved your data to the production server!
-        <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-        <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
-        bg_respond(nwo, issue_id, build_update)
+      if binderhub_build_resp.include? "I have successfully moved your data to the production server!"
+        bg_respond(nwo, issue_id, "<p>:racing_car:: leaves: Next: Building the BinderHub image on our production server! :zap:</p>")
       end
+      
+      # BINDER REQUEST HERE --------------------------
+      # Set parameters for forked repository binderhub build
+      post_params = {
+        :repo_url => forked_address,
+        :commit_hash => latest_sha
+      }.to_json
 
-      # BINDERHUB REQUEST
-      resp = request_production_binderhub(post_params)
+      # Send BinderHub build request
+      binderhub_build_resp = request_production_binderhub(post_params)
+      bg_respond(nwo, issue_id, data_sync_resp)
 
-      if resp.nil?
-        build_update = "DEBUG: Problem with Binder API."
-        bg_respond(nwo, issue_id, build_update)
-      else
-        build_update = " :hibiscus: Your Binder is ready!
-        <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>
-        <p>:confetti_ball:Production workflow has been completed, congrats!</p>"
-        bg_respond(nwo, issue_id, build_update)
+      if binderhub_build_resp.include? "Your Binder is ready!"
+        fin_msg = ":confetti_ball: :tada: Production workflow has been completed successfully!
+        <ul><li>:heavy_check_mark: Forked and configured repository for production</li><li>:heavy_check_mark: Built the Jupyter Book for production</li><li> :heavy_check_mark: Transferred the built book to the production server</li><li>:heavy_check_mark: Transferred the data to the production server</li><li>:heavy_check_mark: Built the Binder image on the production server</li></ul>
+        <p> You can try executing the book served from the production server.</p>
+        <p>:information_source: If all looks good, you can proceed with Zenodo tasks.</p>"
+        bg_respond(nwo, issue_id, fin_msg)
       end
-    
+      
     elsif action_type == "sync-data"
       
-      # SYNC DATA HERE
-      lut = get_resource_lookup(repository_address)
+      forked_address = fork_for_production(repository_address)
+      lut = get_resource_lookup(forked_address)
       post_params = {
         :project_name => lut["project_name"]
       }.to_json
-      
-      resp = request_data_sync(post_params)
+      # Sending the data to the production server
+      data_sync_resp = request_data_sync(post_params)
+      bg_respond(nwo, issue_id, data_sync_resp)
 
-      if resp.nil?
-        build_update = "DEBUG: Problem with data sync API."
-        bg_respond(nwo, issue_id, build_update)
-      else
-        build_update = " :maple_leaf: I have successfully moved your data to the production server!
-        <details><summary> <b> Data prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-        <p>Now we are building a BinderHub instance, may be the :zap: with your preprint!</p>"
-        bg_respond(nwo, issue_id, build_update)
-      end
-    
     elsif action_type == "sync-book"
 
       forked_address = fork_for_production(repository_address)
@@ -1062,22 +1054,11 @@ class ProdWorker
         :commit_hash => latest_sha
       }.to_json
 
-      resp = request_book_sync(post_params)
-
-      if resp.nil?
-        build_update = "DEBUG: Problem with book sync API."
-        bg_respond(nwo, issue_id, build_update)
-      else
-        build_update = " :maple_leaf: Your book is now on NeuroLibre production server!
-        You can visit the book, but Binder is not ready yet for execution.
-        <details><summary> <b> Book prod sync response</b> </summary><pre><code>#{resp}</code></pre></details>
-        <p> :luggage: Now I will move the data from the test to the production server...</p>"
-        bg_respond(nwo, issue_id, build_update)
-      end
+      book_sync_resp = request_book_sync(post_params)
+      bg_respond(nwo, issue_id, book_sync_resp)
 
     elsif action_type == "build-binder"
 
-      # BINDERHUB REQUEST
       forked_address = fork_for_production(repository_address)
       latest_sha = get_latest_book_build_sha(forked_address)
 
@@ -1085,16 +1066,30 @@ class ProdWorker
         :repo_url => forked_address,
         :commit_hash => latest_sha
       }.to_json
-      resp = request_production_binderhub(post_params)
 
-      if resp.nil?
-        build_update = "DEBUG: Problem with Binder API."
-        bg_respond(nwo, issue_id, build_update)
+      binderhub_build_resp = request_production_binderhub(post_params)
+      bg_respond(nwo, issue_id, data_sync_resp)
+    
+    elsif action_type == "set-book-url"
+
+      forked_address = fork_for_production(repository_address)
+      latest_sha = get_latest_book_build_sha(forked_address)
+
+      # Look for the book on prod using commit hash
+      response = get_built_books(commit_sha: latest_sha,server_type: "prod")
+      result = JSON.parse(response)
+      book_url = result[0]['book_url']
+
+      if book_url.nil? || book_url.empty?
+        bg_respond(nwo, issue_id, "I could not find a book for this submission on the production server at commit #{latest_sha}")
       else
-        build_update = " :hibiscus: Your Binder is ready!
-        <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>"
-        bg_respond(nwo, issue_id, build_update)
+        book_url_html = "<a href=\"#{book_url}\" target=\"_blank\">#{book_url}</a>"
+        issue = github_client.issue(nwo, issue_id)
+        new_body = aa.body.gsub(/\*\*Jupyter Book:\*\*\s*(.*|Pending)/i, "**Jupyter Book:** #{book_url_html}")
+        github_client.update_issue(nwo, issue_id, issue.title, new_body)
+        bg_respond(nwo, issue_id, ":closed_book: Alright! I have set <a href=\"#{book_url}\" target=\"_blank\">this Jupyter Book</a> (served from the prod server) as the final version. Unless changed, this URI will appear in the preprint.")
       end
+
 
     
     end
