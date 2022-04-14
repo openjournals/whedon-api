@@ -1057,7 +1057,7 @@ class ProdWorker
       book_sync_resp = request_book_sync(post_params)
       bg_respond(nwo, issue_id, book_sync_resp)
 
-    elsif action_type == "build-binder"
+    elsif action_type == "binderhub-build"
 
       forked_address = fork_for_production(repository_address)
       latest_sha = get_latest_book_build_sha(forked_address)
@@ -1068,7 +1068,7 @@ class ProdWorker
       }.to_json
 
       binderhub_build_resp = request_production_binderhub(post_params)
-      bg_respond(nwo, issue_id, data_sync_resp)
+      bg_respond(nwo, issue_id, binderhub_build_resp)
     
     elsif action_type == "set-book-url"
 
