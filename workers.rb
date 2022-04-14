@@ -1011,7 +1011,7 @@ class ProdWorker
       bg_respond(nwo, issue_id, data_sync_resp)
 
       if data_sync_resp.include? "I have successfully moved your data to the production server!"
-        bg_respond(nwo, issue_id, "<p>:racing_car:: leaves: Next: Building the BinderHub image on our production server! :zap:</p>")
+        bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :grimacing:</p>")
       end
       
       # BINDER REQUEST HERE --------------------------

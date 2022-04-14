@@ -697,7 +697,7 @@ def parse_neurolibre_response(response)
                 res = "Run into problem during production BinderHub build request for #{payload_in['repo_url']}"
         else
                 res = ":hibiscus: Your Binder is ready!
-                <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{resp}</code></pre></details>"
+                <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{response}</code></pre></details>"
         end
 
         return res
