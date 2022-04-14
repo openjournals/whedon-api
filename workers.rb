@@ -1010,7 +1010,7 @@ class ProdWorker
       data_sync_resp = request_data_sync(post_params)
       bg_respond(nwo, issue_id, data_sync_resp)
 
-      if binderhub_build_resp.include? "I have successfully moved your data to the production server!"
+      if data_sync_resp.include? "I have successfully moved your data to the production server!"
         bg_respond(nwo, issue_id, "<p>:racing_car:: leaves: Next: Building the BinderHub image on our production server! :zap:</p>")
       end
       
@@ -1085,7 +1085,7 @@ class ProdWorker
       else
         book_url_html = "<a href=\"#{book_url}\" target=\"_blank\">#{book_url}</a>"
         issue = github_client.issue(nwo, issue_id)
-        new_body = aa.body.gsub(/\*\*Jupyter Book:\*\*\s*(.*|Pending)/i, "**Jupyter Book:** #{book_url_html}")
+        new_body = issue.body.gsub(/\*\*Jupyter Book:\*\*\s*(.*|Pending)/i, "**Jupyter Book:** #{book_url_html}")
         github_client.update_issue(nwo, issue_id, issue.title, new_body)
         bg_respond(nwo, issue_id, ":closed_book: Alright! I have set <a href=\"#{book_url}\" target=\"_blank\">this Jupyter Book</a> (served from the prod server) as the final version. Unless changed, this URI will appear in the preprint.")
       end
