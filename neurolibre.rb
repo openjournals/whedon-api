@@ -694,7 +694,7 @@ def parse_neurolibre_response(response)
         end
 
         if response.nil?
-                res = "Run into problem during production BinderHub build request for #{payload_in['repo_url']}"
+                res = "Run into problem during production BinderHub build request for #{payload_in["repo_url"]}"
         else
                 res = ":hibiscus: Your Binder is ready!
                 <details><summary> <b> BinderHub prod build response</b> </summary><pre><code>#{response}</code></pre></details>"
@@ -829,6 +829,26 @@ def parse_neurolibre_response(response)
         end
 
         return response
+
+    end
+
+    def zenodo_flush_items(items,issue_id)
+        payload_in = {}
+        payload_in["items"] = items
+        payload_in["issue_id"] = issue_id
+
+        r = RestClient::Request.new(
+                method: :post,
+                :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/flush',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_call,
+                :timeout => 1800, # Give 30 minutes
+                :headers => { :content_type => :json }
+                ).execute
+
+        return r.to_str
 
     end
 

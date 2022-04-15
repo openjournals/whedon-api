@@ -1138,10 +1138,9 @@ class ZenodoWorker
     # Important: repository_address vs forked_address
     # repository_address is fetched from the GitHub REVIEW issue. Therefore, corresponds to the user repo.
     # forked_address is the forked (to roboneurolibre organization) and slightly modified version of the user repo
-    # get_resource_lookup has the repository address for the fork. TODO: confirm with Loic! 
-
+    
     # INFER DEPOSIT DATA STATUS HERE 
-    lut = get_resource_lookup(repository_address)
+    lut = get_resource_lookup(forked_address)
     
     # We need to clarify the conditions when a lookup table (LUT) becomes available on 
     # neurolibre-data.conp.cloud (test server)
@@ -1152,7 +1151,7 @@ class ZenodoWorker
     
     else
       
-      if (lut["data_doi"].nil?)
+      if lut["data_doi"].nil?
         # If there's not a DOI, then NeuroLibre will deposit data. 
         deposit_data = true
       else
@@ -1162,7 +1161,7 @@ class ZenodoWorker
 
     end
     
-    if (action_type=="deposit")
+    if action_type=="deposit"
       
       FileUtils.rm_rf("tmp/#{issue_id}") if Dir.exist?("tmp/#{issue_id}") if clear_cache
       Whedon::Paper.new(issue_id).download
@@ -1170,6 +1169,7 @@ class ZenodoWorker
       
       paper_paths = processor.find_paper_paths(path)
 
+      # TODO: Write a lightweight version of this on the GEM side.
       if paper_paths.empty?
         abort("Can't find any papers to compile :-(")
       elsif paper_paths.size == 1
@@ -1210,11 +1210,11 @@ class ZenodoWorker
     
     end
 
-    if (action_type!="deposit" && action_type!="status")
+    if action_type.include? "archive"
 
-      if (action_type=="archive-all")
+      if action_type=="archive-all"
         
-        if (deposit_data)
+        if deposit_data
           items = ["book","repository","data","docker"]
           item_args = ["","",lut["project_name"],lut["docker"]]
         else
@@ -1222,31 +1222,31 @@ class ZenodoWorker
           item_args = ["","",lut["docker"]]
         end
       
-      elsif (action_type=="archive-data")
+      elsif action_type=="archive-data"
 
-        if (deposit_data)
+        if deposit_data
           items = ["data"]
-          item_args = lut["project_name"]
+          item_args = [lut["project_name"]] # Cast as array
         else
           bg_respond(nwo, issue_id, ":no_entry: Looks like a DOI already exists for the data of this submisison.")
         end
       
-      elsif (action_type=="archive-repository")
+      elsif action_type=="archive-repository"
         
         # We have this information, no arg needed.
         items = ["repository"]
         item_args = ""
 
-      elsif (action_type=="archive-book")
+      elsif action_type=="archive-book"
 
         # We have this information, no arg needed.
         items = ["book"]
         item_args = ""
 
-      elsif (action_type=="archive-docker")
+      elsif action_type=="archive-docker"
 
         items = ["docker"]
-        item_args = lut["docker"]
+        item_args = [lut["docker"]] # Cast as array 
       end
 
       # DO NOT PARSE THIS INTO JSON BEFORE CALLING zenodo_archive_items
@@ -1278,13 +1278,30 @@ class ZenodoWorker
 
     end
 
-    if (action_type=="status")
+    if action_type=="status"
     
       resp = zenodo_get_status(issue_id)
+      resp = resp + "<p>:record_button: Author repository sha <code>#{latest_sha_user[0..5]}</code> <br> :twisted_rightwards_arrows: Forked repository sha <code>#{latest_sha_fork[0..5]}</code></p>"
       bg_respond(nwo, issue_id, resp)
 
     end
 
+    if action_type.include? "flush"
+      
+      if action_type == "flush-all"
+        items = ["book","repository","data","docker"]
+      elsif action_type == "flush-data"
+        items = ["data"]
+      elsif action_type == "flush-repository"
+        items = ["repository"]
+      elsif action_type == "flush-book"
+        items = ["book"]
+      elsif action_type == "flush-docker"
+        items = ["docker"]
+      end
+
+      resp = zenodo_flush_items(items,issue_id)
+      flush_response = "<details><summary> :wastebasket: Zenodo response for <code>#{action_type}</code> </summary><pre><code>#{resp}</code></pre></details>"
   end
 
 end
