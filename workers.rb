@@ -1302,6 +1302,8 @@ class ZenodoWorker
 
       resp = zenodo_flush_items(items,issue_id)
       flush_response = "<details><summary> :wastebasket: Zenodo response for <code>#{action_type}</code> </summary><pre><code>#{resp}</code></pre></details>"
+    end
+   
   end
 
 end
