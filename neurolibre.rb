@@ -843,7 +843,7 @@ def parse_neurolibre_response(response)
                 verify_ssl: false,
                 :user => 'neurolibre',
                 :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-                :payload => payload_call,
+                :payload => payload_in.to_json,
                 :timeout => 1800, # Give 30 minutes
                 :headers => { :content_type => :json }
                 ).execute

@@ -1011,7 +1011,7 @@ class ProdWorker
       bg_respond(nwo, issue_id, data_sync_resp)
 
       if data_sync_resp.include? "I have successfully moved your data to the production server!"
-        bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :grimacing:</p>")
+        bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :bowtie:</p>")
       end
       
       # BINDER REQUEST HERE --------------------------
@@ -1027,7 +1027,7 @@ class ProdWorker
 
       if binderhub_build_resp.include? "Your Binder is ready!"
         fin_msg = ":confetti_ball: :tada: Production workflow has been completed successfully!
-        <ul><li>:heavy_check_mark: Forked and configured repository for production</li><li>:heavy_check_mark: Built the Jupyter Book for production</li><li> :heavy_check_mark: Transferred the built book to the production server</li><li>:heavy_check_mark: Transferred the data to the production server</li><li>:heavy_check_mark: Built the Binder image on the production server</li></ul>
+        <ul><li>:white_check_mark: Forked and configured repository for production</li><li>:white_check_mark: Built the Jupyter Book for production</li><li> :white_check_mark: Transferred the built book to the production server</li><li>:white_check_mark: Transferred the data to the production server</li><li>:white_check_mark: Built the Binder image on the production server</li></ul>
         <p> You can try executing the book served from the production server.</p>
         <p>:information_source: If all looks good, you can proceed with Zenodo tasks.</p>"
         bg_respond(nwo, issue_id, fin_msg)
@@ -1302,6 +1302,7 @@ class ZenodoWorker
 
       resp = zenodo_flush_items(items,issue_id)
       flush_response = "<details><summary> :wastebasket: Zenodo response for <code>#{action_type}</code> </summary><pre><code>#{resp}</code></pre></details>"
+      bg_respond(nwo, issue_id, flush_response)
     end
    
   end
