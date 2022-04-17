@@ -885,7 +885,7 @@ def parse_neurolibre_response(response)
             id = "%05d" % issue_id
             response = RestClient::Request.new(
                     method: :get,
-                    :url => "http://neurolibre-data-prod.conp.cloud/zenodo_records/#{id}/zenodo_published_#{item}_NeuroLibre_#{id}.json"
+                    :url => "http://neurolibre-data-prod.conp.cloud/zenodo_records/#{id}/zenodo_published_#{item}_NeuroLibre_#{id}.json",
                     verify_ssl: false,
                     :user => 'neurolibre',
                     :password =>  ENV['NEUROLIBRE_TESTAPI_TOKEN'],
@@ -895,6 +895,7 @@ def parse_neurolibre_response(response)
         rescue
             cur_record = nil
         end   
+
         return cur_record
     end
 
@@ -965,6 +966,6 @@ def parse_neurolibre_response(response)
         
         return rsp.join('')
     
-      end
+    end
 
 end
