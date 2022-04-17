@@ -289,7 +289,7 @@ class DOIWorker
       # Need to checkout the new branch before looking for the paper.
       `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
 
-      paper_path = find_paper_paths(issue_id)
+      paper_path = find_paper(issue_id)
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
         bibtex_filename = YAML.load_file(meta_data_path)['bibliography']
@@ -443,7 +443,7 @@ class DOIWorker
     paper_paths = []
 
     Find.find(search_path) do |path|
-      paper_paths << path if path =~ /preprint\.tex$|preprint\.md$/
+      paper_paths << path if path =~ /paper\.tex$|paper\.md$/
     end
 
     return paper_paths.first
