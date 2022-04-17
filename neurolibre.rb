@@ -596,6 +596,7 @@ def parse_neurolibre_response(response)
     end
 
     def update_github_content(repository_address,content_path,new_content,commit_message,branch="main")
+    # To configure the forked repository for production.
 
         # A repo for which roboneuro has write access (neurolibre or roboneurolibre orgs.)
         target_repo = get_repo_name(repository_address)
@@ -619,7 +620,8 @@ def parse_neurolibre_response(response)
     end
 
     def request_book_sync(payload_in)
-        
+        # Based on the commit hash, this 
+        # call copies the built book from test to the production server.
         begin 
         response = RestClient::Request.new(
             method: :post,
@@ -650,7 +652,8 @@ def parse_neurolibre_response(response)
     end
 
     def request_data_sync(payload_in)
-        
+        # Based on the project_name provided in the repo2data, this 
+        # call copies data from test to the production server.
         begin
             response = RestClient::Request.new(
                 method: :post,
@@ -677,7 +680,9 @@ def parse_neurolibre_response(response)
     end
 
     def request_production_binderhub(payload_in)
-        
+        # Sends a binderhub build request to the production server for 
+        # a repository forked into the roboneurolibre GitHub organization. 
+        # Requests from other user/ organization/ repositories are not allowed.
         begin
         response = RestClient::Request.new(
             method: :post,
@@ -704,7 +709,8 @@ def parse_neurolibre_response(response)
     end
 
     def zenodo_create_buckets(payload_in)
-
+        # This action can ben run only once, regardless of the commit. Only one deposit per issue. 
+        # Checks are performed on the server side.
         response = RestClient::Request.new(
         method: :post,
         :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/buckets',
@@ -719,7 +725,8 @@ def parse_neurolibre_response(response)
     end
 
     def get_resource_lookup(repository_address)
-        
+        # Each build on the test server is listed on this tabular file with 
+        # the respective components.
         puts(" Requested lookup table for #{repository_address}")
         response = RestClient::Request.new(
             method: :get,
@@ -749,9 +756,12 @@ def parse_neurolibre_response(response)
     end
 
     def zenodo_get_status(issue_id)
-
+        # Depending on  the availibility of the zenodo records on the
+        # production server, a response is returned.
+        # API endpoint zenodo/list returns a simple HTML formatted list of records found
+        # in the /zenodo_records/issue_id directory. REGEX patterns are used for interpretation. 
         post_params = {:issue_id => issue_id}.to_json
-        
+        id = "%05d" % issue_id
         response = RestClient::Request.new(
             method: :post,
             :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/list',
@@ -789,7 +799,25 @@ def parse_neurolibre_response(response)
             rsp.push("<li>:red_circle: <b>#{types[idx]} archive is missing</b></li>")
         else
             tmp = res[cur_regex][hash_regex][1..-1]
-            rsp.push("<li>:green_circle: #{types[idx]} archive (<code>#{tmp}</code>)</li>")
+            # Display file size for uploaded items, so it is informative.
+            response = RestClient::Request.new(
+                method: :get,
+                :url => "http://neurolibre-data-prod.conp.cloud/zenodo_records/#{id}/#{res[cur_regex]}.json".gsub("<li>",""),
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password =>  ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :headers => { :content_type => :json }
+            ).execute
+            cur_record = JSON.parse(response.to_str)
+            # Display MB or GB depending on the size.
+            size = (cur_record['size'].to_i/1e6).round(2)
+            if size > 999
+              size = (cur_record['size'].to_i/1e9).round(2).to_s + " GB"
+            else
+              size = size.to_s + " MB"
+            end
+            # Format 
+            rsp.push("<li>:green_circle: #{types[idx]} archive <ul><li><code>#{size}</code> <code>#{tmp}</code></li></ul></li>")
         end
         end
         rsp.push("</ul><h3>Publish</h3>")
@@ -806,8 +834,7 @@ def parse_neurolibre_response(response)
 
     def zenodo_archive_items(payload_in,items,item_args)
         # Requests will be sent to NeuroLibre server one by one
-        # Otherwise, it may time-out, also not elegant.
-
+        # Otherwise, it may time-out, also not modular. 
         response = []
         items.each_with_index do |it, idx|
             
@@ -832,7 +859,48 @@ def parse_neurolibre_response(response)
 
     end
 
+    def zenodo_publish(issue_id)
+        
+        payload_in = {}
+        payload_in["issue_id"] = issue_id
+        payload_call = payload_in.to_json
+        
+        r = RestClient::Request.new(
+                method: :post,
+                :url => 'http://neurolibre-data-prod.conp.cloud:29876/api/v1/resources/zenodo/publish',
+                verify_ssl: false,
+                :user => 'neurolibre',
+                :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                :payload => payload_call,
+                :timeout => 1800, # Give 30 minutes
+                :headers => { :content_type => :json }
+        ).execute
+
+        return(r.to_str)
+    end
+
+    def zenodo_get_published(issue_id,item)
+        
+        begin
+            id = "%05d" % issue_id
+            response = RestClient::Request.new(
+                    method: :get,
+                    :url => "http://neurolibre-data-prod.conp.cloud/zenodo_records/#{id}/zenodo_published_#{item}_NeuroLibre_#{id}.json"
+                    verify_ssl: false,
+                    :user => 'neurolibre',
+                    :password =>  ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+                    :headers => { :content_type => :json }
+                ).execute
+            cur_record = JSON.parse(response.to_str)
+        rescue
+            cur_record = nil
+        end   
+        return cur_record
+    end
+
     def zenodo_flush_items(items,issue_id)
+        # Deletes zenodo records from Zenodo (and locally on the server)
+        # Deletes corresponding data from the prod server.
         payload_in = {}
         payload_in["items"] = items
         payload_in["issue_id"] = issue_id
@@ -864,5 +932,39 @@ def parse_neurolibre_response(response)
     
         return gh_response.content.html_url
     end
+
+
+    def assign_archives(issue_id,zenodo_dois)
+        
+        nwo = "neurolibre/neurolibre-reviews"
+        issue = github_client.issue(nwo, issue_id)
+
+        doi_regex = /\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/
+        
+        types = {"repository" => "Repository","data" => "Data","book" => 'Book',"docker" => "Docker"}
+
+        rsp = []
+        new_body = ''
+        zenodo_dois.each_key do |key|
+
+          doi = zenodo_dois[key]
+          if doi
+            doi_with_url = "<a href=\"https://doi.org/#{doi}\" target=\"_blank\">#{doi}</a>"
+            if idx == 0
+              new_body = issue.body.gsub(/\*\*#{types[key]} archive:\*\*\s*(.*|Pending)/i, "**#{types[key]} archive:** #{doi_with_url}")
+            else
+              new_body = new_body.gsub(/\*\*#{types[key]} archive:\*\*\s*(.*|Pending)/i, "**#{types[key]} archive:** #{doi_with_url}")
+            end
+            rsp.push("OK. #{doi_with_url} is the archive or #{types[key]}.<br>")
+          else
+            rsp.push("* #{cur_doi} doesn't look like an archive DOI for #{types[key]}.<br>")
+          end
+        end
+    
+        github_client.update_issue(nwo, issue_id, issue.title, new_body)
+        
+        return rsp.join('')
+    
+      end
 
 end

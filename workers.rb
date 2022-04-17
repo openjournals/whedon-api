@@ -1090,7 +1090,25 @@ class ProdWorker
         bg_respond(nwo, issue_id, ":closed_book: Alright! I have set <a href=\"#{book_url}\" target=\"_blank\">this Jupyter Book</a> (served from the prod server) as the final version. Unless changed, this URI will appear in the preprint.")
       end
 
+    elsif action_type == "set-zenodo-dois"
 
+      forked_address = fork_for_production(repository_address)
+      lut = get_resource_lookup(forked_address)
+
+      if lut["data_doi"].nil? || lut["data_doi"].nil?
+        items = ["data","book","repository","docker"]
+      else
+        items = ["book","repository","docker"]
+      end
+
+      zenodo_dois = {}
+      items.each do |item|
+        pub_records = zenodo_get_published(issue_id,item)
+        zenodo_dois[item] = pub_records['doi']
+      end
+      
+      resp = assign_archives(issue_id,zenodo_dois)
+      bg_respond(nwo, issue_id, resp)
     
     end
     
@@ -1281,7 +1299,7 @@ class ZenodoWorker
     if action_type=="status"
     
       resp = zenodo_get_status(issue_id)
-      resp = resp + "<p>:record_button: Author repository sha <code>#{latest_sha_user[0..5]}</code> <br> :twisted_rightwards_arrows: Forked repository sha <code>#{latest_sha_fork[0..5]}</code></p>"
+      resp = resp + "<br><p>:record_button: Author repository sha <code>#{latest_sha_user[0..5]}</code> <br> :twisted_rightwards_arrows: Forked repository sha <code>#{latest_sha_fork[0..5]}</code></p>"
       bg_respond(nwo, issue_id, resp)
 
     end
@@ -1290,6 +1308,11 @@ class ZenodoWorker
       
       if action_type == "flush-all"
         items = ["book","repository","data","docker"]
+      
+      # NOTE: 
+      # Allowing individual operations are half baked at the moment
+      # given that zenodo deposit works in a all-or-none fashion.
+      #  ** Do not list these in the command list before implementing individual deposit functionality
       elsif action_type == "flush-data"
         items = ["data"]
       elsif action_type == "flush-repository"
@@ -1303,6 +1326,13 @@ class ZenodoWorker
       resp = zenodo_flush_items(items,issue_id)
       flush_response = "<details><summary> :wastebasket: Zenodo response for <code>#{action_type}</code> </summary><pre><code>#{resp}</code></pre></details>"
       bg_respond(nwo, issue_id, flush_response)
+    end
+
+    if action_type == "publish"
+      
+      resp = zenodo_publish(issue_id)
+      bg_respond(nwo, issue_id, resp)
+
     end
    
   end
