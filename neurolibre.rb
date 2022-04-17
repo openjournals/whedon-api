@@ -946,7 +946,8 @@ def parse_neurolibre_response(response)
 
         rsp = []
         new_body = ''
-        zenodo_dois.each_key do |key|
+        
+        zenodo_dois.keys.each_with_index do |key,idx|
 
           doi = zenodo_dois[key]
           if doi
