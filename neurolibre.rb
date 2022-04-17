@@ -935,7 +935,7 @@ def parse_neurolibre_response(response)
     end
 
 
-    def assign_archives(issue_id,zenodo_dois)
+    def assign_zenodo_archives(issue_id,zenodo_dois)
         
         nwo = "neurolibre/neurolibre-reviews"
         issue = github_client.issue(nwo, issue_id)

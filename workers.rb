@@ -1107,7 +1107,7 @@ class ProdWorker
         zenodo_dois[item] = pub_records['doi']
       end
       
-      resp = assign_archives(issue_id,zenodo_dois)
+      resp = assign_zenodo_archives(issue_id,zenodo_dois)
       bg_respond(nwo, issue_id, resp)
     
     end
@@ -1299,7 +1299,7 @@ class ZenodoWorker
     if action_type=="status"
     
       resp = zenodo_get_status(issue_id)
-      resp = resp + "<br><p>:record_button: Author repository sha <code>#{latest_sha_user[0..5]}</code> <br> :twisted_rightwards_arrows: Forked repository sha <code>#{latest_sha_fork[0..5]}</code></p>"
+      resp = resp + "<br><br><p>:record_button: Author repository sha <code>#{latest_sha_user[0..5]}</code> <br> :twisted_rightwards_arrows: Forked repository sha <code>#{latest_sha_fork[0..5]}</code></p>"
       bg_respond(nwo, issue_id, resp)
 
     end
