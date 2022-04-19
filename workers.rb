@@ -63,7 +63,7 @@ class PaperPreviewWorker
       journal_logo = "#{Whedon.resources}/#{journal}/logo.png"
       csl_file = "#{Whedon.resources}/joss/apa.csl"
       directory = File.dirname(paper_paths.first)
-      #puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.55458/NeuroLibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
+      #puts "cd #{directory} && pandoc -V repository='#{repository_address}' -V archive_doi='PENDING' -V paper_url='PENDING' -V journal_name='#{journal_name}' -V formatted_doi='10.55458/neurolibre.0XXXX' -V review_issue_url='XXXX' -V graphics='true' -V issue='X' -V volume='X' -V page='X' -V logo_path='logopreprint.png' -V year='XXXX' -V submitted='01 January XXXX' -V published='01 January XXXX' -V editor_name='Editor Name' -V editor_url='http://example.com' -V citation_author='Neuro Libre et al.' -o #{sha}.pdf -V geometry:margin=1in --pdf-engine=xelatex --citeproc #{File.basename(paper_paths.first)} --from markdown+autolink_bare_uris --csl=#{csl_file} --template latex.template"
       # TODO: may eventually want to swap out the latex template
 
       result, stderr, status = Open3.capture3("cd #{directory} && pandoc \
@@ -74,7 +74,7 @@ class PaperPreviewWorker
       -V docker_doi='PENDING' \
       -V book_exec_url='PENDING' \
       -V paper_url='PENDING' \
-      -V formatted_doi='10.55458/NeuroLibre.0XXXX' \
+      -V formatted_doi='10.55458/neurolibre.0XXXX' \
       -V journal_name='#{journal_name}' \
       -V book_exec_icon='#{book_exec_logo}' \
       -V logo_path='#{journal_logo}' \
@@ -635,7 +635,7 @@ class PDFWorker
       "year" => paper_year,
       "submitted" => "Unavailable",
       "published" => Time.now.strftime('%d %B %Y'),
-      "formatted_doi" => "10.55458/NeuroLibre.0XXXX",
+      "formatted_doi" => "10.55458/neurolibre.0XXXX",
       "citation_author" => processor.paper.citation_author,
       "editor_name" => editor_name,
       "reviewers" => processor.paper.reviewers_without_handles,

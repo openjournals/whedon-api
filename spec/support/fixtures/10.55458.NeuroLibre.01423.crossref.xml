@@ -65,7 +65,7 @@
           <first_page>1423</first_page>
         </pages>
         <publisher_item>
-          <identifier id_type="doi">10.55458/NeuroLibre.01423</identifier>
+          <identifier id_type="doi">10.55458/neurolibre.01423</identifier>
         </publisher_item>
         <ai:program name="AccessIndicators">
           <ai:license_ref applies_to="vor">http://creativecommons.org/licenses/by/4.0/</ai:license_ref>
