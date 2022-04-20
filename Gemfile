@@ -19,7 +19,7 @@ gem 'twitter'
 gem 'unicorn', '5.3.1'
 gem 'pry-byebug'
 #gem 'whedon', :git => 'https://github.com/openjournals/whedon.git', :ref => '364ded0628421ee74b57f3afaf0ba8272263904d'
-gem 'roboneuro', '0.1.4'
+gem 'roboneuro', '0.1.5'
 gem 'mail', '~> 2.6', '>= 2.6.4'
 
 group :test do
