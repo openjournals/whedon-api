@@ -8,7 +8,7 @@ module ConfigHelper
     ENV['JOURNAL_ALIAS'] = config.journal_alias
     ENV['PAPER_REPOSITORY'] = config.papers_repo
     ENV['JOURNAL_URL'] = config.site_host
-    ENV['JOURNAL_NAME'] = config.site_name
+    ENV['JOURNAL_NAME'] = config.journal_name
     # We need this for NeuroLibre as its abbrv name is not 
     # all uppercaser of the alias as in JOSS.
     # Addedd in roboneuro-gem v 1.0.4
