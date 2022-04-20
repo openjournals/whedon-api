@@ -12,7 +12,7 @@ journals:
       site_host: https://neurolibre.org
       doi_prefix: "10.55458"
       journal_alias: NeuroLibre
-      journal_name: NeuroLibre Executable Preprint Server
+      journal_name: NeuroLibre Reproducible Preprint Server
       journal_launch_date: '2022-04-05'
       current_issue: "1"
       current_volume: "1"

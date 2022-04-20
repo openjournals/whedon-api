@@ -44,7 +44,7 @@ class PaperPreviewWorker
     paper_paths = find_paper_paths("tmp/#{sha}")
 
     journal = "NeuroLibre"
-    journal_name = "NeuroLibre Executable Preprint Server"
+    journal_name = "NeuroLibre Reproducible Preprint Server"
 
     if paper_paths.empty?
       self.payload = "Can't find any papers to compile. Make sure there's a file named <code>preprint.md</code> in your repository."
