@@ -226,7 +226,7 @@ GEM
     reverse_markdown (1.4.0)
       nokogiri
     rexml (3.2.5)
-    roboneuro (0.1.4)
+    roboneuro (0.1.6)
       bibtex-ruby (~> 6.0.0)
       dotenv
       github-linguist (~> 5.3)
@@ -340,7 +340,7 @@ DEPENDENCIES
   rack-test
   rails (= 6.0.3.2)
   rest-client (~> 2.0)
-  roboneuro (= 0.1.4)
+  roboneuro (= 0.1.6)
   rspec
   sanitize (~> 5.2.1)
   serrano
