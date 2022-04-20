@@ -336,7 +336,6 @@ class RoboNeuro < Sinatra::Base
         respond "No jupyter book url set. Exiting..."
         return
       end  
-    end
 
       if dry_run == true
         label_issue(@nwo, @issue_id, ['recommend-accept'])
