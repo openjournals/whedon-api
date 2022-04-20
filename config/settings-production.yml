@@ -11,8 +11,9 @@ journals:
       reviewers_signup: ''
       site_host: https://neurolibre.org
       doi_prefix: "10.55458"
-      journal_alias: NeuroLibre
+      journal_alias: neurolibre
       journal_name: NeuroLibre Reproducible Preprint Server
+      journal_abbrv_name: NeuroLibre
       journal_launch_date: '2022-04-05'
       current_issue: "1"
       current_volume: "1"
@@ -32,7 +33,9 @@ journals:
       reviewers_signup: ''
       site_host: https://neurolibre.herokuapp.com
       doi_prefix: ""
-      journal_alias: NeuroLibre
+      journal_alias: neurolibre
+      journal_name: NeuroLibre Reproducible Preprint Server
+      journal_abbrv_name: NeuroLibre
       journal_launch_date: ''
       journal_issn: ''
       site_name: NeuroLibre
