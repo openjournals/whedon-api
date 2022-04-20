@@ -318,19 +318,24 @@ class RoboNeuro < Sinatra::Base
     if review_issue?
       if !repository_doi?
         respond "No respository DOI set. Exiting..."
-      return
+        return
+      end
       if !book_doi?
         respond "No book DOI set. Exiting..."
-      return
+        return
+      end
       if !data_doi?
         respond "No data DOI set. Exiting..."
-      return
+        return
+      end
       if !docker_doi?
         respond "No docker DOI set. Exiting..."
-      return
+        return
+      end  
       if !book_exec_url?
         respond "No jupyter book url set. Exiting..."
-      return
+        return
+      end  
     end
 
       if dry_run == true
