@@ -316,10 +316,22 @@ class RoboNeuro < Sinatra::Base
 
   def deposit(dry_run, custom_branch=nil)
     if review_issue?
-      if !archive_doi?
-        respond "No archive DOI set. Exiting..."
-        return
-      end
+      if !repository_doi?
+        respond "No respository DOI set. Exiting..."
+      return
+      if !book_doi?
+        respond "No book DOI set. Exiting..."
+      return
+      if !data_doi?
+        respond "No data DOI set. Exiting..."
+      return
+      if !docker_doi?
+        respond "No docker DOI set. Exiting..."
+      return
+      if !book_exec_url?
+        respond "No jupyter book url set. Exiting..."
+      return
+    end
 
       if dry_run == true
         label_issue(@nwo, @issue_id, ['recommend-accept'])
