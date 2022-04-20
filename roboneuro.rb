@@ -296,9 +296,46 @@ class RoboNeuro < Sinatra::Base
     github_client.add_comment(nwo, issue_id, comment)
   end
 
+
   # Check if the review issue has an archive DOI set already
-  def archive_doi?
-    archive = issue.body[/(?<=\*\*Archive:\*\*.<a\shref=)"(.*?)"/]
+  def repository_doi?
+    archive = issue.body[/(?<=\*\*Repository archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
+  def book_doi?
+    archive = issue.body[/(?<=\*\*Book archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
+  def data_doi?
+    archive = issue.body[/(?<=\*\*Data archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
+  def docker_doi?
+    archive = issue.body[/(?<=\*\*Docker archive:\*\*.<a\shref=)"(.*?)"/]
+    if archive
+      return true
+    else
+      return false
+    end
+  end
+
+  def book_exec_url?
+    archive = issue.body[/(?<=\*\*Jupyter Book:\*\*.<a\shref=)"(.*?)"/]
     if archive
       return true
     else
