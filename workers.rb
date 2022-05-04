@@ -951,15 +951,15 @@ class ProdWorker
           warn "Cannot update _config.yml"
       end
 
-      branch, new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
-      if new_toc.nil?
-        bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-        abort("Cannot find _config.yml in the forked repository.")
-      end
-      # Commit new toc file to the forked repository
-      if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production", branch).nil?
-        warn "Cannot update _toc.yml"
-      end
+      # branch, new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
+      # if new_toc.nil?
+      #   bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+      #   abort("Cannot find _config.yml in the forked repository.")
+      # end
+      # # Commit new toc file to the forked repository
+      # if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production", branch).nil?
+      #   warn "Cannot update _toc.yml"
+      # end
 
       # 3) Build book for prod on test server, then sync book to the prod.
       latest_sha = get_latest_book_build_sha(forked_address)
