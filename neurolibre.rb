@@ -536,10 +536,22 @@ def parse_neurolibre_response(response)
         target_repo = get_repo_name(repository_address)
         puts("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
         new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
+        
+        branch = "main" 
+        if new_config.code == 404
+            # Fall back to master branch 
+            branch = "master"
+            puts("https://raw.githubusercontent.com/#{target_repo}/master/content/_config.yml")
+            new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/master/content/_config.yml")
+            
+            if new_config.code == 404
+                return branch, nil
+            end
+        end
 
         if new_config.nil?
             warn "Target repository does not have content/_config.yml"
-            return nil
+            return branch, nil
         end
 
         pattern = Regexp.new(/binderhub_url:.*/).freeze
@@ -569,12 +581,16 @@ def parse_neurolibre_response(response)
                 new_config = new_config.gsub(/repository.*/, "repository: \n  url: #{repository_address}")
             else
                 # Both url and repository parent field are missing, append them to the end.
-                new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: main"
+                if branch == "main"
+                    new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: main"
+                else
+                    new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: master"
+                end
             end
         end
 
         # return modified _config.yml content
-        return new_config
+        return branch, new_config
     end
 
     def get_toc_for_prod(repository_address, author_repository, review_id)
@@ -582,10 +598,22 @@ def parse_neurolibre_response(response)
         # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
         target_repo = get_repo_name(repository_address)
         new_toc = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_toc.yml")
-    
+        
+        branch = "main"
+        if new_toc.code == 404
+            # Fall back to master branch 
+            branch = "master"
+            puts("https://raw.githubusercontent.com/#{target_repo}/master/content/_toc.yml")
+            new_toc = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/master/content/_toc.yml")
+            
+            if new_toc.code == 404
+                return branch, nil
+            end
+        end
+
         if new_toc.nil?
             warn "Target repository does not have content/_config.yml"
-            return nil
+            return branch, nil
         end
     
         # Please do not modify empty spaces
