@@ -6,7 +6,7 @@ journals:
         - pbellec
         - agahkarakuzu
       eic_team_name: neurolibre/editors
-      papers_repo: neurolibre/neurolibre-papers
+      papers_repo: neurolibre/preprints
       reviewers: https://tinyurl.com/y22xx6ux
       reviewers_signup: ''
       site_host: https://neurolibre.org
@@ -28,7 +28,7 @@ journals:
       eics:
         - emdupre
       eic_team_name: neurolibre/editors
-      papers_repo: neurolibre/neurolibre-papers
+      papers_repo: neurolibre/preprints
       reviewers: https://tinyurl.com/y22xx6ux
       reviewers_signup: ''
       site_host: https://neurolibre.herokuapp.com

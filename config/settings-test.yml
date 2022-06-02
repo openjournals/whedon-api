@@ -3,7 +3,7 @@ journals:
       editor_team_id: 3408147
       eics:
         - emdupre
-      papers: neurolibre/neurolibre-papers
+      papers: neurolibre/preprints
       reviewers: https://tinyurl.com/y22xx6ux
       reviewers_signup: ''
       site_host: https://neurolibre.herokuapp.com
