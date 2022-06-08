@@ -1109,7 +1109,37 @@ class ProdWorker
       
       resp = assign_zenodo_archives(issue_id,zenodo_dois)
       bg_respond(nwo, issue_id, resp)
-    
+
+    elsif action_type == "book-build"
+      
+      ## REFACTOR THIS INTO A FUNCTION, REPEATS THE ABOVE 
+      forked_address = fork_for_production(repository_address)
+      latest_sha = get_latest_book_build_sha(forked_address)
+      puts(latest_sha)
+
+      build_update = " :zap: We are currently building your NeuroLibre notebook for production! :twisted_rightwards_arrows: ([fork](#{forked_address}))"
+      bg_respond(nwo, issue_id, build_update)
+
+      post_params = {
+        :repo_url => forked_address,
+        :commit_hash => latest_sha
+      }.to_json
+      
+      puts(post_params)
+
+      op_binder, op_book = request_book_build(post_params)
+      book_url = op_book['book_url']
+
+      # if book build failed :(
+        if book_url.nil?
+          book_response = get_book_build_log(op_binder,repository_address,latest_sha)
+          bg_respond(nwo, issue_id, book_response)
+          abort("FORKED REPO BUILD ERROR: Book URL not found. Problem with book (or BinderHub) build. Logs have been forwarded.")
+        else
+          build_update = " :repeat: Build was successful! <p> :luggage: Next: Sending the book to our production server. </p>"
+          bg_respond(nwo, issue_id, build_update)
+        end
+
     end
     
 
