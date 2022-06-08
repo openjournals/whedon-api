@@ -941,15 +941,15 @@ class ProdWorker
       # Wait briefly before reading content from fork
       sleep(20)
       # 2) Update _config.yml & _toc.yml on the forked repo for production server.
-      branch,new_config = get_config_for_prod(forked_address)
-      if new_config.nil?
-        bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-        abort("Cannot find _config.yml in the forked repository.")
-      end
-      # Commit new config file to the forked repository
-      if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production",branch).nil?
-          warn "Cannot update _config.yml"
-      end
+      # branch,new_config = get_config_for_prod(forked_address)
+      # if new_config.nil?
+      #   bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
+      #   abort("Cannot find _config.yml in the forked repository.")
+      # end
+      # # Commit new config file to the forked repository
+      # if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production",branch).nil?
+      #     warn "Cannot update _config.yml"
+      # end
 
       # branch, new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
       # if new_toc.nil?
