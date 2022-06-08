@@ -997,22 +997,22 @@ class ProdWorker
         bg_respond(nwo, issue_id, "<p>:luggage: Next: Sending the data to our production server.</p>")
       end
       
-      # SYNC DATA HERE --------------------------
-      # First get the LUT for the forked repo.
-      # For project_name this does not really matter, they are identical.
-      lut = get_resource_lookup(forked_address)
+      # # SYNC DATA HERE --------------------------
+      # # First get the LUT for the forked repo.
+      # # For project_name this does not really matter, they are identical.
+      # lut = get_resource_lookup(forked_address)
       
-      post_params = {
-        :project_name => lut["project_name"]
-      }.to_json
+      # post_params = {
+      #   :project_name => lut["project_name"]
+      # }.to_json
 
-      # Sending the data to the production server
-      data_sync_resp = request_data_sync(post_params)
-      bg_respond(nwo, issue_id, data_sync_resp)
+      # # Sending the data to the production server
+      # data_sync_resp = request_data_sync(post_params)
+      # bg_respond(nwo, issue_id, data_sync_resp)
 
-      if data_sync_resp.include? "I have successfully moved your data to the production server!"
-        bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :bowtie:</p>")
-      end
+      # if data_sync_resp.include? "I have successfully moved your data to the production server!"
+      #   bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :bowtie:</p>")
+      # end
       
       # BINDER REQUEST HERE --------------------------
       # Set parameters for forked repository binderhub build
