@@ -750,7 +750,7 @@ class DepositWorker
         pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@roboneuro accept deposit=true\n```"
       end
     else
-      pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
+      #pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
       # Deposit with journal and Crossref
       deposit(issue_id)
