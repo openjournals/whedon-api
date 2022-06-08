@@ -726,20 +726,20 @@ class DepositWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    # Download and compile the paper
-    # pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
+    Download and compile the paper
+    pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
-    # if !status.success?
-    #   bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
-    # end
+    if !status.success?
+      bg_respond(nwo, issue_id, "PDF failed to compile for issue ##{issue_id} with the following error: \n\n #{stderr}") and return
+    end
 
-    # # If we've got this far then push a copy of the PDF to the papers repository
-    # create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
+    # If we've got this far then push a copy of the PDF to the papers repository
+    create_or_update_git_branch(issue_id, config.papers_repo, config.journal_alias)
 
-    # pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
+    pdf_url, pdf_download_url = create_git_pdf(pdf_path, issue_id, config.papers_repo, config.journal_alias)
 
-    # crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
-    # crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
+    crossref_xml_path = pdf_path.gsub('.pdf', '.crossref.xml')
+    crossref_url = create_git_xml(crossref_xml_path, issue_id, config.papers_repo, config.journal_alias)
 
     if dry_run == true
       pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
@@ -750,7 +750,7 @@ class DepositWorker
         pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@roboneuro accept deposit=true\n```"
       end
     else
-      #pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
+      pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
       # Deposit with journal and Crossref
       deposit(issue_id)
