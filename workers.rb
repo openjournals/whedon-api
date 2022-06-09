@@ -726,7 +726,7 @@ class DepositWorker
     config = OpenStruct.new(config)
     set_env(nwo, issue_id, config)
 
-    Download and compile the paper
+    # Download and compile the paper
     pdf_path, stderr, status = download_and_compile(issue_id, custom_branch)
 
     if !status.success?
