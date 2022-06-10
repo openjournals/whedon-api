@@ -283,12 +283,14 @@ class DOIWorker
     # Trying to debug a race condition on Heroku
     sleep(10)
     # Download the paper
+    puts "DEBUG: WHEDON DOWNLOAD"
     stdout, stderr, status = download(issue_id, clear_cache)
 
     if status.success?
       # Need to checkout the new branch before looking for the paper.
       `cd tmp/#{issue_id} && git checkout #{custom_branch} --quiet && cd` if custom_branch
-
+      
+      puts "DEBUG: WHEDON DOWNLOAD PASS"
       paper_path = find_paper(issue_id)
       if paper_path.end_with?('.tex')
         meta_data_path = "#{File.dirname(paper_path)}/paper.yml"
@@ -306,6 +308,7 @@ class DOIWorker
           bg_respond(nwo, issue_id, "Checking the BibTeX entries failed with the following error: \n\n #{e.message}") and return
         end
 
+        puts "DEBUG: CHECKING DOIS"
         doi_summary = check_dois(entries)
 
         if doi_summary.any?
@@ -753,6 +756,7 @@ class DepositWorker
       pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
 
       # Deposit with journal and Crossref
+      puts "DEBUG: ENTERING DEPOSIT"
       deposit(issue_id)
 
       id = "%05d" % issue_id
@@ -809,6 +813,7 @@ class DepositWorker
   end
 
   def deposit(issue_id)
+    puts "DEBUG: WHEDON DEPOSIT"
     Open3.capture3("whedon deposit #{issue_id}")
   end
 end
