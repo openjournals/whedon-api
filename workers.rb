@@ -818,6 +818,8 @@ class DepositWorker
     puts "DEBUG: WHEDON DEPOSIT"
     result, stderr, status = Open3.capture3("whedon deposit #{issue_id}")
     puts "#{result}"
+    puts "#{stderr}"
+    puts "#{status}"
   end
 end
 
