@@ -813,8 +813,11 @@ class DepositWorker
   end
 
   def deposit(issue_id)
+    result, stderr, status = Open3.capture3("ls tmp/#{issue_id}")
+    puts "#{result}"
     puts "DEBUG: WHEDON DEPOSIT"
-    Open3.capture3("whedon deposit #{issue_id}")
+    result, stderr, status = Open3.capture3("whedon deposit #{issue_id}")
+    puts "#{result}"
   end
 end
 
