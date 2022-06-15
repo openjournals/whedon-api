@@ -25,9 +25,6 @@ Here are some things you can ask me to do:
 # Change editorial assignment
 @roboneuro assign @username as editor
 
-# Set the software archive DOI at the top of the issue e.g.
-@roboneuro set 10.0000/zenodo.00000 as archive
-
 # Set the software version at the top of the issue e.g.
 @roboneuro set v1.0.1 as version
 
@@ -46,14 +43,27 @@ EDITORIAL TASKS
 # Compile the paper from alternative branch
 @roboneuro generate pdf from branch custom-branch-name
 
-# Compile the NeuroLibre notebook
+# Build the NeuroLibre book (on the test server)
 @roboneuro generate nl-notebook
 
-# Compile the NeuroLibre notebook from alternative branch
+# Build the NeuroLibre book from alternative branch (on the test server)
 @roboneuro generate nl-notebook from branch custom-branch-name
 
-# Start production server preparations
-@roboneuro initiate production
+PRODUCTION TASKS (Auth level editor)
+
+# Start production sequence [fork-> config -> build (book and binder) -> sync (data and book)]
+@roboneuro production start
+
+# Production sequence processes can be called individually if `@roboneruo production start` is interrupted at some point.
+@roboneuro production build-book
+@roboneuro production sync-book
+@roboneuro production sync-data
+@roboneuro production build-binderhub
+
+ARCHIVAL TASKS (Auth level editor)
+
+# Displays Zenodo deposit, upload and publish status
+@roboneuro zenodo status
 
 # Create Zenodo records for archiving resources
 @roboneuro zenodo deposit
@@ -61,26 +71,27 @@ EDITORIAL TASKS
 # Uploads all resources to respective Zenodo deposits for archival
 @roboneuro zenodo archive-all
 
-# Uploads Docker image to its Zenodo deposit for archival
+# Zenodo uploads can be performed individually
 @roboneuro zenodo archive-docker
-
-# Uploads built book to its Zenodo deposit for archival
 @roboneuro zenodo archive-book
-
-# Uploads repository to its Zenodo deposit for archival
 @roboneuro zenodo archive-repository
-
-# Uploads dataset to its Zenodo deposit for archival
 @roboneuro zenodo archive-data
 
-# Displays Zenodo deposit, upload and publish status
-@roboneuro zenodo status
+# Destroy all the zenodo resources (cannot be called after publishing, cannot be performed for individual items)
+@roboneuro zenodo flush
 
-# Remind an author or reviewer to return to a review after a
-# certain period of time (supported units days and weeks)
-@roboneuro remind @reviewer in 2 days
+PUBLISHING TASKS
 
-# Ask RoboNeuro to do a dry run of accepting the paper and depositing with Crossref
+# Set the final book URL for publishing (Editor)
+@roboneuro production set-book-url
+
+# Publish all the Zenodo archives (EiC & zenodo status must be green for all types)
+@roboneuro zenodo publish
+
+# Set all the Zenodo DOIs for publishing (Editor)
+@roboneuro production set-zenodo-dois
+
+# Ask RoboNeuro to do a dry run of accepting the paper and depositing with Crossref (Editor)
 @roboneuro accept
 
 # Ask RoboNeuro to check the references for missing DOIs
@@ -88,6 +99,10 @@ EDITORIAL TASKS
 
 # Ask RoboNeuro to check repository statistics for the submitted software
 @roboneuro check repository
+
+# Remind an author or reviewer to return to a review after a
+# certain period of time (supported units days and weeks)
+@roboneuro remind @reviewer in 2 days
 
 EiC TASKS
 

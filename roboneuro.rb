@@ -180,8 +180,13 @@ class RoboNeuro < Sinatra::Base
     when /\A@roboneuro generate nl-notebook/i
       build_book(nil, clear_cache=true)
     when /\A@roboneuro production (.\S*)/
+      check_editor
       init_production($1)
+    when /\A@roboneuro zenodo publish/i
+      check_eic
+      perform_zenodo(clear_cache=true, "publish")
     when /\A@roboneuro zenodo (.\S*)/
+      check_editor
       perform_zenodo(clear_cache=true, $1)
     when /\A@roboneuro accept deposit=true from branch (.\S*)/i
       check_eic

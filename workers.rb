@@ -901,6 +901,9 @@ class JBWorker
   end
 end
 
+# This is the Sidekiq worker that processes initiates the production process
+# or executes individual steps depending on the request. Action types include
+# `start`,(`build-book`,`sync-book`,`sync-data`,`build-binderhub`),`set-zenodo-dois`,`set-book-url`
 class ProdWorker
   require_relative 'github'
   require_relative 'config_helper'
@@ -931,41 +934,42 @@ class ProdWorker
     repository_address = processor.repository_address.gsub(/^\"|\"?$/, "").strip
 
     if action_type == "start"
+      # This command initiated a sequence for the production step:
+      # 1 Fork repository into roboneurolibre organization
+      # 2 Config repo content for the prod server 
+      # 3 Build a book for the forked repo on the test server (build-book)
+      # 4 Send the built book from test to prod (sync-book)
+      # 5 Send the data from test to prod (sync-data)
+      # 6 Build a BinderHub image for the forked repo on the prod server (build-binderhub)
       
       # 1) Fork author repo into roboneurolibre organization. 
+      # This command returns the repository address if the repo is already forked. 
       forked_address = fork_for_production(repository_address)
             
       if forked_address.nil?
-        bg_respond(nwo, issue_id, "🍴🚫 I could not fork the repository.")
+        bg_respond(nwo, issue_id, "🍴🚫 I could not fork the repository. Technical screener, please inspect logs for `#{self.jid}`")
         abort("Running into a problem forking")
       end
 
       # Wait briefly before reading content from fork
       sleep(20)
-      # 2) Update _config.yml & _toc.yml on the forked repo for production server.
-      # branch,new_config = get_config_for_prod(forked_address)
-      # if new_config.nil?
-      #   bg_respond(nwo, issue_id, "👀 `_config.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-      #   abort("Cannot find _config.yml in the forked repository.")
-      # end
-      # # Commit new config file to the forked repository
-      # if update_github_content(forked_address,"content/_config.yml",new_config,"Updating _config.yml for production",branch).nil?
-      #     warn "Cannot update _config.yml"
-      # end
 
-      # branch, new_toc = get_toc_for_prod(forked_address, repository_address, issue_id)
-      # if new_toc.nil?
-      #   bg_respond(nwo, issue_id, "👀 `_toc.yml` is missing from the [forked repository](#{forked_address}). \n I have to interrupt the production process.")
-      #   abort("Cannot find _config.yml in the forked repository.")
-      # end
-      # # Commit new toc file to the forked repository
-      # if update_github_content(forked_address,"content/_toc.yml",new_toc,"Updating _toc.yml for production", branch).nil?
-      #   warn "Cannot update _toc.yml"
-      # end
+      # 2) Update _config.yml & _toc.yml on the forked repo for production server.
+
+      # 2.1
+      if not update_config_for_prod(forked_address)
+        bg_respond(nwo, issue_id, update_forked_content_fail_msg(forked_address, "_config.yml", self.jid))
+        abort("Cannot update _config.yml for #{forked_address}.")
+      end
+
+      # 2.2
+      if not update_toc_for_prod(forked_address, issue_id)
+        bg_respond(nwo, issue_id, update_forked_content_fail_msg(forked_address, "_toc.yml", self.jid))
+        abort("Cannot update _toc.yml for #{forked_address}.")
+      end
 
       # 3) Build book for prod on test server, then sync book to the prod.
       latest_sha = get_latest_book_build_sha(forked_address)
-      puts(latest_sha)
 
       build_update = " :zap: We are currently building your NeuroLibre notebook for production! :twisted_rightwards_arrows: ([fork](#{forked_address}))"
       bg_respond(nwo, issue_id, build_update)
@@ -999,22 +1003,22 @@ class ProdWorker
         bg_respond(nwo, issue_id, "<p>:luggage: Next: Sending the data to our production server.</p>")
       end
       
-      # # SYNC DATA HERE --------------------------
-      # # First get the LUT for the forked repo.
-      # # For project_name this does not really matter, they are identical.
-      # lut = get_resource_lookup(forked_address)
+      # SYNC DATA HERE --------------------------
+      # First get the LUT for the forked repo.
+      # For project_name this does not really matter, they are identical.
+      lut = get_resource_lookup(forked_address)
       
-      # post_params = {
-      #   :project_name => lut["project_name"]
-      # }.to_json
+      post_params = {
+        :project_name => lut["project_name"]
+      }.to_json
 
-      # # Sending the data to the production server
-      # data_sync_resp = request_data_sync(post_params)
-      # bg_respond(nwo, issue_id, data_sync_resp)
+      # Sending the data to the production server
+      data_sync_resp = request_data_sync(post_params)
+      bg_respond(nwo, issue_id, data_sync_resp)
 
-      # if data_sync_resp.include? "I have successfully moved your data to the production server!"
-      #   bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :bowtie:</p>")
-      # end
+      if data_sync_resp.include? "I have successfully moved your data to the production server!"
+        bg_respond(nwo, issue_id, "<p>:racing_car: :leaves: Next: Building the BinderHub image on our production server! :zap:</p><p>:hourglass_flowing_sand: :whale: Whale, whale, whale, this step may take some time depending on the cache status of Docker image layers on our registry. Sometimes builds are just over-whale-ming :bowtie:</p>")
+      end
       
       # BINDER REQUEST HERE --------------------------
       # Set parameters for forked repository binderhub build
@@ -1059,7 +1063,7 @@ class ProdWorker
       book_sync_resp = request_book_sync(post_params)
       bg_respond(nwo, issue_id, book_sync_resp)
 
-    elsif action_type == "binderhub-build"
+    elsif action_type == "build-binderhub"
 
       forked_address = fork_for_production(repository_address)
       latest_sha = get_latest_book_build_sha(forked_address)
@@ -1112,7 +1116,7 @@ class ProdWorker
       resp = assign_zenodo_archives(issue_id,zenodo_dois)
       bg_respond(nwo, issue_id, resp)
 
-    elsif action_type == "book-build"
+    elsif action_type == "build-book"
       
       ## REFACTOR THIS INTO A FUNCTION, REPEATS THE ABOVE 
       forked_address = fork_for_production(repository_address)
@@ -1149,6 +1153,9 @@ class ProdWorker
 
 end
 
+# This is the Sidekiq worker that deals with Zenodo processes.
+# Actions include `deposit`, `archive-all`,(`archive-book`,`archive-data`,`archive-docker`,`archive-repository`
+# `status`, `flush` and `publish`.
 class ZenodoWorker
   require_relative 'github'
   require_relative 'config_helper'
@@ -1192,8 +1199,6 @@ class ZenodoWorker
     # INFER DEPOSIT DATA STATUS HERE 
     lut = get_resource_lookup(forked_address)
     
-    # We need to clarify the conditions when a lookup table (LUT) becomes available on 
-    # neurolibre-data.conp.cloud (test server)
     if(lut.nil?)
 
       bg_respond(nwo, issue_id, ":no_entry: Cannot find resources for this submission on NeuroLibre servers.")
@@ -1336,28 +1341,13 @@ class ZenodoWorker
 
     end
 
-    if action_type.include? "flush"
+    if action_type== "flush"
       
-      if action_type == "flush-all"
-        items = ["book","repository","data","docker"]
-      
-      # NOTE: 
-      # Allowing individual operations are half baked at the moment
-      # given that zenodo deposit works in a all-or-none fashion.
-      #  ** Do not list these in the command list before implementing individual deposit functionality
-      elsif action_type == "flush-data"
-        items = ["data"]
-      elsif action_type == "flush-repository"
-        items = ["repository"]
-      elsif action_type == "flush-book"
-        items = ["book"]
-      elsif action_type == "flush-docker"
-        items = ["docker"]
-      end
-
+      items = ["book","repository","data","docker"]
       resp = zenodo_flush_items(items,issue_id)
       flush_response = "<details><summary> :wastebasket: Zenodo response for <code>#{action_type}</code> </summary><pre><code>#{resp}</code></pre></details>"
       bg_respond(nwo, issue_id, flush_response)
+
     end
 
     if action_type == "publish"

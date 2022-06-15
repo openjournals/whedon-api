@@ -5,6 +5,7 @@ require 'time'
 require_relative 'github'
 require 'mail'
 require 'whedon'
+require 'yaml'
 
 include GitHub
 
@@ -159,60 +160,60 @@ module NeuroLibre
     end
 
     
-def parse_neurolibre_response(response)
-        tmp =  response.to_str
+    def parse_neurolibre_response(response)
+            tmp =  response.to_str
 
-        # Get string between message": and , which is the message
-        #binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
-        #binder_messages = binder_messages.map{|string| string.gsub!(/^\"|\"?$/, '')}
-        binder_messages = response.body
+            # Get string between message": and , which is the message
+            #binder_messages  =  tmp.each_line(chomp: true).map {|s| s[/(?<=message":)(.*)(?=,)/]}.compact
+            #binder_messages = binder_messages.map{|string| string.gsub!(/^\"|\"?$/, '')}
+            binder_messages = response.body
 
 
-        #binder_messages = binder_messages.join('\n')
-        
-        # Fetch book build response into a hash
-        tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
-        book_json  = JSON.parse(tmp_chomped[-1])
+            #binder_messages = binder_messages.join('\n')
+            
+            # Fetch book build response into a hash
+            tmp_chomped  =  tmp.each_line(chomp: true).map {|s| s[/\{([^}]+)\}/]}.compact
+            book_json  = JSON.parse(tmp_chomped[-1])
 
-        # We'll need to send a GET request at this point to fetch book build logs.
+            # We'll need to send a GET request at this point to fetch book build logs.
 
-        return binder_messages, book_json
-    end
-    def request_book_build(payload_in)
-        # Payload contains repo_url and commit_hash
+            return binder_messages, book_json
+        end
+        def request_book_build(payload_in)
+            # Payload contains repo_url and commit_hash
 
-        response = RestClient::Request.new(
-        method: :post,
-        :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
-        verify_ssl: false,
-        :user => 'neurolibre',
-        :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
-        :payload => payload_in,
-        :timeout => 3600, # Give 60 minutes
-        :headers => { :content_type => :json }
-        ).execute do |response|
-            case response.code
-            when 200
-                return parse_neurolibre_response(response)
-            when 409
-                payload_in = JSON.parse(payload_in)
-                puts "hit 409"
-                puts payload_in['commit_hash']
-                begin
-                    result = get_built_books(commit_sha:payload_in['commit_hash'])
-                    result = JSON.parse(result)
-                    return result[0]['book_url']
-                rescue
-                    # We need a better indexing of successfull/failed attempts. More importantly
-                    # we also need to know if a build is ongoing.
-                    puts "Returning the latest successful book build"
-                    reponame = URI(payload_in['repo_url']).path.split('/').last
-                    result = get_built_books(repo_name:reponame)
-                    result = JSON.parse(result)
-                    return result[0]['book_url']
+            response = RestClient::Request.new(
+            method: :post,
+            :url => 'http://neurolibre-data.conp.cloud:8081/api/v1/resources/books',
+            verify_ssl: false,
+            :user => 'neurolibre',
+            :password => ENV['NEUROLIBRE_TESTAPI_TOKEN'],
+            :payload => payload_in,
+            :timeout => 3600, # Give 60 minutes
+            :headers => { :content_type => :json }
+            ).execute do |response|
+                case response.code
+                when 200
+                    return parse_neurolibre_response(response)
+                when 409
+                    payload_in = JSON.parse(payload_in)
+                    puts "hit 409"
+                    puts payload_in['commit_hash']
+                    begin
+                        result = get_built_books(commit_sha:payload_in['commit_hash'])
+                        result = JSON.parse(result)
+                        return result[0]['book_url']
+                    rescue
+                        # We need a better indexing of successfull/failed attempts. More importantly
+                        # we also need to know if a build is ongoing.
+                        puts "Returning the latest successful book build"
+                        reponame = URI(payload_in['repo_url']).path.split('/').last
+                        result = get_built_books(repo_name:reponame)
+                        result = JSON.parse(result)
+                        return result[0]['book_url']
+                    end
                 end
             end
-        end
     end
 
     def get_book_build_log(op_binder,repository_address,hash)
@@ -523,6 +524,35 @@ def parse_neurolibre_response(response)
       return book_url
     end
 
+    def get_default_branch(repository_address)
+        target_repo = get_repo_name(repository_address)
+        repo_info = JSON.parse(RestClient.get("https://api.github.com/repos/#{target_repo}"))
+        return repo_info['default_branch']
+    end
+
+    def update_github_content(repository_address,content_path,new_content,commit_message,branch="main")
+        # To configure the forked repository for production.
+            # A repo for which roboneuro has write access (neurolibre or roboneurolibre orgs.)
+            target_repo = get_repo_name(repository_address)
+            
+            # Get blob sha of the target file 
+            blob = JSON.parse(RestClient.get("https://api.github.com/repos/#{target_repo}/contents/#{content_path}"))
+            
+            # Update the content
+            r = github_client.update_contents(target_repo,
+                                      content_path,
+                                      commit_message,
+                                      blob['sha'],
+                                      new_content,
+                                      :branch => branch)
+            # Let caller infer in case this fails 
+            if r.nil?
+                return nil
+            else
+                return true
+            end
+    end
+
     def fork_for_production(papers_repo)
         target_repo = get_repo_name(papers_repo)
         r = github_client.fork(target_repo, {:organization => 'roboneurolibre'})
@@ -530,116 +560,86 @@ def parse_neurolibre_response(response)
         return r['html_url']
     end
 
-    def get_config_for_prod(repository_address)
-        # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
-        puts(repository_address)
-        target_repo = get_repo_name(repository_address)
-        
-        branch = "main"
-        new_config = nil
+    def update_config_for_prod(forked_address)
+        # Argument to this function is a GitHub URL for a roboneurolibre repository
+        # forked from user's account, e.g., https://github.com/roboneurolibre/my_preprint
+        # Sets launch_buttons/binderhub_url and repository/url for neurolibre production.
+        # Returns true/false, conditional to a successful update of the _config.yml on forked repo.
+        target_repo = get_repo_name(forked_address)
+        branch = get_default_branch(forked_address)
+
         begin
-            puts("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
-            new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_config.yml")
+            jb_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/#{branch}/content/_config.yml")
         rescue
-            branch = "master"
-            puts("https://raw.githubusercontent.com/#{target_repo}/master/content/_config.yml")
-            new_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/master/content/_config.yml")
-        end
-        
-        if new_config.nil?
-            warn "Target repository does not have content/_config.yml"
-            return branch, nil
+            warn "Cannot get content/_config.yml from #{forked_address}"
+            return false
         end
 
-        pattern = Regexp.new(/binderhub_url:.*/).freeze
-        if pattern.match?(new_config)
-            # A line that mathces binderhub_url: (unique occurence in the _config template), then update the target.
-            new_config = new_config.gsub(/binderhub_url:.*/, "binderhub_url: \"https://binder-mcgill.conp.cloud\"")
-        else
-            
-            pattern_lb = Regexp.new(/launch_buttons:.*/).freeze
-            if pattern_lb.match?(new_config)
-                # Launch_buttons parent field exists, binderhub_url missing insert it under the parent field.
-                new_config = new_config.gsub(/launch_buttons:.*/, "launch_buttons: \n  binderhub_url: \"https://binder-mcgill.conp.cloud\"")
-            else
-                # Both parent and child fields are missing, append them to the end.
-                new_config = new_config + "\nlaunch_buttons: \n  binderhub_url: \"https://binder-mcgill.conp.cloud\""
-            end
+        # Parse yaml
+        jb_config = YAML.load(jb_config)
+
+        # Production binderhub server
+        if not jb_config['launch_buttons']
+            jb_config['launch_buttons'] = {}
         end
+        jb_config['launch_buttons']['binderhub_url'] = "https://binder-mcgill.conp.cloud"
 
-        pattern_url = Regexp.new(/^\s*url\s*:.*/).freeze
-        if pattern_url.match?(new_config)
-            # A line that begins with url: (empty spaces allowed), then update url address.
-            new_config = new_config.gsub(/^\s*url\s*:.*/, "  url: #{repository_address}")
-        else
-            pattern_rep = Regexp.new(/repository:.*/).freeze
-            if pattern_rep.match?(new_config)
-                # Repository parent field exists, url missing, add url.
-                new_config = new_config.gsub(/repository.*/, "repository: \n  url: #{repository_address}")
-            else
-                # Both url and repository parent field are missing, append them to the end.
-                if branch == "main"
-                    new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: main"
-                else
-                    new_config = new_config + "\nrepository: \n  url: #{repository_address}\n  branch: master"
-                end
-            end
+        # Update repository address
+        if not jb_config['repository']
+            jb_config['repository'] = {}
         end
+        jb_config['repository']['url'] = "#{forked_address}"
 
-        # return modified _config.yml content
-        return branch, new_config
-    end
-
-    def get_toc_for_prod(repository_address, author_repository, review_id)
-        
-        # Here, repository_address is https://github.com/author/repository, ensured to have content/_config.yml.
-        target_repo = get_repo_name(repository_address)
-
-        branch = "main"
-        new_toc = nil
-        begin
-            puts("https://raw.githubusercontent.com/#{target_repo}/main/content/_toc.yml")
-            new_toc = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/main/content/_toc.yml")
-        rescue
-            branch = "master"
-            puts("https://raw.githubusercontent.com/#{target_repo}/master/content/_toc.yml")
-            new_toc = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/master/content/_toc.yml")
-        end
-
-        if new_toc.nil?
-            warn "Target repository does not have content/_toc.yml"
-            return branch, nil
-        end
-    
-        # Please do not modify empty spaces
-        add = "\n- caption: NeuroLibre\n  chapters:\n  - url: #{author_repository}\n    title: Author\'s repository \n  - url: https://github.com/neurolibre/neurolibre-reviews/issues/#{review_id}\n    title: Technical screening record"
-        
-        return branch, new_toc + add
-    
-    end
-
-    def update_github_content(repository_address,content_path,new_content,commit_message,branch="main")
-    # To configure the forked repository for production.
-
-        # A repo for which roboneuro has write access (neurolibre or roboneurolibre orgs.)
-        target_repo = get_repo_name(repository_address)
-        
-        # Get blob sha of the target file 
-        blob = JSON.parse(RestClient.get("https://api.github.com/repos/#{target_repo}/contents/#{content_path}"))
-        
-        # Update the content
-        r = github_client.update_contents(target_repo,
-                                  content_path,
-                                  commit_message,
-                                  blob['sha'],
-                                  new_content,
-                                  :branch => branch)
-        # Let caller infer in case this fails 
-        if r.nil?
-            return nil
-        else
+        if update_github_content(forked_address,"content/_config.yml",jb_config.to_yaml,"Updating _config.yml for production",branch).nil?
+            warn "Cannot update _config.yml for #{forked_address}"
+            return false
+        else 
             return true
         end
+    end
+
+    def update_toc_for_prod(forked_address, issue_id)
+        # First argument to this function is a GitHub URL for a roboneurolibre repository
+        # forked from user's account, e.g., https://github.com/roboneurolibre/my_preprint
+        # The second argument is to add a hyperlink to the NeuroLibre page from the preprint.
+        # Returns true/false, conditional to a successful update of the _config.yml on forked repo.
+        target_repo = get_repo_name(forked_address)
+        branch = get_default_branch(forked_address)
+
+        begin
+            jb_config = RestClient.get("https://raw.githubusercontent.com/#{target_repo}/#{branch}/content/_toc.yml")
+        rescue
+            warn "Cannot get content/_toc.yml from #{forked_address}"
+            return false
+        end
+
+        jb_toc = YAML.load(jb_toc)
+        
+        # Quite unlikely at this stage of the screening, nevertheless:
+        if not jb_toc['parts']
+            jb_toc['parts'] = Array.new
+        end
+
+        jb_toc['parts'].append({"caption"=>"NeuroLibre", "chapters"=>[{"url"=>"https://neurolibre.org/papers/10.55458/neurolibre.#{"%05d"%issue_id}", "title"=>"Citable PDF and archives"}]})
+        
+        if update_github_content(forked_address,"content/_toc.yml",jb_toc.to_yaml,"Updating _toc.yml for production",branch).nil?
+            warn "Cannot update _toc.yml for #{forked_address}"
+            return false
+        else 
+            return true
+        end
+    
+    end
+
+    def update_forked_content_fail_msg(forked_address,content,job_id)
+        target_repo = get_repo_name(forked_address)
+        branch = get_default_branch(forked_address)
+        "😥 I could not update `_toc.yml` at the [forked repository](#{forked_address}), interrupting the production workflow.
+        <details><summary> Potential issues </summary><ul>
+        <li>I waited for 20 seconds after the repo was forked to update `#{content}`. But sometimes GitHub slows down, wait for a minute and try again!</li>
+        <li>`#{content}` may not be a properly formatted `yaml` file. You can copy/paste [its content](https://raw.githubusercontent.com/#{target_repo}/#{branch}/content/#{content}) to validate [online](https://jsonformatter.org/yaml-validator).</li>
+        <li>That's all I can think of. If you've tried all of the above and still running into a problem, the technical reviewer should check `roboneuro` logs at job ID `#{job_id}`</li>
+        </ul></details>"
     end
 
     def request_book_sync(payload_in)
