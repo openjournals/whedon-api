@@ -271,7 +271,7 @@ describe WhedonApi do
       expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Attempting dry run of processing paper acceptance/)
-      expect(github_client).to receive(:label_issue).never
+      expect(github_client).to receive(:add_labels_to_an_issue).never
       post '/dispatch', whedon_accept_with_doi, {'CONTENT_TYPE' => 'application/json'}
     end
 
@@ -285,6 +285,7 @@ describe WhedonApi do
       expect(DepositWorker).to receive(:perform_async).once
       allow(Octokit::Client).to receive(:new).once.and_return(github_client)
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /Doing it live! Attempting automated processing of paper acceptance.../)
+      expect(github_client).to receive(:add_labels_to_an_issue).never
       post '/dispatch', whedon_accept_for_reals_with_doi, {'CONTENT_TYPE' => 'application/json'}
     end
 
