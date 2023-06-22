@@ -41,6 +41,7 @@ class WhedonApi < Sinatra::Base
         @message = params['issue']['body']
       elsif @action == 'created'
         @message = params['comment']['body']
+        @comment_id = params['comment']['id']
       end
 
       @sender = params['sender']['login']
@@ -162,9 +163,6 @@ class WhedonApi < Sinatra::Base
     when /\A@whedon invite (.*) as editor/i
       check_eic
       invite_editor($1)
-    when /\A@whedon re-invite (.*) as reviewer/i
-      check_editor
-      invite_reviewer($1)
     when /\A@whedon set (.*) as archive/
       check_editor
       assign_archive($1)
@@ -185,6 +183,9 @@ class WhedonApi < Sinatra::Base
       respond erb :editors, :locals => { :editors => @config.editors }
     when /\A@whedon list reviewers/i
       respond all_reviewers
+    when /\A@whedon generate my checklist/i
+      check_reviewer
+      generate_checklist
     when /\A@whedon generate pdf from branch (.\S*)/
       process_pdf($1)
     when /\A@whedon generate pdf/i
@@ -390,6 +391,25 @@ class WhedonApi < Sinatra::Base
     end
   end
 
+  # Update sender's comment with a reviewer checklist
+  def generate_checklist
+    if !review_issue?
+      respond "Reviewer checklists can only be added from the review issue"
+      halt 422
+    end
+
+    # update comment
+    submitting_author = issue.body.match(/\*\*Submitting author:\*\*\s*.(@\S*)/)[1]
+    repository_url = issue.body.match(/\*\*Repository:\*\*\s*<a href="([^"]*)"/)[1]
+    checklist = erb :reviewer_checklist, locals: { reviewer: @sender, submitting_author: submitting_author, repository_url: repository_url }
+    github_client.update_comment(@nwo, @comment_id, checklist)
+
+    # link checklist from issue's body
+    text = "[- Review checklist for @#{@sender}](https://github.com/#{@nwo}/issues/#{@issue_id}#issuecomment-#{@comment_id})"
+    new_body = issue.body + "\n" + text
+    github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
+  end
+
   # Returns a string response with URL to Gist of reviewers
   def all_reviewers
     "Here's the current list of reviewers: #{@config.reviewers}"
@@ -410,7 +430,6 @@ class WhedonApi < Sinatra::Base
     url = "#{@config.site_host}/papers/api_assign_editor?id=#{@issue_id}&editor=#{new_editor}&secret=#{@config.site_api_key}"
     response = RestClient.post(url, "")
 
-    reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     update_assignees([new_editor] | reviewer_logins)
     new_editor
   end
@@ -431,14 +450,11 @@ class WhedonApi < Sinatra::Base
   end
 
   def set_reviewers(reviewer_list)
-    reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
+    new_reviewer_logins = reviewer_list.map { |reviewer_name| reviewer_name.sub(/^@/, "").downcase }.uniq
     label = reviewer_list.empty? ? "Pending" : reviewer_list.join(", ")
     new_body = issue.body.gsub(/\*\*Reviewers?:\*\*\s*(.+?)\r?\n/i, "**Reviewers:** #{label}\r\n")
-    reviewer_logins.each do |reviewer_name|
-      github_client.add_collaborator(@nwo, reviewer_name)
-    end
-    github_client.update_issue(@nwo, @issue_id, issue.title, new_body, :assignees => [])
-    update_assignees([editor] | reviewer_logins)
+
+    github_client.update_issue(@nwo, @issue_id, issue.title, new_body)
   end
 
   def editor?
@@ -449,23 +465,12 @@ class WhedonApi < Sinatra::Base
     issue.body.match(/\*\*Editor:\*\*\s*.@(\S*)/)[1]
   end
 
-  def invite_reviewer(reviewer_name)
-    reviewer_name = reviewer_name.sub(/^@/, "").downcase
-    existing_invitees = github_client.repository_invitations(@nwo).collect {|i| i.invitee.login.downcase }
-
-    if existing_invitees.include?(reviewer_name)
-      respond "The reviewer already has a pending invite.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-    elsif github_client.collaborator?(@nwo, reviewer_name)
-      respond "@#{reviewer_name} already has access."
-    else
-      # Ideally we should check if a user exists here... (for another day)
-      github_client.add_collaborator(@nwo, reviewer_name)
-      respond "OK, the reviewer has been re-invited.\n\n@#{reviewer_name} please accept the invite by clicking this link: https://github.com/#{@nwo}/invitations"
-    end
-  end
-
   def reviewers
     issue.body.match(/Reviewers?:\*\*\s*(.+?)\r?\n/)[1].split(", ") - ["Pending"]
+  end
+
+  def reviewer_logins
+    @reviewer_logins ||= reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "").strip }
   end
 
   # Send an HTTP POST to the GitHub API here due to Octokit problems
@@ -496,7 +501,6 @@ class WhedonApi < Sinatra::Base
       halt 422
     end
 
-    reviewer_logins = reviewers.map { |reviewer_name| reviewer_name.sub(/^@/, "") }
     url = "#{@config.site_host}/papers/api_start_review?id=#{@issue_id}&editor=#{editor}&reviewers=#{reviewer_logins.join(',')}&secret=#{@config.site_api_key}"
     # TODO let's do some error handling here please
     response = RestClient.post(url, "")
@@ -507,6 +511,14 @@ class WhedonApi < Sinatra::Base
   # Return an Octokit GitHub Issue
   def issue
     @issue ||= github_client.issue(@nwo, @issue_id)
+  end
+
+  # Check that the person sending the command is a reviewer
+  def check_reviewer
+    unless reviewer_logins.include?(@sender)
+      respond "I'm sorry @#{@sender}, I'm afraid I can't do that. That's something only the reviewers are allowed to do."
+      halt 403
+    end
   end
 
   # Check that the person sending the command is an editor
