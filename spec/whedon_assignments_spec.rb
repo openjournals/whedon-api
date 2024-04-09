@@ -10,6 +10,9 @@ describe WhedonApi do
   let(:whedon_assign_reviewer_from_non_editor) { json_fixture('whedon-assign-reviewer-non-editor-on-pre-review-issue-936.json') }
   let(:whedon_commands_from_editor_response) { erb_response('commands.erb')}
   let(:whedon_commands_from_non_editor_response) { erb_response('commands_public.erb')}
+  let(:whedon_generate_my_checklist_from_reviewer) { json_fixture('generate-my-checklist.json') }
+  let(:whedon_generate_my_checklist_from_non_reviewer) { json_fixture('generate-my-checklist-non-reviewer.json') }
+  let(:whedon_generate_my_checklist_from_pre_review_issue) { json_fixture('generate-my-checklist-pre-review-issue.json') }
 
   subject do
     app = described_class.allocate
@@ -121,6 +124,47 @@ describe WhedonApi do
       expect_any_instance_of(WhedonApi).to receive(:assign_reviewer).once.with('@reviewer')
       expect(github_client).to receive(:add_comment).once.with(anything, anything, /OK, @reviewer is now a reviewer/)
       post '/dispatch', whedon_assign_reviewer_from_editor, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should be OK" do
+      expect(last_response).to be_ok
+    end
+  end
+
+  context 'with @whedon generate my checklist as non-reviewer' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, /I'm afraid I can't do that. That's something only the reviewers are allowed to do./)
+      expect(github_client).to receive(:update_comment).never
+      expect(github_client).to receive(:update_issue).never
+      post '/dispatch', whedon_generate_my_checklist_from_non_reviewer, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should be forbidden" do
+      expect(last_response).to be_forbidden
+    end
+  end
+
+  context 'with @whedon generate my checklist from a non-review issue' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:add_comment).once.with(anything, anything, "Reviewer checklists can only be added from the review issue")
+      expect(github_client).to receive(:update_comment).never
+      expect(github_client).to receive(:update_issue).never
+      post '/dispatch', whedon_generate_my_checklist_from_pre_review_issue, {'CONTENT_TYPE' => 'application/json'}
+    end
+
+    it "should be unprocessable" do
+      expect(last_response).to be_unprocessable
+    end
+  end
+
+  context 'with @whedon generate my checklist as reviewer in a review issue' do
+    before do
+      allow(Octokit::Client).to receive(:new).once.and_return(github_client)
+      expect(github_client).to receive(:update_comment).once.with("openjournals/joss-reviews-testing", 420601978, /## Review checklist for @reviewer1/)
+      expect(github_client).to receive(:update_issue).once.with("openjournals/joss-reviews-testing", 121, "[REVIEW]: Testing", /Review checklist for @reviewer1/)
+      post '/dispatch', whedon_generate_my_checklist_from_reviewer, {'CONTENT_TYPE' => 'application/json'}
     end
 
     it "should be OK" do
