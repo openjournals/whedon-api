@@ -1,3 +1,5 @@
+⚠️ JOSS does not uses this service anymore. Whedon and Whedon-API have been deprecated in favor of [Buffy](https://github.com/openjournals/buffy) ⚠️
+
 # Whedon API
 
 A small service that provides the basic Whedon API. Used to help editors manage reviews for [The Journal of Open Source Software](http://joss.theoj.org). You can see him in action in [this review issue](https://github.com/openjournals/joss-reviews/issues/78).
