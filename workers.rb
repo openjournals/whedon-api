@@ -585,6 +585,7 @@ class DepositWorker
 
     if dry_run == true
       pr_url = create_deposit_pr(issue_id, config.papers_repo, config.journal_alias, dry_run)
+      labels = ['recommend-accept']
 
       if custom_branch
         pr_response = ":wave: @#{config.eic_team_name}, this paper is ready to be accepted and published.\n\n Check final proof :point_right: #{pr_url}\n\nIf the paper PDF and Crossref deposit XML look good in #{pr_url}, then you can now move forward with accepting the submission by compiling again with the flag `deposit=true` e.g.\n ```\n@whedon accept deposit=true from branch #{custom_branch} \n```"
@@ -601,13 +602,15 @@ class DepositWorker
       doi = "https://doi.org/#{config.doi_prefix}/#{config.journal_alias}.#{id}"
 
       pr_response = "🚨🚨🚨 **THIS IS NOT A DRILL, YOU HAVE JUST ACCEPTED A PAPER INTO #{config.journal_alias.upcase}!** 🚨🚨🚨\n\n Here's what you must now do:\n\n0. Check final PDF and Crossref metadata that was deposited :point_right: #{pr_url}\n1. Wait a couple of minutes, then verify that the paper DOI resolves [#{doi}](#{doi})\n2. If everything looks good, then close this review issue.\n3. Party like you just published a paper! 🎉🌈🦄💃👻🤘\n\n Any issues? Notify your editorial technical team..."
+      labels = ['accepted', 'published']
 
       # Only Tweet if configured with keys
       if config.twitter_consumer_key
         whedon_tweet(crossref_xml_path, nwo, issue_id, config)
       end
     end
-    # Finally, respond in the review issue with the PDF URL
+    # Finally, add labels and respond in the review issue with the PDF URL
+    label_issue(@nwo, @issue_id, labels)
     bg_respond(nwo, issue_id, pr_response)
     # Clean-up
     FileUtils.rm_rf("#{jid}") if Dir.exist?("#{jid}")
